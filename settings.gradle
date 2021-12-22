@@ -1,0 +1,4 @@
+rootProject.name = 'me.itsmcb'
+include 'api'
+include 'bukkit'
+include 'velocity'

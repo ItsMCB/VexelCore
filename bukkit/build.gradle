@@ -1,0 +1,86 @@
+plugins {
+    id "com.github.johnrengelman.shadow" version "7.0.0"
+}
+
+
+import com.github.jengelman.gradle.plugins.shadow.tasks.ConfigureShadowRelocation
+
+mainClassName = 'me.itsmcb.vexelcore.bukkit.VexelCoreBukkit'
+jar.enabled = false
+
+repositories {
+    mavenCentral()
+    maven {
+        name = 'papermc-repo'
+        url = 'https://papermc.io/repo/repository/maven-public/'
+    }
+    maven {
+        name = 'sonatype'
+        url = 'https://oss.sonatype.org/content/groups/public/'
+    }
+    // PAPI
+    maven {
+        url = 'https://repo.extendedclip.com/content/repositories/placeholderapi/'
+    }
+    // Fast Async World Edit
+    maven {
+        name = "IntellectualSites Releases"
+        url = uri("https://mvn.intellectualsites.com/content/repositories/releases/")
+    }
+    maven {
+        name = "IntellectualSites Snapshots"
+        url = uri("https://mvn.intellectualsites.com/content/repositories/snapshots/")
+    }
+    // Sponge Configurate YAML
+    maven {
+        name = 'spongepowered-repo'
+        url = 'https://repo.spongepowered.org/maven'
+    }
+}
+
+dependencies {
+    implementation project(':api')
+    compileOnly 'io.papermc.paper:paper-api:1.17.1-R0.1-SNAPSHOT'
+    compileOnly 'me.clip:placeholderapi:2.10.10'
+    compileOnly("com.fastasyncworldedit:FastAsyncWorldEdit-Bukkit:1.17-419")
+    compileOnly("com.fastasyncworldedit:FastAsyncWorldEdit-Core:1.17-419")
+    compileOnly("mysql:mysql-connector-java:8.0.27")
+    implementation 'com.github.ItsMCB:MartinsJavaLogger:snapshot-SNAPSHOT'
+}
+
+
+
+processResources {
+    filter { String line -> line.replace('${version}', project.version.toString()) }
+}
+
+
+import org.apache.tools.ant.filters.ReplaceTokens
+
+task processSources(type: Sync) {
+    from sourceSets.main.java.srcDirs
+    inputs.property 'version', version
+    filter ReplaceTokens, tokens: [version: version]
+    into "$buildDir/src"
+}
+
+compileJava.source = processSources.outputs
+
+shadowJar {
+    archiveFileName = 'VexelCoreBukkit-' + project.version.toString() + '.jar'
+}
+
+// Configure Auto Relocation
+
+task relocateShadowJar(type: ConfigureShadowRelocation) {
+    target = tasks.shadowJar
+    prefix = "libs" // Default value is "shadow"
+}
+
+tasks.shadowJar.dependsOn tasks.relocateShadowJar
+
+artifacts {
+    shadowJar
+}
+
+assemble.dependsOn(shadowJar)

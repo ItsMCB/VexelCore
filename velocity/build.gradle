@@ -1,0 +1,67 @@
+plugins {
+    id "com.github.johnrengelman.shadow" version "7.0.0"
+}
+
+
+import com.github.jengelman.gradle.plugins.shadow.tasks.ConfigureShadowRelocation
+
+mainClassName = 'me.itsmcb.vexelcore.velocity.VexelCoreVelocity'
+jar.enabled = false
+
+repositories {
+    mavenCentral()
+    // Velocity
+    maven {
+        name = 'velocitypowered-repo'
+        url = 'https://repo.velocitypowered.com/releases/'
+    }
+    // Minecraft
+    maven {
+        name = 'minecraft-libraries'
+        url = 'https://libraries.minecraft.net/'
+    }
+}
+
+dependencies {
+    implementation project(':api')
+    compileOnly 'com.velocitypowered:velocity-api:3.0.1'
+    annotationProcessor 'com.velocitypowered:velocity-api:3.0.1'
+    implementation 'com.github.ItsMCB:MartinsJavaLogger:snapshot-SNAPSHOT'
+}
+
+
+
+processResources {
+    filter { String line -> line.replace('${version}', project.version.toString()) }
+}
+
+
+import org.apache.tools.ant.filters.ReplaceTokens
+
+task processSources(type: Sync) {
+    from sourceSets.main.java.srcDirs
+    inputs.property 'version', version
+    filter ReplaceTokens, tokens: [version: version]
+    into "$buildDir/src"
+}
+
+compileJava.source = processSources.outputs
+
+shadowJar {
+    archiveFileName = 'VexelCore-Velocity-' + project.version.toString() + '.jar'
+}
+
+// Configure Auto Relocation
+
+task relocateShadowJar(type: ConfigureShadowRelocation) {
+    target = tasks.shadowJar
+    prefix = "libs" // Default value is "shadow"
+}
+
+tasks.shadowJar.dependsOn tasks.relocateShadowJar
+
+artifacts {
+    shadowJar
+}
+
+assemble.dependsOn(shadowJar)
