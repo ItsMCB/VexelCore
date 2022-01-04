@@ -2,8 +2,8 @@ package me.itsmcb.vexelcore.bukkit;
 
 import me.itsmcb.logger.ProjectLogger;
 import me.itsmcb.vexelcore.api.modules.VexelCorePlatform;
-import me.itsmcb.vexelcore.bukkit.modules.VexelCoreBukkitModuleHandler;
-import me.itsmcb.vexelcore.bukkit.modules.doorman.Doorman;
+import me.itsmcb.vexelcore.bukkit.api.VexelCoreBukkitModuleHandler;
+import me.itsmcb.vexelcore.bukkit.modules.firewall.Firewall;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.scheduler.BukkitRunnable;
 
@@ -18,18 +18,22 @@ public class VexelCoreBukkit extends JavaPlugin {
         this.instance = this;
         moduleHandler = new VexelCoreBukkitModuleHandler(instance, VexelCorePlatform.BUKKIT);
 
-        // This example will register a basic Bukkit module that contains a listener and command
-        // After 20 seconds, it will automatically be unloaded.
-        moduleHandler.addModule(new Doorman());
-        moduleHandler.enableModule("itsmcb","doorman");
-        new BukkitRunnable() {
+        // Task timer will run after the server has fully loaded.
+        // This allows dependencies to load first, so they can be detected by modules.
+
+        // TODO config generate
+        // TODO module onEnable and onDisable methods
+        // TODO Load module jars?
+        // TODO VexelCore command to manage modules.
+        BukkitRunnable addModules = new BukkitRunnable() {
             @Override
             public void run() {
-                moduleHandler.disableModule("itsmcb","doorman");
-                getServer().broadcastMessage("Doorman module has been disabled!");
+                // Firewall
+                moduleHandler.addModule(new Firewall());
+                moduleHandler.enableModule("itsmcb","firewall");
             }
-
-        }.runTaskLater(this, 20*20);
+        };
+        addModules.runTaskLater(this, 1L);
     }
 
     @Override

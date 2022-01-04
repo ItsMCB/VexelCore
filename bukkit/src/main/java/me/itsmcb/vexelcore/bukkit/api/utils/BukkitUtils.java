@@ -1,4 +1,4 @@
-package me.itsmcb.vexelcore.bukkit.utils;
+package me.itsmcb.vexelcore.bukkit.api.utils;
 
 import net.kyori.adventure.text.Component;
 import org.bukkit.ChatColor;

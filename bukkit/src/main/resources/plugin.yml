@@ -1,7 +1,7 @@
 name: VexelCore
 version: '${version}'
 main: me.itsmcb.vexelcore.bukkit.VexelCoreBukkit
-api-version: 1.17
+api-version: 1.18
 load: STARTUP
 authors: [ ItsMCB ]
 description: A modular and lightweight essential features suite.

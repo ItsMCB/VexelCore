@@ -48,7 +48,7 @@ task processSources(type: Sync) {
 compileJava.source = processSources.outputs
 
 shadowJar {
-    archiveFileName = 'VexelCore-Velocity-' + project.version.toString() + '.jar'
+    archiveFileName = 'VexelCoreVelocity-' + project.version.toString() + '.jar'
 }
 
 // Configure Auto Relocation

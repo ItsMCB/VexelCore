@@ -14,12 +14,21 @@ Modules will have:
 - Ability to be enabled or disabled on the fly
  */
 
+    public VexelCoreModule(String name, String developer, VexelCorePlatform platform, double version) {
+        this.name = name;
+        this.developer = developer;
+        this.id = developer + ":" + name;
+        this.platform = platform;
+        this.version = version;
+    }
+
     // General
-    private String name = "Untitled Module";
-    private String developer = "Unknown Developer";
-    private VexelCorePlatform platform = VexelCorePlatform.UNKNOWN;
-    private double version = 1.0;
-    private String id = null;
+    private String name;
+    private String developer;
+    private VexelCorePlatform platform;
+    private String id;
+    private double version;
+    private List<String> pluginDependencies = new ArrayList<>();
 
     // Bukkit
     private List<Object> bukkitListenerList = new ArrayList<>();
@@ -32,34 +41,17 @@ Modules will have:
 
     // Setters and Getters
     // Module Info
-    public void setName(String name) {
-        this.name = name;
-        this.id = developer + ":" + name;
-    }
 
     public String getName() {
         return this.name;
-    }
-
-    public void setDeveloper(String developer) {
-        this.developer = developer;
-        this.id = developer + ":" + name;
     }
 
     public String getDeveloper() {
         return this.developer;
     }
 
-    public void setPlatform(VexelCorePlatform platform) {
-        this.platform = platform;
-    }
-
     public VexelCorePlatform getPlatform() {
         return this.platform;
-    }
-
-    public void setVersion(double version) {
-        this.version = version;
     }
 
     public double getVersion() {
@@ -73,6 +65,18 @@ Modules will have:
     public String toString() {
         return name + " by " + developer + " for the " + platform + " platform";
     }
+
+
+    // Platform Plugin Dependencies
+    public List<String> getPluginDependencies() {
+        return pluginDependencies;
+    }
+
+    public void addPluginDependency(String dependencyName) {
+        this.pluginDependencies.add(dependencyName);
+    }
+
+    // TODO Other Module Dependencies
 
     // Bukkit
     public void registerBukkitListener(Object listener) {

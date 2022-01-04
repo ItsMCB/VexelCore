@@ -8,8 +8,8 @@ import com.velocitypowered.api.plugin.annotation.DataDirectory;
 import com.velocitypowered.api.proxy.ProxyServer;
 import me.itsmcb.logger.ProjectLogger;
 import me.itsmcb.vexelcore.api.modules.VexelCorePlatform;
-import me.itsmcb.vexelcore.velocity.modules.VexelCoreVelocityModuleHandler;
-import me.itsmcb.vexelcore.velocity.modules.doorman.DoormanVelocity;
+import me.itsmcb.vexelcore.velocity.api.VexelCoreVelocityModuleHandler;
+import me.itsmcb.vexelcore.velocity.modules.doorman.Doorman;
 import net.kyori.adventure.text.Component;
 
 import java.nio.file.Path;
@@ -47,12 +47,12 @@ public class VexelCoreVelocity {
     @Subscribe
     public void onProxyInitialization(ProxyInitializeEvent event) {
         logger.log("VexelCore for Velocity has been initialized.");
-        moduleHandler.addModule(new DoormanVelocity());
-        moduleHandler.enableModule("itsmcb","doormanvelocity");
+        moduleHandler.addModule(new Doorman());
+        moduleHandler.enableModule("itsmcb","doorman");
 
         server.getScheduler()
                 .buildTask(instance, () -> {
-                    moduleHandler.disableModule("itsmcb","doormanvelocity");
+                    moduleHandler.disableModule("itsmcb","doorman");
                     getProxyServer().sendMessage(Component.text("Doorman Velocity has been disabled!"));
                 })
                 .delay(15L, TimeUnit.SECONDS)
