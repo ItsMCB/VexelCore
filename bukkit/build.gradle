@@ -25,11 +25,11 @@ repositories {
     // Fast Async World Edit
     maven {
         name = "IntellectualSites Releases"
-        url = uri("https://mvn.intellectualsites.com/content/repositories/releases/")
+        url = uri("https://repo.maven.apache.org/content/repositories/releases/")
     }
     maven {
         name = "IntellectualSites Snapshots"
-        url = uri("https://mvn.intellectualsites.com/content/repositories/snapshots/")
+        url = uri("https://repo.maven.apache.org/content/repositories/snapshots/")
     }
     // Sponge Configurate YAML
     maven {
@@ -43,8 +43,8 @@ dependencies {
     compileOnly 'io.papermc.paper:paper-api:1.18.1-R0.1-SNAPSHOT'
     paperweightDevelopmentBundle("io.papermc.paper:dev-bundle:1.18.1-R0.1-SNAPSHOT")
     compileOnly 'me.clip:placeholderapi:2.10.10'
-    compileOnly("com.fastasyncworldedit:FastAsyncWorldEdit-Bukkit:1.17-419")
-    compileOnly("com.fastasyncworldedit:FastAsyncWorldEdit-Core:1.17-419")
+    compileOnly 'com.fastasyncworldedit:FastAsyncWorldEdit-Bukkit:2.0.0'
+    compileOnly 'com.fastasyncworldedit:FastAsyncWorldEdit-Core:2.0.0'
     compileOnly("mysql:mysql-connector-java:8.0.27")
     implementation 'com.github.ItsMCB:MartinsJavaLogger:snapshot-SNAPSHOT'
 }
