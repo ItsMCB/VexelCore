@@ -49,10 +49,28 @@ dependencies {
     implementation 'com.github.ItsMCB:MartinsJavaLogger:snapshot-SNAPSHOT'
 }
 
+
+def targetJavaVersion = 17
+java {
+    def javaVersion = JavaVersion.toVersion(targetJavaVersion)
+    sourceCompatibility = javaVersion
+    targetCompatibility = javaVersion
+    if (JavaVersion.current() < javaVersion) {
+        toolchain.languageVersion = JavaLanguageVersion.of(targetJavaVersion)
+    }
+}
+
+tasks.withType(JavaCompile).configureEach {
+    if (targetJavaVersion >= 10 || JavaVersion.current().isJava10Compatible()) {
+        options.release = targetJavaVersion
+    }
+}
+
+
+
 processResources {
     filter { String line -> line.replace('${version}', project.version.toString()) }
 }
-
 
 import org.apache.tools.ant.filters.ReplaceTokens
 
@@ -83,5 +101,3 @@ artifacts {
 }
 
 assemble.dependsOn(shadowJar)
-sourceCompatibility = JavaVersion.VERSION_17
-targetCompatibility = JavaVersion.VERSION_17
