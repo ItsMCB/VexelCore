@@ -25,38 +25,32 @@ public class VexelCoreVelocityModuleHandler extends ModuleHandler {
     @Override
     public ModuleLoadStatus enableModule(String developer, String name) {
         Optional<VexelCoreModule> module = super.getModule(developer, name);
-        if (module.isPresent()) {
-            if (module.get().getPlatform().equals(super.getPlatform())) {
-                // Check if dependencies are present
-                AtomicBoolean allDependenciesPresent = new AtomicBoolean(true);
-                module.get().getPluginDependencies().forEach(dependency -> {
-                    Optional<PluginContainer> dependencyPlugin = instance.getProxyServer().getPluginManager().getPlugin(dependency);
-                    if (dependencyPlugin.isPresent()) {
-                        if (dependencyPlugin.get().getInstance().isEmpty()) {
-                            allDependenciesPresent.set(false);
-                        }
-                    } else {
-                        allDependenciesPresent.set(false);
-                    }
-                });
-                if (!allDependenciesPresent.get()) {
-                    return ModuleLoadStatus.DEPENDENCY_MISSING;
-                }
-
-                // Register Velocity Listeners
-                module.get().getVelocityListenerList().forEach(listener -> {
-                    instance.getProxyServer().getEventManager().register(instance, listener);
-                });
-                // Register Velocity Commands
-                module.get().getVelocitySimpleCommandList().forEach((prefix, cmd) -> {
-                    CommandMeta meta = instance.getProxyServer().getCommandManager().metaBuilder(prefix).build();
-                    instance.getProxyServer().getCommandManager().register(meta, (SimpleCommand) cmd);
-                });
-                return ModuleLoadStatus.SUCCESS;
-            }
+        if (module.isEmpty()) {
+            return ModuleLoadStatus.NOT_FOUND;
+        }
+        if (module.get().getPlatform() != super.getPlatform()) {
             return ModuleLoadStatus.UNSUPPORTED_PLATFORM;
         }
-        return ModuleLoadStatus.NOT_FOUND;
+        AtomicBoolean allDependenciesPresent = new AtomicBoolean(true);
+        module.get().getPluginDependencies().forEach(dependency -> {
+            Optional<PluginContainer> dependencyPlugin = instance.getProxyServer().getPluginManager().getPlugin(dependency);
+            if (dependencyPlugin.isEmpty()) {
+                allDependenciesPresent.set(false);
+            }
+        });
+        if (!allDependenciesPresent.get()) {
+            return ModuleLoadStatus.DEPENDENCY_MISSING;
+        }
+        // Register Velocity Listeners
+        module.get().getVelocityListenerList().forEach(listener -> {
+            instance.getProxyServer().getEventManager().register(instance, listener);
+        });
+        // Register Velocity Commands
+        module.get().getVelocitySimpleCommandList().forEach((prefix, cmd) -> {
+            CommandMeta meta = instance.getProxyServer().getCommandManager().metaBuilder(prefix).build();
+            instance.getProxyServer().getCommandManager().register(meta, (SimpleCommand) cmd);
+        });
+        return ModuleLoadStatus.SUCCESS;
     }
 
     @Override
