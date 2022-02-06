@@ -9,6 +9,7 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -17,11 +18,11 @@ public class ModuleHandler {
 
     private VexelCorePlatform platform;
     private List<VexelCoreModule> moduleList = new ArrayList<>();
-    private File datafolder;
+    private File dataFolder;
 
     public ModuleHandler(VexelCorePlatform platform, File dataFolder) {
         this.platform = platform;
-        this.datafolder = dataFolder;
+        this.dataFolder = dataFolder;
     }
 
     public VexelCorePlatform getPlatform() { return this.platform; }
@@ -53,7 +54,7 @@ public class ModuleHandler {
     public void loadLocalModules() {
         System.out.println("Enabling experimental local module support...");
         try {
-            File modulesFolder = Path.of(datafolder + File.separator + "Modules").toFile();
+            File modulesFolder = Paths.get(dataFolder + File.separator + "Modules").toFile();
             if (!modulesFolder.exists()) {
                 modulesFolder.mkdirs();
             }
