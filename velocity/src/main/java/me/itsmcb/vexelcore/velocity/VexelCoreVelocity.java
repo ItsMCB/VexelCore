@@ -41,7 +41,7 @@ public class VexelCoreVelocity {
         this.server = server;
         this.dataDirectory = dataDirectory;
         this.logger = new ProjectLogger("VexelCore", true, true);
-        this.moduleHandler = new VexelCoreVelocityModuleHandler(instance, VexelCorePlatform.VELOCITY);
+        this.moduleHandler = new VexelCoreVelocityModuleHandler(instance, VexelCorePlatform.VELOCITY, dataDirectory.toFile());
     }
 
     @Subscribe

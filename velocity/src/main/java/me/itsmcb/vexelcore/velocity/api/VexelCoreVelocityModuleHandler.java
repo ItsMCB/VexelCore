@@ -10,6 +10,7 @@ import me.itsmcb.vexelcore.api.modules.VexelCoreModule;
 import me.itsmcb.vexelcore.api.modules.VexelCorePlatform;
 import me.itsmcb.vexelcore.velocity.VexelCoreVelocity;
 
+import java.io.File;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -17,15 +18,16 @@ public class VexelCoreVelocityModuleHandler extends ModuleHandler {
 
     private VexelCoreVelocity instance;
 
-    public VexelCoreVelocityModuleHandler(VexelCoreVelocity instance, VexelCorePlatform platform) {
-        super(platform);
+    public VexelCoreVelocityModuleHandler(VexelCoreVelocity instance, VexelCorePlatform platform, File dataFolder) {
+        super(platform, dataFolder);
         this.instance = instance;
     }
 
     @Override
     public ModuleLoadStatus enableModule(String developer, String name) {
+        System.out.println("Attempting to enable module " + name + " by " + developer);
         Optional<VexelCoreModule> module = super.getModule(developer, name);
-        if (module.isEmpty()) {
+        if (!module.isPresent()) {
             return ModuleLoadStatus.NOT_FOUND;
         }
         if (module.get().getPlatform() != super.getPlatform()) {
@@ -34,7 +36,7 @@ public class VexelCoreVelocityModuleHandler extends ModuleHandler {
         AtomicBoolean allDependenciesPresent = new AtomicBoolean(true);
         module.get().getPluginDependencies().forEach(dependency -> {
             Optional<PluginContainer> dependencyPlugin = instance.getProxyServer().getPluginManager().getPlugin(dependency);
-            if (dependencyPlugin.isEmpty()) {
+            if (!dependencyPlugin.isPresent()) {
                 allDependenciesPresent.set(false);
             }
         });

@@ -14,6 +14,7 @@ import org.bukkit.event.Listener;
 import org.bukkit.plugin.Plugin;
 import org.jetbrains.annotations.NotNull;
 
+import java.io.File;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -22,47 +23,46 @@ public class VexelCoreBukkitModuleHandler extends ModuleHandler {
     VexelCoreBukkit instance;
     private @NotNull CommandMap commandMap;
 
-    public VexelCoreBukkitModuleHandler(VexelCoreBukkit instance, VexelCorePlatform platform) {
-        super(platform);
+    public VexelCoreBukkitModuleHandler(VexelCoreBukkit instance, VexelCorePlatform platform, File dataFolder) {
+        super(platform, dataFolder);
         this.instance = instance;
     }
 
     @Override
     public ModuleLoadStatus enableModule(String developer, String name) {
+        System.out.println("Attempting to enable module " + name + " by " + developer);
         Optional<VexelCoreModule> module = super.getModule(developer, name);
-        if (module.isPresent()) {
-            if (module.get().getPlatform().equals(super.getPlatform())) {
-                // Check if dependencies are present
-                AtomicBoolean allDependenciesPresent = new AtomicBoolean(true);
-                module.get().getPluginDependencies().forEach(dependency -> {
-                    Plugin dependencyPlugin = Bukkit.getPluginManager().getPlugin(dependency);
-                    if (dependencyPlugin != null) {
-                        if (!dependencyPlugin.isEnabled()) {
-                            allDependenciesPresent.set(false);
-                        }
-                    } else {
-                        allDependenciesPresent.set(false);
-                    }
-                });
-                if (!allDependenciesPresent.get()) {
-                    return ModuleLoadStatus.DEPENDENCY_MISSING;
-                }
-
-                // Register Bukkit Listeners
-                module.get().getBukkitListenerList().forEach(listener -> {
-                    Bukkit.getPluginManager().registerEvents((Listener) listener, instance);
-                });
-                // Register Bukkit Commands
-                module.get().getBukkitCommandList().forEach((prefix, cmd) -> {
-                    Bukkit.getCommandMap().register(prefix, (Command) cmd);
-                    CraftServer server = (CraftServer) Bukkit.getServer();
-                    server.syncCommands();
-                });
-                return ModuleLoadStatus.SUCCESS;
-            }
+        if (!module.isPresent()) {
+            return ModuleLoadStatus.NOT_FOUND;
+        }
+        if (module.get().getPlatform() != super.getPlatform()) {
             return ModuleLoadStatus.UNSUPPORTED_PLATFORM;
         }
-        return ModuleLoadStatus.NOT_FOUND;
+        AtomicBoolean allDependenciesPresent = new AtomicBoolean(true);
+        module.get().getPluginDependencies().forEach(dependency -> {
+            Plugin dependencyPlugin = Bukkit.getPluginManager().getPlugin(dependency);
+            if (dependencyPlugin != null) {
+                if (!dependencyPlugin.isEnabled()) {
+                    allDependenciesPresent.set(false);
+                }
+            } else {
+                allDependenciesPresent.set(false);
+            }
+        });
+        if (!allDependenciesPresent.get()) {
+            return ModuleLoadStatus.DEPENDENCY_MISSING;
+        }
+        // Register Bukkit Listeners
+        module.get().getBukkitListenerList().forEach(listener -> {
+            Bukkit.getPluginManager().registerEvents((Listener) listener, instance);
+        });
+        // Register Bukkit Commands
+        module.get().getBukkitCommandList().forEach((prefix, cmd) -> {
+            Bukkit.getCommandMap().register(prefix, (Command) cmd);
+            CraftServer server = (CraftServer) Bukkit.getServer();
+            server.syncCommands();
+        });
+        return ModuleLoadStatus.SUCCESS;
     }
 
     @Override
