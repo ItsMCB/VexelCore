@@ -8,6 +8,7 @@ allprojects {
 subprojects {
     apply plugin: 'java'
     apply plugin: 'application'
+    apply plugin: 'maven-publish'
 
     group = 'me.itsmcb'
     version = '1.0.1-SNAPSHOT'

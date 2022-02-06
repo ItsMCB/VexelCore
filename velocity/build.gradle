@@ -29,8 +29,6 @@ dependencies {
     implementation 'com.github.ItsMCB:MartinsJavaLogger:snapshot-SNAPSHOT'
 }
 
-
-
 processResources {
     filter { String line -> line.replace('${version}', project.version.toString()) }
 }
