@@ -5,7 +5,7 @@ plugins {
 import com.github.jengelman.gradle.plugins.shadow.tasks.ConfigureShadowRelocation
 
 mainClassName = 'me.itsmcb.vexelcore.velocity.VexelCoreVelocity'
-jar.enabled = false
+jar.enabled = true
 
 repositories {
     mavenCentral()

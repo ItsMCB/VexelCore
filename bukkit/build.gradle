@@ -6,7 +6,7 @@ plugins {
 import com.github.jengelman.gradle.plugins.shadow.tasks.ConfigureShadowRelocation
 
 mainClassName = 'me.itsmcb.vexelcore.bukkit.VexelCoreBukkit'
-jar.enabled = false
+jar.enabled = true
 
 repositories {
     mavenCentral()
