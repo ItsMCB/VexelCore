@@ -107,7 +107,7 @@ assemble.dependsOn(shadowJar)
 publishing {
     publications {
         shadow(MavenPublication) { publication ->
-            project.shadow.component(publication)
+            artifact tasks.shadowJar
         }
     }
 }
