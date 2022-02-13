@@ -2,7 +2,6 @@ plugins {
     id "com.github.johnrengelman.shadow" version "7.0.0"
 }
 
-
 import com.github.jengelman.gradle.plugins.shadow.tasks.ConfigureShadowRelocation
 
 mainClassName = 'me.itsmcb.vexelcore.velocity.VexelCoreVelocity'
@@ -32,7 +31,6 @@ dependencies {
 processResources {
     filter { String line -> line.replace('${version}', project.version.toString()) }
 }
-
 
 import org.apache.tools.ant.filters.ReplaceTokens
 
@@ -67,7 +65,9 @@ assemble.dependsOn(shadowJar)
 publishing {
     publications {
         shadow(MavenPublication) { publication ->
-            artifact tasks.shadowJar
+            artifact tasks.shadowJar {
+                classifier null
+            }
         }
     }
 }

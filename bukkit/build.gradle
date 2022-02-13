@@ -107,7 +107,9 @@ assemble.dependsOn(shadowJar)
 publishing {
     publications {
         shadow(MavenPublication) { publication ->
-            artifact tasks.shadowJar
+            artifact tasks.shadowJar {
+                classifier null
+            }
         }
     }
 }
