@@ -10,7 +10,6 @@ allprojects {
 
 subprojects {
     apply plugin: 'java'
-    apply plugin: 'application'
     apply plugin: 'maven-publish'
 
     repositories {
@@ -19,6 +18,11 @@ subprojects {
 
     dependencies {
         testImplementation group: 'junit', name: 'junit', version: '4.13.2'
+    }
+
+    java {
+        withSourcesJar()
+        //withJavadocJar()
     }
 
     publishing {
