@@ -99,4 +99,14 @@ artifacts {
     shadowJar
 }
 
+publishing {
+    publications {
+        mavenJava(MavenPublication) {
+            artifact tasks.shadowJar {
+                classifier null
+            }
+        }
+    }
+}
+
 assemble.dependsOn(shadowJar)
