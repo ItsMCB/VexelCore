@@ -21,3 +21,11 @@ dependencies {
 processResources {
     filter { String line -> line.replace('${version}', project.version.toString()) }
 }
+
+publishing {
+    publications {
+        mavenJava(MavenPublication) {
+            from components.java
+        }
+    }
+}
