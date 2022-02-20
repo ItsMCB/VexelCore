@@ -6,7 +6,6 @@ import com.velocitypowered.api.event.proxy.ProxyInitializeEvent;
 import com.velocitypowered.api.plugin.Plugin;
 import com.velocitypowered.api.plugin.annotation.DataDirectory;
 import com.velocitypowered.api.proxy.ProxyServer;
-import me.itsmcb.logger.ProjectLogger;
 import me.itsmcb.vexelcore.api.modules.VexelCorePlatform;
 import me.itsmcb.vexelcore.velocity.api.VexelCoreVelocityModuleHandler;
 import me.itsmcb.vexelcore.velocity.modules.doorman.Doorman;
@@ -29,7 +28,6 @@ public class VexelCoreVelocity {
     private final VexelCoreVelocity instance;
     private final ProxyServer server;
     private final Path dataDirectory;
-    private final ProjectLogger logger;
     private final VexelCoreVelocityModuleHandler moduleHandler;
 
     public Path getDataDirectory() { return dataDirectory; }
@@ -40,13 +38,12 @@ public class VexelCoreVelocity {
         this.instance = this;
         this.server = server;
         this.dataDirectory = dataDirectory;
-        this.logger = new ProjectLogger("VexelCore", true, true);
         this.moduleHandler = new VexelCoreVelocityModuleHandler(instance, VexelCorePlatform.VELOCITY, dataDirectory.toFile());
     }
 
     @Subscribe
     public void onProxyInitialization(ProxyInitializeEvent event) {
-        logger.log("VexelCore for Velocity has been initialized.");
+        System.out.println("VexelCore for Velocity has been initialized.");
         moduleHandler.addModule(new Doorman());
         moduleHandler.enableModule("itsmcb","doorman");
 
