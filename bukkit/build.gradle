@@ -103,11 +103,3 @@ artifacts {
 }
 
 assemble.dependsOn(shadowJar)
-
-publishing {
-    publications {
-        mavenJava(MavenPublication) {
-            from components.java
-        }
-    }
-}
