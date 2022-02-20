@@ -65,9 +65,7 @@ assemble.dependsOn(shadowJar)
 publishing {
     publications {
         mavenJava(MavenPublication) {
-            artifact tasks.shadowJar {
-                classifier null
-            }
+            from components.java
         }
     }
 }
