@@ -1,11 +1,6 @@
 allprojects {
     group = 'me.itsmcb.vexelcore'
     version = '1.0.1-SNAPSHOT'
-
-    repositories {
-        mavenCentral()
-        maven { url "https://jitpack.io" }
-    }
 }
 
 subprojects {
@@ -14,20 +9,7 @@ subprojects {
 
     repositories {
         mavenCentral()
-    }
-
-    java {
-        withSourcesJar()
-    }
-
-    publishing {
-        publications {
-            mavenJava(MavenPublication) {
-                groupId project.group
-                artifactId project.name
-                version project.version
-            }
-        }
+        maven { url "https://jitpack.io" }
     }
 
 }
