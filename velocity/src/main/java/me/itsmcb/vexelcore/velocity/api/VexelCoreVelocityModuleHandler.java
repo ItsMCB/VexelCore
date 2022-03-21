@@ -2,7 +2,6 @@ package me.itsmcb.vexelcore.velocity.api;
 
 import com.velocitypowered.api.command.CommandMeta;
 import com.velocitypowered.api.command.SimpleCommand;
-import com.velocitypowered.api.plugin.Plugin;
 import com.velocitypowered.api.plugin.PluginContainer;
 import me.itsmcb.vexelcore.api.modules.ModuleHandler;
 import me.itsmcb.vexelcore.api.modules.ModuleLoadStatus;
@@ -11,6 +10,7 @@ import me.itsmcb.vexelcore.api.modules.VexelCorePlatform;
 import me.itsmcb.vexelcore.velocity.VexelCoreVelocity;
 
 import java.io.File;
+import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -67,6 +67,14 @@ public class VexelCoreVelocityModuleHandler extends ModuleHandler {
             module.get().getVelocitySimpleCommandList().forEach((prefix, cmd) -> {
                 instance.getProxyServer().getCommandManager().unregister(prefix);
             });
+        }
+    }
+
+    @Override
+    public void disableAllModules() {
+        List<VexelCoreModule> copyOfModules = super.getModuleList().stream().toList();
+        for (VexelCoreModule module : copyOfModules) {
+            disableModule(module.getDeveloper(), module.getName());
         }
     }
 }

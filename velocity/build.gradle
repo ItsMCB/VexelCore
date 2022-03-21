@@ -1,3 +1,9 @@
+plugins {
+    id "com.github.johnrengelman.shadow" version "7.0.0"
+}
+
+import com.github.jengelman.gradle.plugins.shadow.tasks.ConfigureShadowRelocation
+
 repositories {
     mavenCentral()
     // Velocity
@@ -22,13 +28,26 @@ processResources {
     filter { String line -> line.replace('${version}', project.version.toString()) }
 }
 
-publishing {
-    publications {
-        mavenJava(MavenPublication) {
-            groupId project.group
-            artifactId project.name
-            version project.version
-            from components.java
-        }
-    }
+
+shadowJar {
+    archiveFileName = 'VexelCore-Velocity-' + project.version.toString() + '.jar'
+}
+
+// Configure Auto Relocation
+
+task relocateShadowJar(type: ConfigureShadowRelocation) {
+    target = tasks.shadowJar
+    prefix = "libs" // Default value is "shadow"
+}
+
+tasks.shadowJar.dependsOn tasks.relocateShadowJar
+
+artifacts {
+    shadowJar
+}
+
+
+jar {
+    enabled = false
+    dependsOn(shadowJar { classifier = null })
 }

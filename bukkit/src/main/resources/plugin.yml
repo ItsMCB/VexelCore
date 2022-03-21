@@ -8,3 +8,6 @@ description: A modular and lightweight essential features suite.
 website: https://github.com/ItsMCB/VexelCore
 libraries:
   - mysql:mysql-connector-java:8.0.27
+commands:
+  vexelcore:
+    description: VexelCore main command

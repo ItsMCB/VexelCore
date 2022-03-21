@@ -7,12 +7,10 @@ import me.itsmcb.vexelcore.api.modules.VexelCorePlatform;
 import me.itsmcb.vexelcore.bukkit.VexelCoreBukkit;
 import org.bukkit.Bukkit;
 import org.bukkit.command.Command;
-import org.bukkit.command.CommandMap;
-import org.bukkit.craftbukkit.v1_18_R1.CraftServer;
+import org.bukkit.craftbukkit.v1_18_R2.CraftServer;
 import org.bukkit.event.HandlerList;
 import org.bukkit.event.Listener;
 import org.bukkit.plugin.Plugin;
-import org.jetbrains.annotations.NotNull;
 
 import java.io.File;
 import java.util.Optional;
@@ -21,7 +19,6 @@ import java.util.concurrent.atomic.AtomicBoolean;
 public class VexelCoreBukkitModuleHandler extends ModuleHandler {
 
     VexelCoreBukkit instance;
-    private @NotNull CommandMap commandMap;
 
     public VexelCoreBukkitModuleHandler(VexelCoreBukkit instance, VexelCorePlatform platform, File dataFolder) {
         super(platform, dataFolder);
@@ -76,10 +73,19 @@ public class VexelCoreBukkitModuleHandler extends ModuleHandler {
             // Unregister Bukkit Commands
             module.get().getBukkitCommandList().forEach((prefix, cmd) -> {
                 Command command = (Command) cmd;
-                commandMap = Bukkit.getCommandMap();
-                commandMap.getKnownCommands().remove(prefix + ":" + command.getName());
-                commandMap.getKnownCommands().remove(command.getName());
+                Bukkit.getCommandMap().getKnownCommands().remove(command.getName());
             });
+            CraftServer server = (CraftServer) Bukkit.getServer();
+            server.syncCommands();
+            super.removeModule(module.get());
+            System.out.println("Disabled " + name + " by " + developer);
+        }
+    }
+
+    @Override
+    public void disableAllModules() {
+        for (VexelCoreModule module : super.getModuleList().stream().toList() ) {
+            disableModule(module.getDeveloper(), module.getName());
         }
     }
 }

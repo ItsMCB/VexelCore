@@ -8,7 +8,6 @@ import java.lang.reflect.InvocationTargetException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLClassLoader;
-import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
@@ -28,6 +27,10 @@ public class ModuleHandler {
     public VexelCorePlatform getPlatform() { return this.platform; }
 
     public List<VexelCoreModule> getModuleList() { return this.moduleList; }
+
+    public void removeModule(VexelCoreModule module) {
+        this.moduleList.remove(module);
+    }
 
     public void addModule(VexelCoreModule vexelCoreModule) {
         if (vexelCoreModule.getPlatform().equals(platform)) {
@@ -51,8 +54,9 @@ public class ModuleHandler {
 
     public void disableModule(String developer, String name) { }
 
+    public void disableAllModules() { }
+
     public void loadLocalModules() {
-        System.out.println("Enabling experimental local module support...");
         try {
             File modulesFolder = Paths.get(dataFolder + File.separator + "Modules").toFile();
             if (!modulesFolder.exists()) {
@@ -75,6 +79,7 @@ public class ModuleHandler {
     private void loadModuleFromURL(URL url) {
         String mainClass = JarUtils.getMainClassOfJar(url.getFile());
         if (mainClass == null) {
+            System.out.println("Couldn't find main class for " + url.getPath());
             return;
         }
         try {

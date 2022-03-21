@@ -10,15 +10,15 @@ public class WebRequest {
     private URL url;
     private String userAgent = null;
     private String requestMethod = "GET";
-    private boolean ignoreResponseCode = false;
+    private boolean produceResponseError = false;
 
     public WebRequest(String url) throws MalformedURLException {
         this.url = new URL(url);
     }
 
-    public WebRequest(String url, boolean ignoreResponseCode) throws MalformedURLException {
+    public WebRequest(String url, boolean produceResponseError) throws MalformedURLException {
         this.url = new URL(url);
-        this.ignoreResponseCode = ignoreResponseCode;
+        this.produceResponseError = produceResponseError;
     }
 
     public void setUserAgent(String userAgent) {
@@ -39,7 +39,7 @@ public class WebRequest {
             }
             scanner.close();
         } catch (IOException e) {
-            if (!ignoreResponseCode) {
+            if (produceResponseError) {
                 e.printStackTrace();
             }
         }

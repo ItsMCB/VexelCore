@@ -1,10 +1,38 @@
-publishing {
-    publications {
-        mavenJava(MavenPublication) {
-            groupId project.group
-            artifactId project.name
-            version project.version
-            from components.java
-        }
-    }
+plugins {
+    id "com.github.johnrengelman.shadow" version "7.0.0"
+}
+
+import com.github.jengelman.gradle.plugins.shadow.tasks.ConfigureShadowRelocation
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    implementation 'com.googlecode.json-simple:json-simple:1.1.1'
+}
+
+shadowJar {
+    archiveFileName = 'VexelCore-API-' + project.version.toString() + '.jar'
+}
+
+// Configure Auto Relocation
+
+task relocateShadowJar(type: ConfigureShadowRelocation) {
+    target = tasks.shadowJar
+    prefix = "libs" // Default value is "shadow"
+}
+
+tasks.shadowJar.dependsOn tasks.relocateShadowJar
+
+artifacts {
+    shadowJar
+}
+
+jar {
+    dependsOn(shadowJar { classifier = null })
+}
+
+tasks.withType(JavaCompile) {
+    //options.compilerArgs += ['-Xlint:unchecked']
 }
