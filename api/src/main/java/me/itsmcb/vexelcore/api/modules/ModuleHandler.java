@@ -52,7 +52,7 @@ public class ModuleHandler {
     // To be overridden by platform extension
     public ModuleLoadStatus enableModule(String developer, String name) { return ModuleLoadStatus.UNKNOWN; }
 
-    public void disableModule(String developer, String name) { }
+    public void unloadModule(String developer, String name) { }
 
     public void disableAllModules() { }
 

@@ -1,6 +1,7 @@
 package me.itsmcb.vexelcore.velocity;
 
 import com.google.inject.Inject;
+import com.velocitypowered.api.command.CommandMeta;
 import com.velocitypowered.api.event.Subscribe;
 import com.velocitypowered.api.event.proxy.ProxyInitializeEvent;
 import com.velocitypowered.api.plugin.Plugin;
@@ -8,8 +9,7 @@ import com.velocitypowered.api.plugin.annotation.DataDirectory;
 import com.velocitypowered.api.proxy.ProxyServer;
 import me.itsmcb.vexelcore.api.modules.VexelCorePlatform;
 import me.itsmcb.vexelcore.velocity.api.VexelCoreVelocityModuleHandler;
-import me.itsmcb.vexelcore.velocity.modules.doorman.Doorman;
-import net.kyori.adventure.text.Component;
+import me.itsmcb.vexelcore.velocity.commands.MainCMD;
 
 import java.nio.file.Path;
 import java.util.concurrent.TimeUnit;
@@ -32,6 +32,7 @@ public class VexelCoreVelocity {
 
     public Path getDataDirectory() { return dataDirectory; }
     public ProxyServer getProxyServer() { return server; }
+    public VexelCoreVelocityModuleHandler getModuleHandler() { return moduleHandler; }
 
     @Inject
     public VexelCoreVelocity(ProxyServer server, @DataDirectory Path dataDirectory) {
@@ -43,17 +44,22 @@ public class VexelCoreVelocity {
 
     @Subscribe
     public void onProxyInitialization(ProxyInitializeEvent event) {
-        System.out.println("VexelCore for Velocity has been initialized.");
-        moduleHandler.addModule(new Doorman());
-        moduleHandler.enableModule("itsmcb","doorman");
+        loadCommands();
+        loadModules();
+    }
 
-        server.getScheduler()
-                .buildTask(instance, () -> {
-                    moduleHandler.disableModule("itsmcb","doorman");
-                    getProxyServer().sendMessage(Component.text("Doorman Velocity has been disabled!"));
-                })
-                .delay(15L, TimeUnit.SECONDS)
-                .schedule();
+    private void loadCommands() {
+        // Main VexelCore command
+        CommandMeta.Builder builder = getProxyServer().getCommandManager().metaBuilder("vexelcoreproxy");
+        builder.aliases("vcp");
+        getProxyServer().getCommandManager().register(builder.build(), new MainCMD(instance));
+    }
+
+    private void loadModules() {
+        getProxyServer().getScheduler().buildTask(instance, () -> {
+            System.out.println("Init VexelCore modules");
+            moduleHandler.loadLocalModules();
+        }).delay(1L, TimeUnit.SECONDS).schedule();
     }
 
 }

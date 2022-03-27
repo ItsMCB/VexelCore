@@ -42,11 +42,15 @@ public class CMDHelper {
         return hasArgIndex(argIndex);
     }
 
+    public boolean argNotExists(int argIndex) {
+        return !hasArgIndex(argIndex);
+    }
+
     private boolean hasArgIndex(int argIndex) {
         return argIndex <= this.args.length-1;
     }
 
-    // TabCompletion Assistant
+    // Tab Completion Assistant
 
     public void addTabCompletion(HashMap<Integer, String> argPointCheck, List<String> completions) {
         tabCompletions.put(argPointCheck, completions);
@@ -64,8 +68,11 @@ public class CMDHelper {
                     return tabCompletions.entrySet().stream().toList().get(i).getValue();
                 }
             }
+            if (args.length == 0 && tcArgIndex == 0) {
+                return tabCompletions.entrySet().stream().toList().get(i).getValue();
+            }
         }
-        return null;
+        return List.of("");
     }
 
     public HashMap<Integer, String> getMap(int argIndex, String valueToCheck) {

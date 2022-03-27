@@ -56,7 +56,7 @@ public class VexelCoreVelocityModuleHandler extends ModuleHandler {
     }
 
     @Override
-    public void disableModule(String developer, String name) {
+    public void unloadModule(String developer, String name) {
         Optional<VexelCoreModule> module = super.getModule(developer, name);
         if (module.isPresent()) {
             // Unregister Velocity Listeners
@@ -67,6 +67,10 @@ public class VexelCoreVelocityModuleHandler extends ModuleHandler {
             module.get().getVelocitySimpleCommandList().forEach((prefix, cmd) -> {
                 instance.getProxyServer().getCommandManager().unregister(prefix);
             });
+            // Remove old module data from cache
+            super.removeModule(module.get());
+            // Log unload
+            System.out.println("Disabled " + name + " by " + developer);
         }
     }
 
@@ -74,7 +78,7 @@ public class VexelCoreVelocityModuleHandler extends ModuleHandler {
     public void disableAllModules() {
         List<VexelCoreModule> copyOfModules = super.getModuleList().stream().toList();
         for (VexelCoreModule module : copyOfModules) {
-            disableModule(module.getDeveloper(), module.getName());
+            unloadModule(module.getDeveloper(), module.getName());
         }
     }
 }

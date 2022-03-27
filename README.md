@@ -1,53 +1,35 @@
 # VexelCore
-Custom plugins for PaperMC-based servers and Velocity proxies respectively that handles a custom module system with standard APIs.
 
-### Why?
-After working in the Minecraft server scene for a few years now, I've come to realize a few problems teams often face:
-- Whole plugins are made to add simple features.
-- Common methods are copy and pasted into multiple projects instead of being called from a central API.
-- Getting started if difficult due to lack of experience and all the initial setup that must be done even after the IDE is configured.
-- Having multiple systems makes it more difficult to manage.
+The VexelCore system works for Bukkit-based servers and Velocity-based proxies. Each has a respective plugin that handles modules; Java jars built with the VexelCore API designed for that target platform.
 
-VexelCore aims to solve these issues by:
-- Being modular. Enable what works, disable what doesn't.
-- Having standard APIs and utilities to get comfortable with. Stop writing the same code over and over again.
-- Lowering the level of entry when coding plugins through modules. Start *creating* faster.
-- Containing lots of documentation. Easy to read, easier to use.
+VexelCore is for developers and server owners who want to simplify their development and update workflow.
 
-### Simple Usage Example
-Let's say there are three modules, a TNT Run mini-game module, a join/quit message module, and a scoreboard module. Here's how one might choose to enable them based on their different servers:
+Plugin Advantages
+- Instantly enjoy changes without restarting the server.
+- Easily debug your code with commands that output key information.
 
-Hub Server: `Custom Messages, Scoreboard`
+API Advantages
+- Use utilities to simplify your code and speed up development.
 
-Survival Server: `Custom Messages`
+## Developers
+Getting started is easy. First, understand the purpose of each API.
 
-TNT Run Server: `TNT Run, Custom Messages, Scoreboard`
+Common: Module handling template and universal utilities, notably a command handler, in-game icon set, and web response utility.
 
+Bukkit: Extends the module handling template to work with Bukkit-based servers. Notably includes message utilities for Bukkit.
 
-## Understanding Our APIs
-There are 3 important APIs in VexelCore.
+Velocity: Extends the module handling template to work with Velocity-based proxies. Notably includes message utilities for Velocity.
 
-### Main API
-Contains the basic module management system and some general utilities.
+Second, choose the platform you're developing for, set up the respective server environment, and put the corresponding VexelCore plugin in the platform's plugin folder.
 
-### Bukkit API
-Contains an extended version of the module management system to work with PaperMC servers along with additional utilities.
+Third, set up your IDE to use the VexelCore API designed for the platform you're developing.
 
-### Velocity API
-Contains an extended version of the module management system to work with Velocity proxies along with additional utilities.
+Fifth, create a main class that extends "VexelCoreModule" and use super method calls to register your commands, listeners, and other module data. Additionally, ensure that "Main-Class" is added to your META-INF in the built jar.
 
-## Project Goals
-- Have a common module system for multiple platforms. ✅
-- Provide useful utilities for developers.
-  - General useful methods ✅
-  - UUID & username+UUID validation ✅
-  - Icons ✅
-  - Simple web requests ✅
-  - Debugging tools
-- Have modules be loaded in at runtime from jar files (help wanted).
-- Allow modules to load their dependencies at runtime (help wanted).
-- Allow modules to talk with each other and call their methods.
-- Allow modules to have dependencies for plugins and other modules.
+Last, move the exported module jar file to the "Modules" folder under "VexelCore" and use the built-in reload command. Continue to do this as you change your module's code.
+
+## Planned Features
+- Ability to update module jar files by downloading GitHub CI workflow artifacts.
 
 ## Credits
 This project utilizes the following dependencies:

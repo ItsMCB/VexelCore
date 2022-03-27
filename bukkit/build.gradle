@@ -42,7 +42,7 @@ dependencies {
     compileOnly 'me.clip:placeholderapi:2.10.10'
     compileOnly 'com.fastasyncworldedit:FastAsyncWorldEdit-Bukkit:2.0.1'
     compileOnly 'com.fastasyncworldedit:FastAsyncWorldEdit-Core:2.0.1'
-    compileOnly("mysql:mysql-connector-java:8.0.27")
+    compileOnly('mysql:mysql-connector-java:8.0.28')
 }
 
 

@@ -63,7 +63,7 @@ public class VexelCoreBukkitModuleHandler extends ModuleHandler {
     }
 
     @Override
-    public void disableModule(String developer, String name) {
+    public void unloadModule(String developer, String name) {
         Optional<VexelCoreModule> module = super.getModule(developer, name);
         if (module.isPresent()) {
             // Unregister Bukkit Listeners
@@ -77,7 +77,9 @@ public class VexelCoreBukkitModuleHandler extends ModuleHandler {
             });
             CraftServer server = (CraftServer) Bukkit.getServer();
             server.syncCommands();
+            // Remove old module data from cache
             super.removeModule(module.get());
+            // Log unload
             System.out.println("Disabled " + name + " by " + developer);
         }
     }
@@ -85,7 +87,7 @@ public class VexelCoreBukkitModuleHandler extends ModuleHandler {
     @Override
     public void disableAllModules() {
         for (VexelCoreModule module : super.getModuleList().stream().toList() ) {
-            disableModule(module.getDeveloper(), module.getName());
+            unloadModule(module.getDeveloper(), module.getName());
         }
     }
 }
