@@ -24,9 +24,16 @@ dependencies {
     annotationProcessor 'com.velocitypowered:velocity-api:3.0.1'
 }
 
-processResources {
-    filter { String line -> line.replace('${version}', project.version.toString()) }
+import org.apache.tools.ant.filters.ReplaceTokens
+
+task processSources(type: Sync) {
+    from sourceSets.main.java.srcDirs
+    inputs.property 'version', version
+    filter ReplaceTokens, tokens: [version: version]
+    into "$buildDir/src"
 }
+
+compileJava.source = processSources.outputs
 
 
 shadowJar {

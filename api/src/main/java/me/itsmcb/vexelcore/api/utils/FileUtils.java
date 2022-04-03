@@ -1,8 +1,11 @@
 package me.itsmcb.vexelcore.api.utils;
 
+import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Stream;
 
@@ -20,4 +23,24 @@ public class FileUtils {
         }
         return foundText.get();
     }
+
+    public static List<File> getSpecific(Path path, String endsWith) {
+        List<File> fileList = new ArrayList<>();
+
+        File modulesFolder = path.toFile();
+        if (!modulesFolder.exists()) {
+            return null;
+        }
+        File[] modulesFolderItems = modulesFolder.listFiles();
+        if (modulesFolderItems == null) {
+            return fileList;
+        }
+        for (final File fileEntry : modulesFolderItems) {
+            if (fileEntry.getPath().endsWith(endsWith)) {
+                fileList.add(fileEntry);
+            }
+        }
+        return fileList;
+    }
+
 }

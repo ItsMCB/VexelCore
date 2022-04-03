@@ -1,6 +1,9 @@
 package me.itsmcb.vexelcore.api.utils;
 
 import java.io.IOException;
+import java.lang.reflect.Constructor;
+import java.net.URL;
+import java.net.URLClassLoader;
 import java.util.Map;
 import java.util.Optional;
 import java.util.jar.Attributes;
@@ -28,6 +31,22 @@ public class JarUtils {
 
     public static String getManifestVersion(String file) {
         return getAttribute(file, "Manifest-Version");
+    }
+
+    public static Constructor getMainClassConstructorOfJar(URL url, ClassLoader classLoader) {
+        String mainClass = getMainClassOfJar(url.getFile());
+        if (mainClass == null) {
+            System.out.println("Couldn't find main class for " + url.getPath());
+            return null;
+        }
+        try {
+            URLClassLoader child = new URLClassLoader(new URL[] {url}, classLoader);
+            Class classToLoad = Class.forName(mainClass, true, child);
+            return classToLoad.getConstructor();
+        } catch (ClassNotFoundException | NoSuchMethodException e) {
+            e.printStackTrace();
+        }
+        return null;
     }
 
 }
