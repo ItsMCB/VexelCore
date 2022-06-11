@@ -7,7 +7,7 @@ import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;
 
 import java.util.Arrays;
 
-public class VelocityUtils {
+public class Text {
 
     public static TextComponent colorize(String... input) {
         return LegacyComponentSerializer.legacyAmpersand().deserialize(String.join(" ", input));
@@ -20,5 +20,4 @@ public class VelocityUtils {
     public static void send(Player player, String... input) {
         Arrays.stream(input).forEach(msg -> player.sendMessage(colorize(msg)));
     }
-
 }

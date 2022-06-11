@@ -1,4 +1,4 @@
-package me.itsmcb.vexelcore.api.text;
+package me.itsmcb.vexelcore.common.api.text;
 
 public enum Icon {
 

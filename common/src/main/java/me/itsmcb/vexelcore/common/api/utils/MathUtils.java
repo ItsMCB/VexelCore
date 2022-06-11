@@ -1,4 +1,4 @@
-package me.itsmcb.vexelcore.api.utils;
+package me.itsmcb.vexelcore.common.api.utils;
 
 import java.util.Random;
 

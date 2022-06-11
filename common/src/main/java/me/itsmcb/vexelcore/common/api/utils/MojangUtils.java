@@ -1,7 +1,7 @@
-package me.itsmcb.vexelcore.api.utils;
+package me.itsmcb.vexelcore.common.api.utils;
 
-import me.itsmcb.vexelcore.api.web.WebRequest;
-import me.itsmcb.vexelcore.api.web.WebRequestResponse;
+import me.itsmcb.vexelcore.common.api.web.WebRequest;
+import me.itsmcb.vexelcore.common.api.web.WebRequestResponse;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
