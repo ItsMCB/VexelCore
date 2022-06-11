@@ -58,5 +58,5 @@ artifacts {
 
 jar {
     enabled = true
-    dependsOn(shadowJar { classifier = null })
+    dependsOn(shadowJar)
 }
