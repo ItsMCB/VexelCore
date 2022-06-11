@@ -71,7 +71,7 @@ compileJava.source = processSources.outputs
 // Shadow config
 shadowJar {
     archiveFileName = 'VexelCore-Bukkit-' + project.version.toString() + '.jar'
-    relocate('me.itsmcb.vexelcore.api', 'me.itsmcb.vexelcore.api') {}
+    relocate('me.itsmcb.vexelcore.common.api', 'me.itsmcb.vexelcore.api') {}
 }
 
 task relocateShadowJar(type: ConfigureShadowRelocation) {
@@ -86,6 +86,6 @@ artifacts {
 }
 
 jar {
-    enabled = false
+    enabled = true
     dependsOn(shadowJar { classifier = null })
 }
