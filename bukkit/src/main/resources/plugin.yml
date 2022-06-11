@@ -4,10 +4,7 @@ main: me.itsmcb.vexelcore.bukkit.VexelCoreBukkit
 api-version: 1.18
 load: STARTUP
 authors: [ ItsMCB ]
-description: A modular and lightweight essential features suite.
+description: API
 website: https://github.com/ItsMCB/VexelCore
 libraries:
   - mysql:mysql-connector-java:8.0.27
-commands:
-  vexelcore:
-    description: VexelCore main command

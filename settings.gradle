@@ -7,6 +7,6 @@ pluginManagement {
     }
 }
 
-include 'api'
+include 'common'
 include 'bukkit'
 include 'velocity'

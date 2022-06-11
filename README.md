@@ -1,20 +1,10 @@
 # VexelCore
-
-> The VexelCore system works for Bukkit-based servers and Velocity-based proxies. Each has a respective plugin that handles modules; Java jars built with the VexelCore API designed for that target platform.
-
-VexelCore is for developers and server owners who want to simplify their development and update workflow.
-
-### 🔌 Plugin Advantages
-- Instantly enjoy changes without restarting the server.
-- Easily debug your code with commands that output key information.
+VexelCore is an API that's designed to be used with your Bukkit derivative (i.e. Paper) and Velocity plugins so developers can write less code.
 
 ### 🔥 API Advantages
-- Use utilities to simplify your code and speed up development.
+- Reliable utilities to simplify code and speed up development.
 
 ## 📈 Current Features
-- Module reloading system to enjoy code changes without restarting
-- Debugging Utilities
-  - Velocity: Call Events
 - Useful icon set with unambiguous names
 - Chat Utilities
   - Easily send multiple messages in one line with color code translation
@@ -63,30 +53,13 @@ public @Nullable List<String> onTabComplete(@NotNull CommandSender sender, @NotN
   - Website Content Requester
 
 ## 🕹 ️Demo Clip
-Shows off some key features as of 3/29/2022.
-
-[![](https://img.youtube.com/vi/b1AsLoSj86Q/hqdefault.jpg)](https://youtu.be/b1AsLoSj86Q)
+WIP
 
 ## 📝 Planned Features
-- Ability to update module jar files by downloading GitHub CI workflow artifacts.
+WIP
 
 ## ⌨️ Developers
-Getting started is easy. First, understand the purpose of each API.
-
-> Common: Module handling template and universal utilities, notably a command handler, in-game icon set, and web response utility.
-
-> Bukkit: Extends the module handling template to work with Bukkit-based servers. Notably includes message utilities for Bukkit.
-
-> Velocity: Extends the module handling template to work with Velocity-based proxies. Notably includes message utilities for Velocity.
-
-Second, choose the platform you're developing for, set up the respective server environment, and put the corresponding VexelCore plugin in the platform's plugin folder.
-
-Third, set up your IDE to use the VexelCore API designed for the platform you're developing.
-
-Fifth, create a main class that extends "VexelCoreModule" and use super method calls to register your commands, listeners, and other module data. Additionally, ensure that "Main-Class" is added to your META-INF in the built jar.
-
-Last, move the exported module jar file to the "Modules" folder under "VexelCore" and use the built-in reload command. Continue to do this as you change your module's code.
-
+WIP
 
 ## ✋ Help
 Please join [Martin's Community](https://discord.gg/QW2m6bYG4S) Discord server.

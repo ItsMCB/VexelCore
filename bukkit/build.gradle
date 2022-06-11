@@ -1,6 +1,5 @@
 plugins {
     id "com.github.johnrengelman.shadow" version "7.0.0"
-    id "io.papermc.paperweight.userdev" version "1.3.5"
 }
 
 import com.github.jengelman.gradle.plugins.shadow.tasks.ConfigureShadowRelocation
@@ -28,21 +27,15 @@ repositories {
         name = "IntellectualSites Snapshots"
         url = uri("https://repo.maven.apache.org/content/repositories/snapshots/")
     }
-    // Sponge Configurate YAML
-    maven {
-        name = 'spongepowered-repo'
-        url = 'https://repo.spongepowered.org/maven'
-    }
 }
 
 dependencies {
-    implementation project(path: ':api')
+    implementation project(path: ':common')
     compileOnly 'io.papermc.paper:paper-api:1.18.2-R0.1-SNAPSHOT'
-    paperweightDevelopmentBundle("io.papermc.paper:dev-bundle:1.18.2-R0.1-SNAPSHOT")
     compileOnly 'me.clip:placeholderapi:2.10.10'
-    compileOnly 'com.fastasyncworldedit:FastAsyncWorldEdit-Bukkit:2.0.1'
-    compileOnly 'com.fastasyncworldedit:FastAsyncWorldEdit-Core:2.0.1'
-    compileOnly('mysql:mysql-connector-java:8.0.28')
+    compileOnly 'com.fastasyncworldedit:FastAsyncWorldEdit-Bukkit:2.1.2'
+    compileOnly 'com.fastasyncworldedit:FastAsyncWorldEdit-Core:2.1.2'
+    compileOnly('mysql:mysql-connector-java:8.0.29')
 }
 
 
@@ -62,30 +55,24 @@ tasks.withType(JavaCompile).configureEach {
     }
 }
 
-tasks.withType(JavaCompile) {
-    options.compilerArgs += ['-Xlint:unchecked']
-}
-
+// Add gradle project version to each version placeholder in sources
 processResources {
     filter { String line -> line.replace('${version}', project.version.toString()) }
 }
 
-import org.apache.tools.ant.filters.ReplaceTokens
-
 task processSources(type: Sync) {
     from sourceSets.main.java.srcDirs
-    inputs.property 'version', version
-    filter ReplaceTokens, tokens: [version: version]
+    filter { String line -> line.replace('${version}', project.version.toString()) }
     into "$buildDir/src"
 }
 
 compileJava.source = processSources.outputs
 
+// Shadow config
 shadowJar {
     archiveFileName = 'VexelCore-Bukkit-' + project.version.toString() + '.jar'
+    relocate('me.itsmcb.vexelcore.api', 'me.itsmcb.vexelcore.api') {}
 }
-
-// Configure Auto Relocation
 
 task relocateShadowJar(type: ConfigureShadowRelocation) {
     target = tasks.shadowJar

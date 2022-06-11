@@ -1,4 +1,4 @@
-package me.itsmcb.vexelcore.api.utils;
+package me.itsmcb.vexelcore.api.command;
 
 import java.util.HashMap;
 import java.util.List;

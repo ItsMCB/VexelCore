@@ -19,17 +19,19 @@ repositories {
 }
 
 dependencies {
-    implementation project(path: ':api')
+    implementation project(path: ':common')
     compileOnly 'com.velocitypowered:velocity-api:3.0.1'
     annotationProcessor 'com.velocitypowered:velocity-api:3.0.1'
 }
 
-import org.apache.tools.ant.filters.ReplaceTokens
+// Add gradle project version to each version placeholder in sources
+processResources {
+    filter { String line -> line.replace('${version}', project.version.toString()) }
+}
 
 task processSources(type: Sync) {
     from sourceSets.main.java.srcDirs
-    inputs.property 'version', version
-    filter ReplaceTokens, tokens: [version: version]
+    filter { String line -> line.replace('${version}', project.version.toString()) }
     into "$buildDir/src"
 }
 
@@ -38,6 +40,7 @@ compileJava.source = processSources.outputs
 
 shadowJar {
     archiveFileName = 'VexelCore-Velocity-' + project.version.toString() + '.jar'
+    relocate('me.itsmcb.vexelcore.api', 'me.itsmcb.vexelcore.api') {}
 }
 
 // Configure Auto Relocation
@@ -52,7 +55,6 @@ tasks.shadowJar.dependsOn tasks.relocateShadowJar
 artifacts {
     shadowJar
 }
-
 
 jar {
     enabled = false

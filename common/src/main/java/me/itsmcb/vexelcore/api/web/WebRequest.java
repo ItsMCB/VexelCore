@@ -1,4 +1,4 @@
-package me.itsmcb.vexelcore.api.utils;
+package me.itsmcb.vexelcore.api.web;
 
 import java.io.IOException;
 import java.net.HttpURLConnection;

@@ -13,14 +13,13 @@ dependencies {
 }
 
 shadowJar {
-    archiveFileName = 'VexelCore-API-' + project.version.toString() + '.jar'
+    archiveFileName = 'VexelCore-Common-' + project.version.toString() + '.jar'
 }
 
 // Configure Auto Relocation
 
 task relocateShadowJar(type: ConfigureShadowRelocation) {
     target = tasks.shadowJar
-    prefix = "libs" // Default value is "shadow"
 }
 
 tasks.shadowJar.dependsOn tasks.relocateShadowJar
@@ -28,11 +27,4 @@ tasks.shadowJar.dependsOn tasks.relocateShadowJar
 artifacts {
     shadowJar
 }
-
-jar {
-    dependsOn(shadowJar { classifier = null })
-}
-
-tasks.withType(JavaCompile) {
-    //options.compilerArgs += ['-Xlint:unchecked']
-}
+assemble.dependsOn(shadowJar)
