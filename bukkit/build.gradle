@@ -33,8 +33,8 @@ dependencies {
     implementation project(path: ':common')
     compileOnly 'io.papermc.paper:paper-api:1.18.2-R0.1-SNAPSHOT'
     compileOnly 'me.clip:placeholderapi:2.10.10'
-    compileOnly 'com.fastasyncworldedit:FastAsyncWorldEdit-Bukkit:2.1.2'
-    compileOnly 'com.fastasyncworldedit:FastAsyncWorldEdit-Core:2.1.2'
+    compileOnly 'com.fastasyncworldedit:FastAsyncWorldEdit-Bukkit:2.2.0'
+    compileOnly 'com.fastasyncworldedit:FastAsyncWorldEdit-Core:2.2.0'
     compileOnly('mysql:mysql-connector-java:8.0.29')
 }
 
