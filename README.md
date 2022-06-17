@@ -1,5 +1,5 @@
 # VexelCore
-VexelCore is an API that's designed to be used with your Bukkit derivative (i.e. Paper) and Velocity plugins so developers can write less code.
+VexelCore is an API that's designed to be used with Bukkit derivative (i.e. Paper) and Velocity plugins so developers can write less code.
 
 ### 🔥 API Advantages
 - Reliable utilities to simplify code and speed up development.

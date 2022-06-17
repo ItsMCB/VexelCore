@@ -16,6 +16,7 @@ shadowJar {
     archiveFileName = 'VexelCore-Common-' + project.version.toString() + '.jar'
 }
 
+
 // Configure Auto Relocation
 
 task relocateShadowJar(type: ConfigureShadowRelocation) {
@@ -27,4 +28,5 @@ tasks.shadowJar.dependsOn tasks.relocateShadowJar
 artifacts {
     shadowJar
 }
+
 assemble.dependsOn(shadowJar)
