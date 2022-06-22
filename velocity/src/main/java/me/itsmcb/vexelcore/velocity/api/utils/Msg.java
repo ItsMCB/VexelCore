@@ -7,7 +7,7 @@ import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;
 
 import java.util.Arrays;
 
-public class Text {
+public class Msg {
 
     public static TextComponent colorize(String... input) {
         return LegacyComponentSerializer.legacyAmpersand().deserialize(String.join(" ", input));

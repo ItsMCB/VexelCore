@@ -40,7 +40,7 @@ compileJava.source = processSources.outputs
 
 shadowJar {
     archiveFileName = 'VexelCore-Velocity-' + project.version.toString() + '.jar'
-    relocate('me.itsmcb.vexelcore.common.api', 'me.itsmcb.vexelcore.api') {}
+    relocate('me.itsmcb.vexelcore.common.api', 'me.itsmcb.vexelcore.common.api') {}
 }
 
 // Configure Auto Relocation

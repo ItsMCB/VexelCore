@@ -19,11 +19,6 @@ subprojects {
                 artifactId project.name
                 version project.version
                 from components.java
-
-                pom {
-                    group project.group
-                    version project.version
-                }
             }
         }
     }

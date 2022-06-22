@@ -35,7 +35,7 @@ dependencies {
     compileOnly 'me.clip:placeholderapi:2.10.10'
     compileOnly 'com.fastasyncworldedit:FastAsyncWorldEdit-Bukkit:2.2.0'
     compileOnly 'com.fastasyncworldedit:FastAsyncWorldEdit-Core:2.2.0'
-    compileOnly('mysql:mysql-connector-java:8.0.29')
+    compileOnly 'mysql:mysql-connector-java:8.0.29'
 }
 
 
@@ -71,7 +71,7 @@ compileJava.source = processSources.outputs
 // Shadow config
 shadowJar {
     archiveFileName = 'VexelCore-Bukkit-' + project.version.toString() + '.jar'
-    relocate('me.itsmcb.vexelcore.common.api', 'me.itsmcb.vexelcore.api') {}
+    relocate('me.itsmcb.vexelcore.common.api', 'me.itsmcb.vexelcore.common.api') {}
 }
 
 task relocateShadowJar(type: ConfigureShadowRelocation) {

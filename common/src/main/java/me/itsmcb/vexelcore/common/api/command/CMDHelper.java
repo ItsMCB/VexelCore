@@ -22,9 +22,16 @@ public class CMDHelper {
 
     // Methods
 
-    public boolean argEquals(int argIndex, String input) {
+    public boolean argEquals(int argIndex, String... inputs) {
         if (hasArgIndex(argIndex)) {
-            return args[argIndex].equalsIgnoreCase(input);
+            boolean isFound = false;
+            for (String input : inputs) {
+                if (args[argIndex].equalsIgnoreCase(input)) {
+                    isFound = true;
+                    break;
+                }
+            }
+            return isFound;
         }
         return false;
     }
