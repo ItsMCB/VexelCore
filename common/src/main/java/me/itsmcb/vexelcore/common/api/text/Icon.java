@@ -9,6 +9,8 @@ public enum Icon {
     SQUARE('■'),
     TRIANGLE_POINTING_UP('▲'),
     TRIANGLE_POINTING_DOWN('▼'),
+    TRIANGLE_POINTING_RIGHT('▶'),
+    TRIANGLE_POINTING_LEFT('◀'),
     DIAMOND('✦'),
     TICK('✔'),
     CROSS('✘'),
