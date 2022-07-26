@@ -1,6 +1,9 @@
 package me.itsmcb.vexelcore.bukkit.api.utils;
 
 import org.bukkit.Location;
+import org.bukkit.entity.Entity;
+import org.bukkit.entity.Player;
+import org.bukkit.util.Vector;
 
 public class LocationUtils {
 
@@ -19,6 +22,23 @@ public class LocationUtils {
             }
         }
         return location.toString();
+    }
+
+    // Based on https://www.spigotmc.org/threads/spawn-armor-stand-relative-to-player-location.473159/#post-4001540
+    public static void entityLookAtPlayer(Player p, Entity entity) {
+        Vector direction = entity.getLocation().toVector().subtract(p.getEyeLocation().toVector()).normalize();
+        double x = direction.getX();
+        double y = direction.getY();
+        double z = direction.getZ();
+
+        // Now change the angle
+        Location changed = entity.getLocation().clone();
+        changed.setYaw(180 - toDegree(Math.atan2(x, z)));
+        changed.setPitch(90 - toDegree(Math.acos(y)));
+        entity.teleport(changed);
+    }
+    public static float toDegree(double angle) {
+        return (float) Math.toDegrees(angle);
     }
 
 }

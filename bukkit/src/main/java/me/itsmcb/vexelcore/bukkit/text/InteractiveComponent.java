@@ -52,7 +52,6 @@ public class InteractiveComponent {
             mainText = PlaceholderAPI.setPlaceholders(player, mainText);
             hoverText = PlaceholderAPI.setPlaceholders(player, hoverText);
             eventValue = PlaceholderAPI.setPlaceholders(player, eventValue);
-            System.out.println("Main text: " + mainText);
             return true;
         }
         return false;

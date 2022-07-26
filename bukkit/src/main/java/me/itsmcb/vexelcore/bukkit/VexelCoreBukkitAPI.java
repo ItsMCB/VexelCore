@@ -10,6 +10,7 @@ public class VexelCoreBukkitAPI {
     }
 
     public static boolean serverIsConnectedToProxy() {
+        refreshProxyServerNameCache();
         return VexelCoreBukkit.getInstance().getProxyManager().getServerNames().size() > 0;
     }
 
