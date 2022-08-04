@@ -1,27 +1,26 @@
-package me.itsmcb.vexelcore.bukkit.api.utils;
+package me.itsmcb.vexelcore.common.api.text;
 
 import net.kyori.adventure.text.TextComponent;
 import net.kyori.adventure.text.event.ClickEvent;
-import org.bukkit.command.CommandSender;
+import org.jetbrains.annotations.NotNull;
 
-public class MsgBuilder {
+public class CommonMsgBuilder {
 
     private String messageText;
     private String hoverText = null;
     private ClickEvent.Action clickEventAction = null;
     private String clickEventValue = null;
 
-
-    public MsgBuilder(String messageText) {
+    public CommonMsgBuilder(@NotNull String messageText) {
         this.messageText = messageText;
     }
 
-    public MsgBuilder hover(String hoverText) {
+    public CommonMsgBuilder hover(@NotNull String hoverText) {
         this.hoverText = hoverText;
         return this;
     }
 
-    public MsgBuilder clickEvent(ClickEvent.Action clickEventAction, String clickEventValue) {
+    public CommonMsgBuilder clickEvent(@NotNull ClickEvent.Action clickEventAction, @NotNull String clickEventValue) {
         this.clickEventAction = clickEventAction;
         this.clickEventValue = clickEventValue;
         return this;
@@ -48,17 +47,8 @@ public class MsgBuilder {
         return msg;
     }
 
-    // Shortcuts
-
-    public void send(CommandSender sender) {
-        new CustomMsg(this).send(sender);
-    }
-
-    public void sendAll() {
-        new CustomMsg(this).sendAll();
-    }
-
     public TextComponent get() {
         return new CustomMsg(this).get();
     }
+
 }

@@ -31,12 +31,12 @@ public class LocationUtils {
         double y = direction.getY();
         double z = direction.getZ();
 
-        // Now change the angle
         Location changed = entity.getLocation().clone();
         changed.setYaw(180 - toDegree(Math.atan2(x, z)));
         changed.setPitch(90 - toDegree(Math.acos(y)));
         entity.teleport(changed);
     }
+
     public static float toDegree(double angle) {
         return (float) Math.toDegrees(angle);
     }

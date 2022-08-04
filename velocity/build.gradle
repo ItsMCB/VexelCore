@@ -57,6 +57,6 @@ artifacts {
 }
 
 jar {
-    enabled = true
+    enabled = false
     dependsOn(shadowJar)
 }

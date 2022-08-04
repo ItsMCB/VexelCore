@@ -1,8 +1,10 @@
 package me.itsmcb.vexelcore.bukkit;
 
+import me.itsmcb.vexelcore.bukkit.api.text.BukkitMsgBuilder;
 import me.itsmcb.vexelcore.bukkit.plugin.PCMListener;
 import me.itsmcb.vexelcore.bukkit.plugin.ProxyManager;
 import org.bukkit.Bukkit;
+import org.bukkit.configuration.serialization.ConfigurationSerialization;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import java.util.logging.Level;
@@ -24,6 +26,7 @@ public class VexelCoreBukkit extends JavaPlugin {
         getServer().getMessenger().registerIncomingPluginChannel(this, "BungeeCord", new PCMListener(instance));
         proxyManager = new ProxyManager(instance);
         Bukkit.getPluginManager().registerEvents(proxyManager,this);
+        ConfigurationSerialization.registerClass(BukkitMsgBuilder.class, "MsgBuilder");
         getLogger().log(Level.INFO, "VexelCore API ${version} for Bukkit has loaded.");
     }
 

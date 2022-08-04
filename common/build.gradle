@@ -1,32 +1,24 @@
-plugins {
-    id "com.github.johnrengelman.shadow" version "7.0.0"
-}
-
-import com.github.jengelman.gradle.plugins.shadow.tasks.ConfigureShadowRelocation
-
 repositories {
     mavenCentral()
 }
 
 dependencies {
-    implementation 'com.googlecode.json-simple:json-simple:1.1.1'
+    compileOnly 'com.googlecode.json-simple:json-simple:1.1.1'
+    compileOnly "net.kyori:adventure-api:4.11.0"
+    compileOnly "net.kyori:adventure-text-serializer-legacy:4.11.0"
 }
 
-shadowJar {
-    archiveFileName = 'VexelCore-Common-' + project.version.toString() + '.jar'
+archivesBaseName = 'VexelCore-Common'
+
+// Add gradle project version to each version placeholder in sources
+processResources {
+    filter { String line -> line.replace('${version}', project.version.toString()) }
 }
 
-
-// Configure Auto Relocation
-
-task relocateShadowJar(type: ConfigureShadowRelocation) {
-    target = tasks.shadowJar
+task processSources(type: Sync) {
+    from sourceSets.main.java.srcDirs
+    filter { String line -> line.replace('${version}', project.version.toString()) }
+    into "$buildDir/src"
 }
 
-tasks.shadowJar.dependsOn tasks.relocateShadowJar
-
-artifacts {
-    shadowJar
-}
-
-assemble.dependsOn(shadowJar)
+compileJava.source = processSources.outputs
