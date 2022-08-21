@@ -21,6 +21,7 @@ public enum Icon {
     FLOWER('❀'),
     SMILEY_FACE('☻'),
     RADIOACTIVE('☢'),
+    WARNING('⚠'),
     FRACTION_ONE_HALF('½'),
     FILLED_CIRCLE_1('➊'),
     FILLED_CIRCLE_2('➋'),

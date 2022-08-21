@@ -15,12 +15,18 @@ public class CommonMsgBuilder {
         this.messageText = messageText;
     }
 
+    public CommonMsgBuilder text(@NotNull String messageText) {
+        this.messageText = messageText;
+        return this;
+    }
+
     public CommonMsgBuilder hover(@NotNull String hoverText) {
         this.hoverText = hoverText;
         return this;
     }
 
     public CommonMsgBuilder clickEvent(@NotNull ClickEvent.Action clickEventAction, @NotNull String clickEventValue) {
+        System.out.println("Spain: " + clickEventAction.name() + " | " + clickEventValue);
         this.clickEventAction = clickEventAction;
         this.clickEventValue = clickEventValue;
         return this;
@@ -31,15 +37,15 @@ public class CommonMsgBuilder {
     }
 
     public String getHoverText() {
-        return hoverText;
+        return this.hoverText;
     }
 
     public ClickEvent.Action getClickEventAction() {
-        return clickEventAction;
+        return this.clickEventAction;
     }
 
     public String getClickEventValue() {
-        return clickEventValue;
+        return this.clickEventValue;
     }
 
     public CustomMsg build() {

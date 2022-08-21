@@ -11,6 +11,7 @@ import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.LinkedHashMap;
+import java.util.Locale;
 import java.util.Map;
 
 @SerializableAs("MsgBuilder")
@@ -48,23 +49,15 @@ public class BukkitMsgBuilder extends CommonMsgBuilder implements ConfigurationS
         LinkedHashMap<String, Object> map = new LinkedHashMap<>();
         if (super.getMessageText() != null) {
             map.put("message-text", getMessageText());
-        } else {
-            map.put("message-text", "");
         }
         if (getHoverText() != null) {
             map.put("hover-text", getHoverText());
-        } else {
-            map.put("hover-text", "");
         }
         if (getClickEventAction() != null) {
             map.put("click-event-action", getClickEventAction().toString());
-        } else {
-            map.put("click-event-action", "");
         }
         if (getClickEventValue() != null) {
             map.put("click-event-value", getClickEventValue());
-        } else {
-            map.put("click-event-value", "");
         }
         return map;
     }
@@ -75,7 +68,11 @@ public class BukkitMsgBuilder extends CommonMsgBuilder implements ConfigurationS
             msgBuilder.hover((String) map.get("hover-text"));
         }
         if (map.containsKey("click-event-action") && map.containsKey("click-event-value")) {
-            msgBuilder.clickEvent(ClickEvent.Action.valueOf((String) map.get("click-event-action")), (String) map.get("click-event-value"));
+            String action = (String) map.get("click-event-action");
+            String value = (String) map.get("click-event-value");
+            if (!action.isBlank() && !value.isBlank()) {
+                msgBuilder.clickEvent(ClickEvent.Action.valueOf(action.toUpperCase(Locale.ROOT)), value);
+            }
         }
         return msgBuilder;
     }
