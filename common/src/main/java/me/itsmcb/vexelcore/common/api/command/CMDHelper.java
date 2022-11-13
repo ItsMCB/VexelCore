@@ -45,6 +45,15 @@ public class CMDHelper {
         return false;
     }
 
+    public String getFlag(String flag) {
+        for (int i = 0; i < args.length; i++) {
+            if (args[i].equalsIgnoreCase(flag) && argExists(i+1)) {
+                return args[i+1];
+            }
+        }
+        return null;
+    }
+
     public boolean argExists(int argIndex) {
         return hasArgIndex(argIndex);
     }

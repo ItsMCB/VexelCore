@@ -26,7 +26,6 @@ public class CommonMsgBuilder {
     }
 
     public CommonMsgBuilder clickEvent(@NotNull ClickEvent.Action clickEventAction, @NotNull String clickEventValue) {
-        System.out.println("Spain: " + clickEventAction.name() + " | " + clickEventValue);
         this.clickEventAction = clickEventAction;
         this.clickEventValue = clickEventValue;
         return this;
