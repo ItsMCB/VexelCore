@@ -10,8 +10,8 @@ public class CooldownManager {
     private final long cooldownTime;
     private ArrayList<UUID> playerUUIDsInCooldown = new ArrayList<>();
 
-    public CooldownManager (long cooldownTime) {
-        this.cooldownTime = cooldownTime;
+    public CooldownManager (long cooldownSeconds) {
+        this.cooldownTime = cooldownSeconds;
     }
 
     public void activateCooldown(UUID playerUUID) {

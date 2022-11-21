@@ -21,4 +21,7 @@ public class BukkitFeatureManager {
         features.forEach(BukkitFeature::enable);
     }
 
+    public ArrayList<BukkitFeature> getFeatures() {
+        return features;
+    }
 }

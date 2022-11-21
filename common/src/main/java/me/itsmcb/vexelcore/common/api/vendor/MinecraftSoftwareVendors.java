@@ -1,4 +1,4 @@
-package me.itsmcb.vexelcore.common.api.mcsoftwarevendor;
+package me.itsmcb.vexelcore.common.api.vendor;
 
 public enum MinecraftSoftwareVendors {
 

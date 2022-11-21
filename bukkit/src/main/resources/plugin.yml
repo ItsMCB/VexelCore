@@ -4,7 +4,7 @@ main: me.itsmcb.vexelcore.bukkit.VexelCoreBukkit
 api-version: 1.18
 load: STARTUP
 authors: [ ItsMCB ]
-description: API
+description: A useful API to offload complexity.
 website: https://github.com/ItsMCB/VexelCore
 libraries:
   - mysql:mysql-connector-java:8.0.27

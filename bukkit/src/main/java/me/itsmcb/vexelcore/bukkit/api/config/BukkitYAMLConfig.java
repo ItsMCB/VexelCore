@@ -6,7 +6,14 @@ import org.bukkit.configuration.file.YamlConfiguration;
 
 import java.io.*;
 
-// Use BoostYML in the future so comments and order save correctly.
+/**
+ * Manage config files
+ * @deprecated
+ * New BoostedConfig class uses more universal and flexible BoostedYAML library backend.
+ * <p> Use {@link me.itsmcb.vexelcore.common.api.config.BoostedConfig} instead.
+ *
+ */
+@Deprecated
 public class BukkitYAMLConfig {
 
     private File customConfigFile;

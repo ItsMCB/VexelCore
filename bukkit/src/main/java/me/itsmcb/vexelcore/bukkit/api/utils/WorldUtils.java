@@ -10,13 +10,14 @@ import org.jetbrains.annotations.NotNull;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 public class WorldUtils {
 
     public static ArrayList<String> getAllWorldNames() {
         ArrayList<String> worldNames = new ArrayList<>();
-        for (File file : Bukkit.getWorldContainer().listFiles()) {
+        for (File file : Objects.requireNonNull(Bukkit.getWorldContainer().listFiles())) {
             if (file.isDirectory()) {
                 File datFile = new File(file.getPath()+File.separator+"uid.dat");
                 if (datFile.exists()) {
@@ -28,7 +29,7 @@ public class WorldUtils {
     }
 
     public static boolean exists(String name) {
-        return getAllWorldNames().stream().map(wn -> wn.equalsIgnoreCase(name)).findFirst().orElse(false);
+        return getAllWorldNames().stream().map(wn -> wn.equalsIgnoreCase(name)).findFirst().isPresent();
     }
 
     public static boolean kickAllFromWorld(@NotNull World worldNameToKickFrom, String worldNameToSendTo) {

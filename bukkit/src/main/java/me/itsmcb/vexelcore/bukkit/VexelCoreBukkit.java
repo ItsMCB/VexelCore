@@ -7,8 +7,6 @@ import org.bukkit.Bukkit;
 import org.bukkit.configuration.serialization.ConfigurationSerialization;
 import org.bukkit.plugin.java.JavaPlugin;
 
-import java.util.logging.Level;
-
 public class VexelCoreBukkit extends JavaPlugin {
 
     private static VexelCoreBukkit instance;
@@ -27,7 +25,7 @@ public class VexelCoreBukkit extends JavaPlugin {
         proxyManager = new ProxyManager(instance);
         Bukkit.getPluginManager().registerEvents(proxyManager,this);
         ConfigurationSerialization.registerClass(BukkitMsgBuilder.class, "MsgBuilder");
-        getLogger().log(Level.INFO, "VexelCore API ${version} for Bukkit has loaded.");
+        System.out.println("VexelCore API ${version} for Bukkit has loaded.");
     }
 
     public static VexelCoreBukkit getInstance() {
