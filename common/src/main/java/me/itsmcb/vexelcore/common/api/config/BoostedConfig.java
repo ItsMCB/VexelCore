@@ -2,6 +2,8 @@ package me.itsmcb.vexelcore.common.api.config;
 
 import dev.dejvokep.boostedyaml.YamlDocument;
 import dev.dejvokep.boostedyaml.dvs.versioning.BasicVersioning;
+import dev.dejvokep.boostedyaml.serialization.YamlSerializer;
+import dev.dejvokep.boostedyaml.serialization.standard.StandardSerializer;
 import dev.dejvokep.boostedyaml.settings.dumper.DumperSettings;
 import dev.dejvokep.boostedyaml.settings.general.GeneralSettings;
 import dev.dejvokep.boostedyaml.settings.loader.LoaderSettings;
@@ -17,7 +19,16 @@ public class BoostedConfig {
     private YamlDocument customConfig;
     private final InputStream inputStream;
 
+    private YamlSerializer serializer = new StandardSerializer("==");
+
     public BoostedConfig(File dataFolder, String fileName, InputStream inputStream) {
+        this.inputStream = inputStream;
+        this.customConfigFile = new File(dataFolder, fileName+".yml");
+        saveDefaultConfig();
+    }
+
+    public BoostedConfig(File dataFolder, String fileName, InputStream inputStream, YamlSerializer serializer) {
+        this.serializer = serializer;
         this.inputStream = inputStream;
         this.customConfigFile = new File(dataFolder, fileName+".yml");
         saveDefaultConfig();
@@ -28,7 +39,7 @@ public class BoostedConfig {
             customConfig = YamlDocument.create(
                     customConfigFile,
                     inputStream,
-                    GeneralSettings.DEFAULT,
+                    GeneralSettings.builder().setSerializer(serializer).build(),
                     LoaderSettings.builder().setAutoUpdate(true).build(),
                     DumperSettings.DEFAULT,
                     UpdaterSettings.builder().setVersioning(new BasicVersioning("file-version")).build()

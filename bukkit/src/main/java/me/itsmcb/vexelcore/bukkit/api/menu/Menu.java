@@ -1,7 +1,6 @@
 package me.itsmcb.vexelcore.bukkit.api.menu;
 
 import org.bukkit.entity.Player;
-import org.bukkit.plugin.java.JavaPlugin;
 
 import java.util.HashMap;
 
@@ -26,7 +25,11 @@ public class Menu {
         return pages.get(pageNumber);
     }
 
-    public void openPage(Player player, int pageNumber, JavaPlugin instance) {
-        pages.get(pageNumber).open(player, instance);
+    public HashMap<Integer, MenuPage> getPages() {
+        return pages;
+    }
+
+    public void openPage(Player player, int pageNumber) {
+        pages.get(pageNumber).open(player);
     }
 }

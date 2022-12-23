@@ -25,7 +25,7 @@ public class BukkitMsgBuilder extends CommonMsgBuilder implements ConfigurationS
         return (BukkitMsgBuilder) super.hover(hoverText);
     }
 
-    public BukkitMsgBuilder clickEvent(ClickEvent.@NotNull Action clickEventAction, @NotNull String clickEventValue) {
+    public BukkitMsgBuilder clickEvent(@NotNull ClickEvent.Action clickEventAction, @NotNull String clickEventValue) {
         return (BukkitMsgBuilder) super.clickEvent(clickEventAction, clickEventValue);
     }
 

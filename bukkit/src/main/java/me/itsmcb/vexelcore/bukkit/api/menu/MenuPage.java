@@ -5,7 +5,6 @@ import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.event.inventory.InventoryType;
 import org.bukkit.inventory.Inventory;
-import org.bukkit.plugin.java.JavaPlugin;
 
 import java.util.HashMap;
 
@@ -35,11 +34,9 @@ public class MenuPage {
         items.put(slot, item);
     }
 
-    public void open(Player player, JavaPlugin instance) {
+    public void open(Player player) {
         Inventory inventory = Bukkit.createInventory(null, InventoryType.CHEST, new BukkitMsgBuilder(title).get());
-        items.forEach((slot, item) -> {
-            inventory.setItem(slot, item.getItemStack());
-        });
+        items.forEach((slot, item) -> inventory.setItem(slot, item.getItemStack()));
         player.openInventory(inventory);
     }
 }

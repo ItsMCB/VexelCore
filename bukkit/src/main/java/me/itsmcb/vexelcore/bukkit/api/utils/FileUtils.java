@@ -6,12 +6,12 @@ public class FileUtils {
 
     public static boolean deleteFile(File path) {
         if (path.exists()) {
-            File files[] = path.listFiles();
-            for (int i = 0; i < files.length; i++) {
-                if (files[i].isDirectory()) {
-                    deleteFile(files[i]);
+            File[] files = path.listFiles();
+            for (File file : files) {
+                if (file.isDirectory()) {
+                    deleteFile(file);
                 } else {
-                    files[i].delete();
+                    file.delete();
                 }
             }
         }

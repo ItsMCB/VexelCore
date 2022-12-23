@@ -97,7 +97,7 @@ public class BukkitFeature extends VexelCoreFeature {
                 CommandMap commandMap = (CommandMap) bukkitCommandMap.get(Bukkit.getServer());
                 commandMap.register(command.getName(), command);
             } catch (NoSuchFieldException | IllegalAccessException e) {
-                System.out.println("ERROR ENABLING FEATURE CALLED " + getName());
+                System.out.println("ERROR ENABLING FEATURE \"" + getName() + "\"");
                 e.printStackTrace();
             }
         });

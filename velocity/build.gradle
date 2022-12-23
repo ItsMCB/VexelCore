@@ -22,6 +22,7 @@ dependencies {
     implementation project(path: ':common')
     compileOnly 'com.velocitypowered:velocity-api:3.0.1'
     annotationProcessor 'com.velocitypowered:velocity-api:3.0.1'
+    implementation "dev.dejvokep:boosted-yaml:1.3"
 }
 
 // Add gradle project version to each version placeholder in sources

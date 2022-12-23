@@ -36,6 +36,7 @@ dependencies {
     compileOnly 'com.fastasyncworldedit:FastAsyncWorldEdit-Bukkit:2.4.9'
     compileOnly 'com.fastasyncworldedit:FastAsyncWorldEdit-Core:2.4.9'
     compileOnly 'mysql:mysql-connector-java:8.0.30'
+    implementation "dev.dejvokep:boosted-yaml-spigot:1.3"
 }
 
 

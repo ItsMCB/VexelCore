@@ -52,8 +52,7 @@ public class WorldUtils {
     }
 
     public static boolean isLoaded(String name) {
-        getLoadedWorlds().forEach(world -> System.out.println(world.getName()));
-        return getLoadedWorlds().stream().map(w -> w.getName().equalsIgnoreCase(name)).findFirst().isPresent();
+        return getLoadedWorlds().stream().map(w -> w.getName().equalsIgnoreCase(name)).findFirst().orElse(false);
     }
 
     public static boolean unloadWorld(String worldName) {
@@ -93,6 +92,18 @@ public class WorldUtils {
         ArrayList<String> worldNames = getAllWorldNames();
         worldNames.removeAll(getLoadedWorldNames());
         return worldNames;
+    }
+
+    public static void deletePlayerData(World world) {
+        File playerDataDir = new File(world.getWorldFolder() + File.separator + "playerdata");
+        if(playerDataDir.isDirectory()) {
+            String[] playerDats = playerDataDir.list();
+            for (int i = 0; i < playerDats.length; i++) {
+                File datFile = new File(playerDataDir, playerDats[i]);
+                datFile.delete();
+                System.out.println("Deleted " + datFile.getPath());
+            }
+        }
     }
 
 }
