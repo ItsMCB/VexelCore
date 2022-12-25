@@ -34,9 +34,19 @@ public class MenuPage {
         items.put(slot, item);
     }
 
-    public void open(Player player) {
+    public void open(Player player, MenuManager menuManager) {
         Inventory inventory = Bukkit.createInventory(null, InventoryType.CHEST, new BukkitMsgBuilder(title).get());
-        items.forEach((slot, item) -> inventory.setItem(slot, item.getItemStack()));
+        // Set item metadata
+        items.forEach((slot, item) -> {
+            item.setKey(menuManager.getMenuItemKey(), item.getId().toString());
+            if (item.getRightClickAction() != null) {
+                item.setKey(menuManager.getMenuItemActionRightKey(), "yes");
+            }
+            if (item.getLeftClickAction() != null) {
+                item.setKey(menuManager.getMenuItemActionLeftKey(), "yes");
+            }
+            inventory.setItem(slot, item.getItemStack());
+        });
         player.openInventory(inventory);
     }
 }

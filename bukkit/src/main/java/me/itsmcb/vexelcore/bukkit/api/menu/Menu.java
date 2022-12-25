@@ -6,11 +6,13 @@ import java.util.HashMap;
 
 public class Menu {
 
-    String menuId;
-    HashMap<Integer, MenuPage> pages = new HashMap<>();
+    private String menuId;
+    private HashMap<Integer, MenuPage> pages = new HashMap<>();
+    private MenuManager menuManager;
 
-    public Menu(String menuId) {
+    public Menu(String menuId, MenuManager menuManager) {
         this.menuId = menuId;
+        this.menuManager = menuManager;
     }
 
     public String getMenuId() {
@@ -30,6 +32,6 @@ public class Menu {
     }
 
     public void openPage(Player player, int pageNumber) {
-        pages.get(pageNumber).open(player);
+        pages.get(pageNumber).open(player, menuManager);
     }
 }

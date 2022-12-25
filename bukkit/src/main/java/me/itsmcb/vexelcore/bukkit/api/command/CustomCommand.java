@@ -2,6 +2,7 @@ package me.itsmcb.vexelcore.bukkit.api.command;
 
 import me.itsmcb.vexelcore.bukkit.api.text.BukkitMsgBuilder;
 import me.itsmcb.vexelcore.common.api.command.CMDHelper;
+import net.kyori.adventure.text.TextComponent;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
@@ -14,6 +15,7 @@ public class CustomCommand extends Command {
 
     String permission = "";
     ArrayList<CustomCommand> subCommands = new ArrayList<>();
+    HashMap<String, String> parameters = new HashMap<>();
 
     public CustomCommand(@NotNull String name, @NotNull String description, String permission) {
         super(name);
@@ -21,9 +23,6 @@ public class CustomCommand extends Command {
         this.setPermission(permission);
     }
 
-    public void registerSubCommand(CustomCommand subCommand) {
-        subCommands.add(subCommand);
-    }
     @Override
     public boolean execute(@NotNull CommandSender sender, @NotNull String commandLabel, @NotNull String[] args) {
         if (!Objects.equals(permission, "") && !sender.hasPermission(permission)) {
@@ -53,22 +52,63 @@ public class CustomCommand extends Command {
     }
 
     public void executeAsPlayer(Player player, String[] args) {
-        // To be overridden
+        player.sendMessage(help());
     }
 
     public void executeAsConsole(CommandSender console, String[] args) {
-        // To be overridden
+        console.sendMessage(help());
     }
 
-    public List<String> getSubCommandNames() {
+    public void registerSubCommand(CustomCommand subCommand) {
+        subCommands.add(subCommand);
+    }
+
+    public void addParameters(String parameter, String description) {
+        this.parameters.put(parameter,description);
+    }
+
+    public HashMap<String, String> getParameters() {
+        return parameters;
+    }
+
+    public List<String> getCompletions() {
         List<String> arguments = new ArrayList<>();
-        subCommands.forEach(subCommand -> arguments.addAll(Collections.singleton(subCommand.getName())));
+        subCommands.forEach(subcommand -> {
+            arguments.add(subcommand.getName());
+        });
+        arguments.addAll(getAdditionalCompletions());
         return arguments;
+    }
+
+    public List<String> getAdditionalCompletions() {
+        return List.of();
+    }
+
+    public TextComponent help() {
+        // TODO allow for localization
+        // TODO maybe list permission if the player doesn't have it? Likely in a hover message
+        // TODO argument descriptions should be a hover message over the argument
+        StringBuilder sb = new StringBuilder();
+        sb.append("&7===== Help - ").append(getName()).append(" =====");
+        subCommands.forEach(command -> {
+            sb.append("\n&7> &a" + command.getName() + " ");
+            command.getParameters().forEach((parameter, description) -> {
+                sb.append(parameter + " (" + description + ")");
+            });
+            sb.append(" &7- &e" + command.getDescription());
+        });
+        return new BukkitMsgBuilder(sb.toString()).get();
     }
 
     @Override
     public @NotNull List<String> tabComplete(@NotNull CommandSender sender, @NotNull String alias, @NotNull String[] args) throws IllegalArgumentException {
-        // TODO allow for "options" too for situations like Voyage's world creator passing a "--flag"
-        return getSubCommandNames();
+        if (args.length == 1) {
+            return getCompletions();
+        }
+        CustomCommand commandBeingCalled = subCommands.stream().filter(command -> command.getName().equalsIgnoreCase(args[args.length-2])).findFirst().orElse(null);
+        if (commandBeingCalled == null) {
+            return List.of();
+        }
+        return commandBeingCalled.getCompletions();
     }
 }

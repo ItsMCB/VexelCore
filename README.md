@@ -1,5 +1,5 @@
 # VexelCore
-VexelCore is an API that's designed to be used with Bukkit derivative (i.e. Paper) and Velocity plugins so developers can write less code and offload complexity.
+VexelCore is an API that's designed to be used with Bukkit derivative (i.e. Paper, Purpur, etc.) and Velocity plugins so developers can write less code and offload complexity.
 
 ### 🔥 Why It's Awesome
 - Feature management system simplifies on the fly disabling/enabling/reloading
@@ -9,8 +9,70 @@ VexelCore is an API that's designed to be used with Bukkit derivative (i.e. Pape
 - Targeted at the latest versions of Minecraft
 - Developed with the community
 
-## 🕹 ️Demo Clip
-Coming soon
+# 🕹 ️Features
+The VexelCore API has features for Bukkit-based and Velocity-based Minecraft server software platforms.
+"Common" features are shared by both.
+
+## Common
+- Feature management system
+  Features are groups of related commands and listeners.
+  - On the fly disabling, enabling, and reloading of commands and listeners
+- You're likely to interact with it through the platform Feature Manager `reload()` method.
+Main class Example:
+`java
+this.bukkitFeatureManager = new BukkitFeatureManager();
+bukkitFeatureManager.register(new CoolFeature(instance));
+bukkitFeatureManager.reload();
+`
+CoolFeature class example:
+`java
+public class CoolFeature extends BukkitFeature {
+
+  public CoolFeature(JavaPlugin instance) {
+    super("cool", "Cool description", null, instance);
+    registerCommand(new CoolCommand(instance));
+  }
+}`
+
+TIP: Remember to call `bukkitFeatureManager.reload()` in your plugins `onEnable()` method to enable the features. 
+- Command Helper
+Helps track arguments. Planning to add type and regex validation.
+Example:
+`java
+CMDHelper cmdHelper = new CMDHelper(args);
+if (cmdHelper.argExists(0)) {
+  Player target = Bukkit.getPlayer(args[0]);
+  if (target == null) {
+    new BukkitMsgBuilder("&cThat player is offline!").send(player);
+  return;
+}
+target.sendMessage(new BukkitMsgBuilder("&7Hello!").get());
+}
+`
+- BoostedYAML Config
+  - Easily write, save, and reload BoostedYAML configs.
+- Icon
+Set of useful icons.
+
+and more.
+## Bukkit
+- Custom command (will eventually work for Velocity too)
+A command registered with the feature manager.
+  - Automatically creates help page (@Override `help()` to customize)
+  - Automatic tab completion of subcommands and additional completions (@Override `getAdditionalCompletions()`).
+- Menu System (WIP)
+  - Pages
+  - Right and left click actions
+  - Prevents players from taking the item
+- Message Builder
+Easily create messages that automatically transform color codes (ex. &7) to 
+- Utilities
+  Various useful utilities
+
+and more.
+
+# Velocity
+Not much has been done with Velocity as the current focus is on Bukkit. This will change sometime soon.
 
 ## 📝 Planned Features
 - Localization//i18n system

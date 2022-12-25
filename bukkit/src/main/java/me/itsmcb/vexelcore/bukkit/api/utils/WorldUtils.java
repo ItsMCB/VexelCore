@@ -52,7 +52,7 @@ public class WorldUtils {
     }
 
     public static boolean isLoaded(String name) {
-        return getLoadedWorlds().stream().map(w -> w.getName().equalsIgnoreCase(name)).findFirst().orElse(false);
+        return getLoadedWorlds().stream().map(world -> world.getName().equalsIgnoreCase(name)).toList().size() > 0;
     }
 
     public static boolean unloadWorld(String worldName) {
