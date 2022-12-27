@@ -115,4 +115,16 @@ public class CMDHelper {
         return false;
     }
 
+    public boolean isInt(int argIndex) {
+        if (hasArgIndex(argIndex)) {
+            try {
+                Integer.parseInt(args[argIndex]);
+                return true;
+            } catch (NumberFormatException e) {
+                return false;
+            }
+        }
+        return false;
+    }
+
 }

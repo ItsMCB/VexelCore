@@ -1,5 +1,5 @@
 # VexelCore
-VexelCore is an API that's designed to be used with Bukkit derivative (i.e. Paper, Purpur, etc.) and Velocity plugins so developers can write less code and offload complexity.
+VexelCore is an API that enables Bukkit derivative (i.e. Paper, Purpur, etc.) and Velocity plugin developers to focus on features and offload complexity.
 
 ### 🔥 Why It's Awesome
 - Feature management system simplifies on the fly disabling/enabling/reloading
@@ -10,54 +10,60 @@ VexelCore is an API that's designed to be used with Bukkit derivative (i.e. Pape
 - Developed with the community
 
 # 🕹 ️Features
-The VexelCore API has features for Bukkit-based and Velocity-based Minecraft server software platforms.
+The VexelCore API has utilities, managers, etc. for Bukkit-based and Velocity-based Minecraft server software platforms.
 "Common" features are shared by both.
 
 ## Common
 - Feature management system
   Features are groups of related commands and listeners.
   - On the fly disabling, enabling, and reloading of commands and listeners
-- You're likely to interact with it through the platform Feature Manager `reload()` method.
-Main class Example:
-`java
+- You're likely to interact with it exclusively through the platform Feature Manager `reload()` method.
+
+Main class example:
+```java
 this.bukkitFeatureManager = new BukkitFeatureManager();
 bukkitFeatureManager.register(new CoolFeature(instance));
 bukkitFeatureManager.reload();
-`
+```
+
 CoolFeature class example:
-`java
+```java
 public class CoolFeature extends BukkitFeature {
 
   public CoolFeature(JavaPlugin instance) {
     super("cool", "Cool description", null, instance);
     registerCommand(new CoolCommand(instance));
   }
-}`
+}
+```
 
-TIP: Remember to call `bukkitFeatureManager.reload()` in your plugins `onEnable()` method to enable the features. 
+TIP: Remember to call `bukkitFeatureManager.reload()` in your plugin's `onEnable()` method to enable the features.
 - Command Helper
-Helps track arguments. Planning to add type and regex validation.
+  Helps track arguments. Planning to add type and regex validation.
+
 Example:
-`java
+
+```java
 CMDHelper cmdHelper = new CMDHelper(args);
 if (cmdHelper.argExists(0)) {
   Player target = Bukkit.getPlayer(args[0]);
   if (target == null) {
     new BukkitMsgBuilder("&cThat player is offline!").send(player);
   return;
+  }
+  target.sendMessage(new BukkitMsgBuilder("&7Hello!").get());
 }
-target.sendMessage(new BukkitMsgBuilder("&7Hello!").get());
-}
-`
-- BoostedYAML Config
+```
+- BoostedYAML Config Utility
   - Easily write, save, and reload BoostedYAML configs.
-- Icon
-Set of useful icons.
+- Icons
+  Set of useful icons.
 
 and more.
+
 ## Bukkit
-- Custom command (will eventually work for Velocity too)
-A command registered with the feature manager.
+- Custom command class (will eventually work for Velocity too)
+  A command registered with the feature manager.
   - Automatically creates help page (@Override `help()` to customize)
   - Automatic tab completion of subcommands and additional completions (@Override `getAdditionalCompletions()`).
 - Menu System (WIP)
@@ -65,7 +71,7 @@ A command registered with the feature manager.
   - Right and left click actions
   - Prevents players from taking the item
 - Message Builder
-Easily create messages that automatically transform color codes (ex. &7) to 
+  Easily create messages that automatically transform color codes (ex. &7) to
 - Utilities
   Various useful utilities
 
@@ -91,9 +97,6 @@ Gradle example:
 `compileOnly files('/home/martin/GitHub/VexelCore/bukkit/build/libs/VexelCore-Bukkit-1.0.1-SNAPSHOT.jar')`
 
 Note: This will change once the API is ready for an official 1.0 release.
-
-### Note on Editions
-The majority of work so far has been put into the Bukkit edition of VexelCore.
 
 ### Dependency Reminder
 Don't forget to make "VexelCore" a dependency for your project's plugin platform dependency management system.

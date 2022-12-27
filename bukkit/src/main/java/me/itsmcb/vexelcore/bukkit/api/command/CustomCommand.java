@@ -3,6 +3,7 @@ package me.itsmcb.vexelcore.bukkit.api.command;
 import me.itsmcb.vexelcore.bukkit.api.text.BukkitMsgBuilder;
 import me.itsmcb.vexelcore.common.api.command.CMDHelper;
 import net.kyori.adventure.text.TextComponent;
+import org.bukkit.Sound;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
@@ -10,11 +11,14 @@ import org.jetbrains.annotations.NotNull;
 
 import java.util.*;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.stream.Stream;
 
 public class CustomCommand extends Command {
 
     String permission = "";
     ArrayList<CustomCommand> subCommands = new ArrayList<>();
+
+    ArrayList<CustomCommand> stipulatedSubCommands = new ArrayList<>();
     HashMap<String, String> parameters = new HashMap<>();
 
     public CustomCommand(@NotNull String name, @NotNull String description, String permission) {
@@ -27,7 +31,10 @@ public class CustomCommand extends Command {
     public boolean execute(@NotNull CommandSender sender, @NotNull String commandLabel, @NotNull String[] args) {
         if (!Objects.equals(permission, "") && !sender.hasPermission(permission)) {
             // TODO error message from Locarzi
-            new BukkitMsgBuilder("&cNo permission!").send(sender);
+            if (sender instanceof Player player) {
+                player.playSound(player.getLocation(), Sound.BLOCK_NOTE_BLOCK_BASS, (float) 1, 0);
+            }
+            sender.sendMessage(permissionError());
             return true;
         }
         CMDHelper cmdHelper = new CMDHelper(args);
@@ -63,7 +70,11 @@ public class CustomCommand extends Command {
         subCommands.add(subCommand);
     }
 
-    public void addParameters(String parameter, String description) {
+    public void registerStipulatedSubCommand(CustomCommand subCommand) {
+        stipulatedSubCommands.add(subCommand);
+    }
+
+    public void addParameter(String parameter, String description) {
         this.parameters.put(parameter,description);
     }
 
@@ -74,6 +85,9 @@ public class CustomCommand extends Command {
     public List<String> getCompletions() {
         List<String> arguments = new ArrayList<>();
         subCommands.forEach(subcommand -> {
+            arguments.add(subcommand.getName());
+        });
+        stipulatedSubCommands.forEach(subcommand -> {
             arguments.add(subcommand.getName());
         });
         arguments.addAll(getAdditionalCompletions());
@@ -90,7 +104,8 @@ public class CustomCommand extends Command {
         // TODO argument descriptions should be a hover message over the argument
         StringBuilder sb = new StringBuilder();
         sb.append("&7===== Help - ").append(getName()).append(" =====");
-        subCommands.forEach(command -> {
+        List<CustomCommand> commands = Stream.concat(subCommands.stream(), stipulatedSubCommands.stream()).toList();
+        commands.forEach(command -> {
             sb.append("\n&7> &a" + command.getName() + " ");
             command.getParameters().forEach((parameter, description) -> {
                 sb.append(parameter + " (" + description + ")");
@@ -98,6 +113,10 @@ public class CustomCommand extends Command {
             sb.append(" &7- &e" + command.getDescription());
         });
         return new BukkitMsgBuilder(sb.toString()).get();
+    }
+
+    public TextComponent permissionError() {
+        return new BukkitMsgBuilder("&cNo permission!").get();
     }
 
     @Override
