@@ -14,14 +14,12 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Stream;
 
 public class CustomCommand extends Command {
-
-    String permission = "";
     ArrayList<CustomCommand> subCommands = new ArrayList<>();
 
     ArrayList<CustomCommand> stipulatedSubCommands = new ArrayList<>();
     HashMap<String, String> parameters = new HashMap<>();
 
-    public CustomCommand(@NotNull String name, @NotNull String description, String permission) {
+    public CustomCommand(@NotNull String name, @NotNull String description, @NotNull String permission) {
         super(name);
         this.setDescription(description);
         this.setPermission(permission);
@@ -29,7 +27,7 @@ public class CustomCommand extends Command {
 
     @Override
     public boolean execute(@NotNull CommandSender sender, @NotNull String commandLabel, @NotNull String[] args) {
-        if (!Objects.equals(permission, "") && !sender.hasPermission(permission)) {
+        if (!hasPermission(sender)) {
             // TODO error message from Locarzi
             if (sender instanceof Player player) {
                 player.playSound(player.getLocation(), Sound.BLOCK_NOTE_BLOCK_BASS, (float) 1, 0);
@@ -56,6 +54,14 @@ public class CustomCommand extends Command {
             executeAsConsole(sender, args);
         }
         return true;
+    }
+
+    private boolean hasPermission(CommandSender sender) {
+        boolean isBlank = Objects.equals(super.getPermission(),"");
+        if (isBlank) {
+            return true;
+        }
+        return sender.hasPermission(super.getPermission());
     }
 
     public void executeAsPlayer(Player player, String[] args) {
@@ -122,11 +128,17 @@ public class CustomCommand extends Command {
 
     @Override
     public @NotNull List<String> tabComplete(@NotNull CommandSender sender, @NotNull String alias, @NotNull String[] args) throws IllegalArgumentException {
+        if (!hasPermission(sender)) {
+            return List.of();
+        }
         if (args.length == 1) {
             return getCompletions();
         }
         CustomCommand commandBeingCalled = subCommands.stream().filter(command -> command.getName().equalsIgnoreCase(args[args.length-2])).findFirst().orElse(null);
         if (commandBeingCalled == null) {
+            return List.of();
+        }
+        if (!commandBeingCalled.hasPermission(sender)) {
             return List.of();
         }
         return commandBeingCalled.getCompletions();
