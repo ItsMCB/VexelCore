@@ -102,6 +102,7 @@ public class CustomCommand extends Command {
         // TODO allow for localization
         // TODO maybe list permission if the player doesn't have it? Likely in a hover message
         // TODO argument descriptions should be a hover message over the argument
+        // TODO display help for current command too (not just subcommands)
         StringBuilder sb = new StringBuilder();
         sb.append("&7===== Help - ").append(getName()).append(" =====");
         List<CustomCommand> commands = Stream.concat(subCommands.stream(), stipulatedSubCommands.stream()).toList();

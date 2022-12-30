@@ -13,7 +13,7 @@ public class CMDHelper {
     public CMDHelper() { }
 
     public CMDHelper(String[] args) {
-        this.args = args;
+        setArgs(args);
     }
 
     public void setArgs(String[] args) {
