@@ -113,9 +113,9 @@ public class CustomCommand extends Command {
         sb.append("&7===== Help - ").append(getName()).append(" =====");
         List<CustomCommand> commands = Stream.concat(subCommands.stream(), stipulatedSubCommands.stream()).toList();
         commands.forEach(command -> {
-            sb.append("\n&7> &a" + command.getName() + " ");
+            sb.append("\n&7> &a" + command.getName());
             command.getParameters().forEach((parameter, description) -> {
-                sb.append(parameter + " (" + description + ")");
+                sb.append(" " + parameter + " (" + description + ")");
             });
             sb.append(" &7- &e" + command.getDescription());
         });

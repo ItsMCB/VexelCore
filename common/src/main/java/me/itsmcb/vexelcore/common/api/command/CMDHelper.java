@@ -127,4 +127,16 @@ public class CMDHelper {
         return false;
     }
 
+    public boolean isFloat(int argIndex) {
+        if (hasArgIndex(argIndex)) {
+            try {
+                Float.parseFloat(args[argIndex]);
+                return true;
+            } catch (NumberFormatException e) {
+                return false;
+            }
+        }
+        return false;
+    }
+
 }

@@ -18,23 +18,26 @@ repositories {
     maven {
         url = 'https://repo.extendedclip.com/content/repositories/placeholderapi/'
     }
-    // Fast Async World Edit
+    // FAWE and WorldGuard
     maven {
-        name = "IntellectualSites Releases"
-        url = uri("https://repo.maven.apache.org/content/repositories/releases/")
+        name = 'sonatype'
+        url = 'https://oss.sonatype.org/content/groups/public/'
     }
-    maven {
-        name = "IntellectualSites Snapshots"
-        url = uri("https://repo.maven.apache.org/content/repositories/snapshots/")
-    }
+    maven { url "https://maven.enginehub.org/repo/" }
 }
 
 dependencies {
     implementation project(path: ':common')
-    compileOnly 'io.papermc.paper:paper-api:1.19.2-R0.1-SNAPSHOT'
-    compileOnly 'me.clip:placeholderapi:2.10.10'
-    compileOnly 'com.fastasyncworldedit:FastAsyncWorldEdit-Bukkit:2.4.9'
-    compileOnly 'com.fastasyncworldedit:FastAsyncWorldEdit-Core:2.4.9'
+    compileOnly 'io.papermc.paper:paper-api:1.19.3-R0.1-SNAPSHOT'
+    // WorldGuard
+    compileOnly 'com.sk89q.worldguard:worldguard-bukkit:7.0.7'
+    // FAWE
+    implementation(platform("com.intellectualsites.bom:bom-1.18.x:1.20"))
+    compileOnly("com.fastasyncworldedit:FastAsyncWorldEdit-Core")
+    compileOnly("com.fastasyncworldedit:FastAsyncWorldEdit-Bukkit")
+    // PlaceholderAPI
+    compileOnly 'me.clip:placeholderapi:2.11.1'
+
     compileOnly 'mysql:mysql-connector-java:8.0.30'
     implementation "dev.dejvokep:boosted-yaml-spigot:1.3"
 }

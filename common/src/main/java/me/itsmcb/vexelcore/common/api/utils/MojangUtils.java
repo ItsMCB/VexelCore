@@ -11,8 +11,14 @@ import java.util.UUID;
 
 public class MojangUtils {
 
-    public static boolean uuidExists(String uuid) throws IOException {
-        WebRequest webRequest = new WebRequest("https://api.mojang.com/user/profiles/" + uuid.replace("-","") + "/names", false);
+    public static boolean uuidExists(UUID uuid) throws IOException {
+        WebRequest webRequest = new WebRequest("https://api.mojang.com/user/profiles/" + uuid.toString().replace("-","") + "/names", false);
+        webRequest.setUserAgent("VexelCore/@version@");
+        return webRequest.getWebRequestResponse().getResponseCode() == 200;
+    }
+
+    public static boolean usernameExists(String username) throws IOException {
+        WebRequest webRequest = new WebRequest("https://api.mojang.com/user/profiles/minecraft" + username, false);
         webRequest.setUserAgent("VexelCore/@version@");
         return webRequest.getWebRequestResponse().getResponseCode() == 200;
     }
