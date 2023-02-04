@@ -11,6 +11,7 @@ import org.jetbrains.annotations.NotNull;
 
 import java.util.*;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 public class CustomCommand extends Command {
@@ -132,7 +133,8 @@ public class CustomCommand extends Command {
             return List.of();
         }
         if (args.length == 1) {
-            return getCompletions();
+            return getCompletions().stream().filter(c -> c.toUpperCase().contains(args[0].toUpperCase())).collect(Collectors.toList());
+            //return getCompletions().stream().filter(c -> c.toUpperCase().startsWith(args[0].toUpperCase())).collect(Collectors.toList());
         }
         CustomCommand commandBeingCalled = subCommands.stream().filter(command -> command.getName().equalsIgnoreCase(args[args.length-2])).findFirst().orElse(null);
         if (commandBeingCalled == null) {
@@ -141,6 +143,6 @@ public class CustomCommand extends Command {
         if (!commandBeingCalled.hasPermission(sender)) {
             return List.of();
         }
-        return commandBeingCalled.getCompletions();
+        return commandBeingCalled.getCompletions().stream().filter(c -> c.toUpperCase().contains(args[0].toUpperCase())).collect(Collectors.toList());
     }
 }
