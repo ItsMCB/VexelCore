@@ -113,6 +113,13 @@ public class CustomCommand extends Command {
         StringBuilder sb = new StringBuilder();
         sb.append("&7===== Help - ").append(getName()).append(" =====");
         List<CustomCommand> commands = Stream.concat(subCommands.stream(), stipulatedSubCommands.stream()).toList();
+        // Command
+        sb.append("\n&a" + this.getName());
+        this.getParameters().forEach((parameter, description) -> {
+            sb.append(" " + parameter + " (" + description + ")");
+        });
+        sb.append(" &7- &e" + this.getDescription());
+        // Subcommands
         commands.forEach(command -> {
             sb.append("\n&7> &a" + command.getName());
             command.getParameters().forEach((parameter, description) -> {
@@ -133,16 +140,15 @@ public class CustomCommand extends Command {
             return List.of();
         }
         if (args.length == 1) {
-            return getCompletions().stream().filter(c -> c.toUpperCase().contains(args[0].toUpperCase())).collect(Collectors.toList());
-            //return getCompletions().stream().filter(c -> c.toUpperCase().startsWith(args[0].toUpperCase())).collect(Collectors.toList());
+            return getCompletions().stream().filter(c -> c.toUpperCase().contains(args[args.length-1].toUpperCase())).collect(Collectors.toList());
         }
-        CustomCommand commandBeingCalled = subCommands.stream().filter(command -> command.getName().equalsIgnoreCase(args[args.length-2])).findFirst().orElse(null);
-        if (commandBeingCalled == null) {
+        CustomCommand subCommand = subCommands.stream().filter(command -> command.getName().equalsIgnoreCase(args[args.length-2])).findFirst().orElse(null);
+        if (subCommand == null) {
             return List.of();
         }
-        if (!commandBeingCalled.hasPermission(sender)) {
+        if (!subCommand.hasPermission(sender)) {
             return List.of();
         }
-        return commandBeingCalled.getCompletions().stream().filter(c -> c.toUpperCase().contains(args[0].toUpperCase())).collect(Collectors.toList());
+        return subCommand.getCompletions().stream().filter(c -> c.toUpperCase().contains(args[args.length-1].toUpperCase())).collect(Collectors.toList());
     }
 }
