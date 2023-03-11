@@ -4,12 +4,27 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Stream;
 
 public class FileUtils {
+
+    public static boolean deleteFile(File path) {
+        if (path.exists()) {
+            File[] files = path.listFiles();
+            for (File file : files) {
+                if (file.isDirectory()) {
+                    deleteFile(file);
+                } else {
+                    file.delete();
+                }
+            }
+        }
+        return (path.delete());
+    }
 
     public static String getLastTextInstanceFromFile(Path path, String textWhere) {
         AtomicReference<String> foundText = null;
@@ -42,5 +57,52 @@ public class FileUtils {
         }
         return fileList;
     }
+
+    public static long getAvailableDiskSpaceBytes(File file) {
+        return file.getUsableSpace();
+    }
+
+    public static long getTotalDiskSpaceBytes(File file) {
+        return file.getTotalSpace();
+    }
+
+    public static File getOSRoot() {
+        File root = null;
+        if (System.getProperty("os.name").startsWith("Windows")) {
+            root = new File("C:");
+        } else {
+            root = new File("/");
+        }
+        return root;
+    }
+
+    private static final String[] SIZE_SUFFIXES = {"B", "KB", "MB", "GB"};
+
+    public static String getRecursiveFileSizeFormatted(File file) {
+        return getRecursiveFileSizeFormatted(file, new DecimalFormat("#.##"));
+    }
+
+    public static String getRecursiveFileSizeFormatted(File file, DecimalFormat decimalFormat) {
+        float size = getRecursiveFileSize(file);
+        int suffixIndex = 0;
+        while (size >= 1024 && suffixIndex < SIZE_SUFFIXES.length - 1) {
+            size /= 1024;
+            suffixIndex++;
+        }
+        return String.format("%s %s", decimalFormat.format(size), SIZE_SUFFIXES[suffixIndex]);
+    }
+
+    private static long getRecursiveFileSize(File file) {
+        if (file.isDirectory()) {
+            long size = 0;
+            for (File child : file.listFiles()) {
+                size += getRecursiveFileSize(child);
+            }
+            return size;
+        } else {
+            return file.length();
+        }
+    }
+
 
 }

@@ -35,6 +35,17 @@ public class VexelCoreBukkit extends JavaPlugin {
         getServer().getScheduler().scheduleSyncDelayedTask(this,this::loadFinalThings);
 
         System.out.println("VexelCore API ${version} for Bukkit has loaded.");
+        // New WIP VexelCore Plugin system
+        // Create data folder
+        /*
+        getDataFolder().mkdirs();
+        File vexelCorePlugins = Path.of(getDataFolder() + File.separator + "plugins").toFile();
+        vexelCorePlugins.mkdir();
+        VexelCoreBukkitPluginManager pluginManager = new VexelCoreBukkitPluginManager(vexelCorePlugins);
+        pluginManager.loadPluginsFromFolder();
+        pluginManager.enablePlugins();
+
+         */
     }
 
     private void loadFinalThings() {

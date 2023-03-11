@@ -85,4 +85,12 @@ public class BoostedConfig {
         }
         return false;
     }
+
+    public static YamlDocument getUnsavedYAML(InputStream inputStream) {
+        try {
+            return YamlDocument.create(inputStream);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
 }

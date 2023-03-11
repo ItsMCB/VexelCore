@@ -67,4 +67,22 @@ public class WorldEditUtils {
             throw new RuntimeException(e);
         }
     }
+
+    public static CuboidRegion expandCuboidRegionWalls(BlockVector3 max, BlockVector3 min, World world, int expansionAmount) {
+        CuboidRegion region = new CuboidRegion(BukkitAdapter.adapt(world), min, max);
+        BlockVector3 newMin = region.getMinimumPoint().subtract(expansionAmount,0,expansionAmount);
+        BlockVector3 newMax = region.getMaximumPoint().add(expansionAmount,0,expansionAmount);
+        region.setPos1(newMin);
+        region.setPos2(newMax);
+        return region;
+    }
+
+    public static CuboidRegion expandCuboidRegionAllSides(BlockVector3 max, BlockVector3 min, World world, int expansionAmount) {
+        CuboidRegion region = new CuboidRegion(BukkitAdapter.adapt(world), min, max);
+        BlockVector3 newMin = region.getMinimumPoint().subtract(expansionAmount,expansionAmount,expansionAmount);
+        BlockVector3 newMax = region.getMaximumPoint().add(expansionAmount,expansionAmount,expansionAmount);
+        region.setPos1(newMin);
+        region.setPos2(newMax);
+        return region;
+    }
 }

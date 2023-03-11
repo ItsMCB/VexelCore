@@ -11,6 +11,7 @@ import org.jetbrains.annotations.NotNull;
 
 import java.util.*;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -36,12 +37,35 @@ public class CustomCommand extends Command {
             sender.sendMessage(permissionError());
             return true;
         }
-        CMDHelper cmdHelper = new CMDHelper(args);
+        // Process args to merge quotes into one argument
+        List<String> wipArgs = new ArrayList<>();
+        for (int i = 0; i < args.length; i++) {
+            StringBuilder sb = new StringBuilder();
+            if (!args[i].startsWith("\"") && !args[i].endsWith("\"")) {
+                wipArgs.add(args[i]);
+                continue;
+            }
+            for (int x = i; x < args.length; x++) {
+                sb.append(args[x]+"");
+                if (args[x].endsWith("\"")) {
+                    wipArgs.add(sb.toString().replaceAll("\"",""));
+                    i = x;
+                    break;
+                } else {
+                    sb.append(" ");
+                }
+            }
+            // If no quote ending is found, don't skip the arg.
+            wipArgs.add(args[i].replaceAll("\"",""));
+        }
+        String[] newArgs = wipArgs.toArray(new String[0]);
+
+        CMDHelper cmdHelper = new CMDHelper(newArgs);
         // Check for sub commands
         AtomicBoolean subCommandCalled = new AtomicBoolean(false);
         subCommands.forEach(subCommand -> {
             if (cmdHelper.isCalling(subCommand.getName())) {
-                subCommand.execute(sender,args[0],Arrays.copyOfRange(args,1,args.length));
+                subCommand.execute(sender,newArgs[0],Arrays.copyOfRange(newArgs,1,newArgs.length));
                 subCommandCalled.set(true);
             }
         });
@@ -50,9 +74,9 @@ public class CustomCommand extends Command {
         }
         // Main command which might have args that are not sub commands
         if (sender instanceof Player player) {
-            executeAsPlayer(player, args);
+            executeAsPlayer(player, newArgs);
         } else {
-            executeAsConsole(sender, args);
+            executeAsConsole(sender, newArgs);
         }
         return true;
     }
@@ -139,16 +163,21 @@ public class CustomCommand extends Command {
         if (!hasPermission(sender)) {
             return List.of();
         }
+        AtomicReference<List<String>> completions = new AtomicReference<>(List.of());
         if (args.length == 1) {
-            return getCompletions().stream().filter(c -> c.toUpperCase().contains(args[args.length-1].toUpperCase())).collect(Collectors.toList());
+            completions.set(getCompletions().stream().filter(c -> c.toUpperCase().contains(args[0].toUpperCase())).collect(Collectors.toList()));
         }
-        CustomCommand subCommand = subCommands.stream().filter(command -> command.getName().equalsIgnoreCase(args[args.length-2])).findFirst().orElse(null);
-        if (subCommand == null) {
-            return List.of();
+        // TODO Don't return sub command names that the player doesn't have permission for
+        if (args.length > 1) {
+            subCommands.forEach(scmd -> {
+                String subCmdArg = args[args.length-2];
+                if (scmd.getName().equalsIgnoreCase(subCmdArg)) {
+                    if (scmd.getCompletions().size() != 0) {
+                        completions.set(scmd.getCompletions().stream().filter(c -> (c != null) && c.toUpperCase().contains(args[args.length-1].toUpperCase())).collect(Collectors.toList()));
+                    }
+                }
+            });
         }
-        if (!subCommand.hasPermission(sender)) {
-            return List.of();
-        }
-        return subCommand.getCompletions().stream().filter(c -> c.toUpperCase().contains(args[args.length-1].toUpperCase())).collect(Collectors.toList());
+        return completions.get();
     }
 }

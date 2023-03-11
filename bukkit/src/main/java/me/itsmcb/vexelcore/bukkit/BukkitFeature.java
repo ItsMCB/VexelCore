@@ -12,11 +12,14 @@ import org.bukkit.scheduler.BukkitRunnable;
 
 import java.lang.reflect.Field;
 import java.util.ArrayList;
+import java.util.List;
 
 public class BukkitFeature extends VexelCoreFeature {
 
     private ArrayList<Listener> listeners = new ArrayList<>();
     private ArrayList<Command> commands = new ArrayList<>();
+
+    private ArrayList<VexelCoreRunnableInfo> runningRunnables = new ArrayList<>();
     private String configPath;
     private JavaPlugin instance;
     private int delay = 0;
@@ -44,6 +47,7 @@ public class BukkitFeature extends VexelCoreFeature {
         commands.add(command);
     }
 
+
     @Override
     public void enable() {
         if (delay > 0) {
@@ -69,6 +73,9 @@ public class BukkitFeature extends VexelCoreFeature {
             commands.forEach(command -> {
                 Bukkit.getCommandMap().getKnownCommands().remove(command.getName());
                 Bukkit.getCommandMap().getKnownCommands().remove(command.getName()+":"+command.getName());
+            });
+            runningRunnables.forEach(runnable -> {
+                runnable.getRunnable().cancel();
             });
             disableTriggers();
         }
@@ -101,6 +108,23 @@ public class BukkitFeature extends VexelCoreFeature {
                 e.printStackTrace();
             }
         });
+        if (runnables().size() == 0) {
+            return;
+        }
+        runnables().forEach(runnable -> {
+            runningRunnables.add(runnable);
+            VexelCoreRunnable run = runnable.getRunnable();
+            switch (runnable.getType()) {
+                case ONCE_SYNC, ONCE_SYNC_LATER -> run.runTaskLater(instance, runnable.getStartDelay());
+                case REPEAT_SYNC, REPEAT_SYNC_LATER -> run.runTaskTimer(instance, runnable.getStartDelay(), runnable.getRepeatDelay());
+                case ONCE_ASYNC, ONCE_ASYNC_LATER -> run.runTaskLaterAsynchronously(instance, runnable.getStartDelay());
+                case REPEAT_ASYNC, REPEAT_ASYNC_LATER -> run.runTaskTimerAsynchronously(instance, runnable.getStartDelay(), runnable.getRepeatDelay());
+            }
+        });
         enableTriggers();
+    }
+
+    public List<VexelCoreRunnableInfo> runnables() {
+        return List.of();
     }
 }

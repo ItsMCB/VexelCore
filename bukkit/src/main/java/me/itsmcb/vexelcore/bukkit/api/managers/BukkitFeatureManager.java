@@ -8,6 +8,8 @@ public class BukkitFeatureManager {
 
     private ArrayList<BukkitFeature> features = new ArrayList<>();
 
+    private ArrayList<BukkitFeature> featuresClone = new ArrayList<>();
+
     public void register(BukkitFeature feature) {
         features.add(feature);
     }
@@ -17,8 +19,10 @@ public class BukkitFeatureManager {
     }
 
     public void reload() {
-        features.forEach(BukkitFeature::disable);
-        features.forEach(BukkitFeature::enable);
+        featuresClone.forEach(BukkitFeature::disable);
+        featuresClone.clear();
+        featuresClone = new ArrayList(features);
+        featuresClone.forEach(BukkitFeature::enable);
     }
 
     public ArrayList<BukkitFeature> getFeatures() {

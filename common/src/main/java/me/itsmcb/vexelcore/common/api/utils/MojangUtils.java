@@ -107,6 +107,7 @@ public class MojangUtils {
 
     /**
      * All Marc's Head Format usernames
+     *
      * @return List<String>
      */
     public static List<String> MHFHeads() {
