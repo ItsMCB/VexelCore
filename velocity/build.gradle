@@ -6,10 +6,10 @@ import com.github.jengelman.gradle.plugins.shadow.tasks.ConfigureShadowRelocatio
 
 repositories {
     mavenCentral()
-    // Velocity
+    // PaperMC (for Velocity)
     maven {
-        name = 'velocitypowered-repo'
-        url = 'https://repo.velocitypowered.com/releases/'
+        name = 'papermc'
+        url = 'https://repo.papermc.io/repository/maven-public/'
     }
     // Minecraft
     maven {
@@ -19,9 +19,12 @@ repositories {
 }
 
 dependencies {
+    // VexelCore
     implementation project(path: ':common')
-    compileOnly 'com.velocitypowered:velocity-api:3.0.1'
-    annotationProcessor 'com.velocitypowered:velocity-api:3.0.1'
+    // Velocity
+    compileOnly("com.velocitypowered:velocity-api:3.1.1")
+    annotationProcessor("com.velocitypowered:velocity-api:3.1.1")
+    // Boosted YAML
     implementation "dev.dejvokep:boosted-yaml:1.3"
 }
 

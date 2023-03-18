@@ -113,7 +113,7 @@ public class CustomCommand extends Command {
         return parameters;
     }
 
-    public List<String> getCompletions() {
+    public List<String> getCompletions(CommandSender sender) {
         List<String> arguments = new ArrayList<>();
         subCommands.forEach(subcommand -> {
             arguments.add(subcommand.getName());
@@ -121,11 +121,11 @@ public class CustomCommand extends Command {
         stipulatedSubCommands.forEach(subcommand -> {
             arguments.add(subcommand.getName());
         });
-        arguments.addAll(getAdditionalCompletions());
+        arguments.addAll(getAdditionalCompletions(sender));
         return arguments;
     }
 
-    public List<String> getAdditionalCompletions() {
+    public List<String> getAdditionalCompletions(CommandSender sender) {
         return List.of();
     }
 
@@ -165,15 +165,15 @@ public class CustomCommand extends Command {
         }
         AtomicReference<List<String>> completions = new AtomicReference<>(List.of());
         if (args.length == 1) {
-            completions.set(getCompletions().stream().filter(c -> c.toUpperCase().contains(args[0].toUpperCase())).collect(Collectors.toList()));
+            completions.set(getCompletions(sender).stream().filter(c -> c.toUpperCase().contains(args[0].toUpperCase())).collect(Collectors.toList()));
         }
         // TODO Don't return sub command names that the player doesn't have permission for
         if (args.length > 1) {
             subCommands.forEach(scmd -> {
                 String subCmdArg = args[args.length-2];
                 if (scmd.getName().equalsIgnoreCase(subCmdArg)) {
-                    if (scmd.getCompletions().size() != 0) {
-                        completions.set(scmd.getCompletions().stream().filter(c -> (c != null) && c.toUpperCase().contains(args[args.length-1].toUpperCase())).collect(Collectors.toList()));
+                    if (scmd.getCompletions(sender).size() != 0) {
+                        completions.set(scmd.getCompletions(sender).stream().filter(c -> (c != null) && c.toUpperCase().contains(args[args.length-1].toUpperCase())).collect(Collectors.toList()));
                     }
                 }
             });

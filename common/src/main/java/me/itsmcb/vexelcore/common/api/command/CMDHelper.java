@@ -115,6 +115,21 @@ public class CMDHelper {
         return false;
     }
 
+    public String getStringOfArgsAfterIndex(int argIndex) {
+        return getStringOfArgsAfterIndex(argIndex, args.length);
+    }
+
+    public String getStringOfArgsAfterIndex(int argIndex, int endArgIndex) {
+        StringBuilder stringBuilder = new StringBuilder();
+        for (int i = 1; i < endArgIndex; i++) {
+            stringBuilder.append(args[i]);
+            if (i+1 < endArgIndex) {
+                stringBuilder.append(" ");
+            }
+        }
+        return stringBuilder.toString();
+    }
+
     public boolean isInt(int argIndex) {
         if (hasArgIndex(argIndex)) {
             try {
