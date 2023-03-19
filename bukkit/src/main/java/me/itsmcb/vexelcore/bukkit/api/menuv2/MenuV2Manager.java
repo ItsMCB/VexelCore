@@ -64,12 +64,9 @@ public class MenuV2Manager implements Listener {
         if (currentItem == null) {
             return;
         }
-        // TODO change
         Optional<MenuV2Item> optional = menu.getItems().stream().filter(item -> item.getUUID().equals(getMenuItemUUID(currentItem))).findFirst();
-
         if (optional.isEmpty()) {
             // Did not click a valid item
-            System.out.println("X");
             return;
         }
         MenuV2Item item = optional.get();
@@ -90,17 +87,14 @@ public class MenuV2Manager implements Listener {
 
     private UUID getMenuItemUUID(ItemStack itemStack) {
         if (!itemStack.hasItemMeta()) {
-            System.out.println("A");
             return null;
         }
         PersistentDataContainer container = itemStack.getItemMeta().getPersistentDataContainer();
         if (!container.has(menuSystemIdKey)) {
-            System.out.println("B");
             return null;
         }
         String foundUUID = container.get(menuSystemIdKey,PersistentDataType.STRING);
         if (foundUUID == null) {
-            System.out.println("C");
             return null;
         }
         return UUID.fromString(foundUUID);
