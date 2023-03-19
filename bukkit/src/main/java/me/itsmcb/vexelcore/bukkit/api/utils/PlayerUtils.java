@@ -10,9 +10,9 @@ import org.bukkit.scheduler.BukkitRunnable;
 
 public class PlayerUtils {
 
-    public static PlayerSkinInformation setAnotherSkin(Player player, String existingPlayer, JavaPlugin pluginInstance) {
-        PlayerProfile playerProfile = player.getPlayerProfile();
-        PlayerSkinInformation skinInformation = new PlayerSkinInformation(existingPlayer);
+    public static PlayerSkinInformation setRealSkin(Player from, String to, JavaPlugin pluginInstance) {
+        PlayerProfile playerProfile = from.getPlayerProfile();
+        PlayerSkinInformation skinInformation = new PlayerSkinInformation(to);
         // Run initial API calls asynchronously to not block main thread
         new BukkitRunnable() {
             @Override
@@ -25,7 +25,7 @@ public class PlayerUtils {
                     @Override
                     public void run() {
                         if (skinInformation.isInformationComplete()) {
-                            player.setPlayerProfile(playerProfile);
+                            from.setPlayerProfile(playerProfile);
                         }
                     }
                 }.runTask(pluginInstance);
@@ -34,10 +34,31 @@ public class PlayerUtils {
         return skinInformation;
     }
 
-    public static void setAnotherSkin(Player player, String value, String signature) {
-        PlayerProfile playerProfile = player.getPlayerProfile();
+    public static void setRealSkin(Player from, Player to, JavaPlugin pluginInstance) {
+        setRealSkin(from, to.getName(), pluginInstance);
+    }
+
+    public static void setRealSkin(Player player, String value, String signature) {
+        player.setPlayerProfile(setTexture(player.getPlayerProfile(), value, signature));
+    }
+
+    public static PlayerProfile setTexture(PlayerProfile playerProfile, String value) {
+        playerProfile.setProperty(new ProfileProperty("textures", value));
+        return playerProfile;
+    }
+
+    public static PlayerProfile setTexture(PlayerProfile playerProfile, String value, String signature) {
         playerProfile.setProperty(new ProfileProperty("textures", value, signature));
-        player.setPlayerProfile(playerProfile);
+        return playerProfile;
+    }
+
+    public static void copy(Player from, Player to) {
+        from.getPlayerProfile().getProperties().forEach(profileProperty -> {
+            if (profileProperty.getName().equals("textures")) {
+                PlayerUtils.setRealSkin(to, profileProperty.getValue(), profileProperty.getSignature());
+                Msg.send(to, "&bUpdated skin to display as &b"+from.getName());
+            }
+        });
     }
 
 }

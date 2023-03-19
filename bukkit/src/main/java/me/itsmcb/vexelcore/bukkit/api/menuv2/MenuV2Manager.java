@@ -2,6 +2,7 @@ package me.itsmcb.vexelcore.bukkit.api.menuv2;
 
 import me.itsmcb.vexelcore.bukkit.api.text.BukkitMsgBuilder;
 import org.bukkit.Bukkit;
+import org.bukkit.NamespacedKey;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
@@ -9,11 +10,16 @@ import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.inventory.InventoryCloseEvent;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.InventoryHolder;
+import org.bukkit.inventory.ItemStack;
+import org.bukkit.persistence.PersistentDataContainer;
+import org.bukkit.persistence.PersistentDataType;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import java.util.*;
 
 public class MenuV2Manager implements Listener {
+
+    public static NamespacedKey menuSystemIdKey = new NamespacedKey("vc-menu-system","vc-menu-item-id");
 
     private ArrayList<MenuV2> menus = new ArrayList<>();
 
@@ -54,11 +60,16 @@ public class MenuV2Manager implements Listener {
             // Not a valid menu
             return;
         }
-        Optional<MenuV2Item> optional = menu.getItems().values().stream().filter(item -> {
-            return item.getItemBuilder().getItemStack().equals(event.getCurrentItem());
-        }).findFirst();
+        ItemStack currentItem = event.getCurrentItem();
+        if (currentItem == null) {
+            return;
+        }
+        // TODO change
+        Optional<MenuV2Item> optional = menu.getItems().stream().filter(item -> item.getUUID().equals(getMenuItemUUID(currentItem))).findFirst();
+
         if (optional.isEmpty()) {
             // Did not click a valid item
+            System.out.println("X");
             return;
         }
         MenuV2Item item = optional.get();
@@ -77,6 +88,24 @@ public class MenuV2Manager implements Listener {
         }
     }
 
+    private UUID getMenuItemUUID(ItemStack itemStack) {
+        if (!itemStack.hasItemMeta()) {
+            System.out.println("A");
+            return null;
+        }
+        PersistentDataContainer container = itemStack.getItemMeta().getPersistentDataContainer();
+        if (!container.has(menuSystemIdKey)) {
+            System.out.println("B");
+            return null;
+        }
+        String foundUUID = container.get(menuSystemIdKey,PersistentDataType.STRING);
+        if (foundUUID == null) {
+            System.out.println("C");
+            return null;
+        }
+        return UUID.fromString(foundUUID);
+    }
+
     private MenuV2 getMenuFromUUID(UUID uuid) throws NoSuchElementException{
         Optional<MenuV2> optional = menus.stream().filter(menu -> menu.getUUID().equals(uuid)).findFirst();
         if (optional.isEmpty()) {
@@ -92,19 +121,15 @@ public class MenuV2Manager implements Listener {
 
         // TODO check that items can fit inside inventory screen
 
-        // Register holder to menu manager
-
-        // TODO check that items can fit inside inventory screen
-
-
         // Set inventory items with specified slots
-        menu.getItems().entrySet().stream().filter(entry -> entry.getKey() != null).sorted(Comparator.comparingInt(Map.Entry::getKey)).forEach(entry -> {
-            inventory.setItem(entry.getKey(), entry.getValue().getItemBuilder().getItemStack());
+        menu.getItems().stream().filter(item -> (item.getSlot() != -1)).sorted(Comparator.comparingInt(MenuV2Item::getSlot)).forEach(item -> {
+            inventory.setItem(item.getSlot(), item.getItemBuilder().getItemStack());
         });
 
         // Set inventory items without any specified slots
-        menu.getItems().entrySet().stream().filter(entry -> entry.getKey() == null).forEach(entry -> {
-            inventory.addItem(entry.getValue().getItemBuilder().getItemStack());
+
+        menu.getItems().stream().filter(item -> (item.getSlot() == -1)).forEach(item -> {
+            inventory.addItem(item.getItemBuilder().getItemStack());
         });
 
         player.openInventory(inventory);

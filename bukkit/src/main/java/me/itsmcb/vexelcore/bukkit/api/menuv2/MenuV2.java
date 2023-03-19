@@ -2,7 +2,7 @@ package me.itsmcb.vexelcore.bukkit.api.menuv2;
 
 import org.bukkit.event.inventory.InventoryType;
 
-import java.util.HashMap;
+import java.util.ArrayList;
 import java.util.UUID;
 
 public class MenuV2 {
@@ -10,7 +10,7 @@ public class MenuV2 {
 
     private InventoryType inventoryType = InventoryType.CHEST;
 
-    private HashMap<Integer, MenuV2Item> items = new HashMap<>();
+    private ArrayList<MenuV2Item> items = new ArrayList<>();
 
     private UUID uuid = UUID.randomUUID();
 
@@ -44,7 +44,7 @@ public class MenuV2 {
     }
 
     public MenuV2 addItem(MenuV2Item menuItem) {
-        this.items.put(null, menuItem);
+        this.items.add(menuItem);
         return this;
     }
 
@@ -52,7 +52,7 @@ public class MenuV2 {
         return uuid;
     }
 
-    public HashMap<Integer, MenuV2Item> getItems() {
+    public ArrayList<MenuV2Item> getItems() {
         return items;
     }
 
