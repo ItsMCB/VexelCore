@@ -8,14 +8,13 @@ import org.json.simple.parser.ParseException;
 
 import java.io.IOException;
 
-public class PlayerSkinInformation {
+public class OnlinePlayerSkin {
 
-    protected PlayerSkinInformation() {}
+    protected OnlinePlayerSkin() {}
 
     private String playerName;
     private String playerStrippedUUID;
-    private String skinValue;
-    private String skinSignature;
+    private PlayerSkin playerSkin;
     private boolean informationComplete = false;
 
     public String getPlayerName() {
@@ -26,19 +25,15 @@ public class PlayerSkinInformation {
         return playerStrippedUUID;
     }
 
-    public String getSkinValue() {
-        return skinValue;
-    }
-
-    public String getSkinSignature() {
-        return skinSignature;
+    public PlayerSkin getPlayerSkin() {
+        return playerSkin;
     }
 
     public boolean isInformationComplete() {
         return informationComplete;
     }
 
-    public PlayerSkinInformation(String playerName) {
+    public OnlinePlayerSkin(String playerName) {
         this.playerName = playerName;
         setInformation();
     }
@@ -56,8 +51,7 @@ public class PlayerSkinInformation {
                 JSONObject skinJSON = (JSONObject) parser.parse(skinWR.getWebRequestResponse().getWebsiteData());
 
                 JSONArray properties = (JSONArray) skinJSON.get("properties");
-                this.skinValue = (String) ((JSONObject) properties.get(0)).get("value");
-                this.skinSignature = (String) ((JSONObject) properties.get(0)).get("signature");
+                this.playerSkin = new PlayerSkin((String) ((JSONObject) properties.get(0)).get("value"), (String) ((JSONObject) properties.get(0)).get("signature"));
                 this.informationComplete = true;
             }
         } catch (ParseException | IOException e) {

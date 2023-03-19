@@ -36,7 +36,7 @@ public class ItemBuilder {
     }
 
     public ItemBuilder name(String name) {
-        this.name = new BukkitMsgBuilder(name).get();
+        this.name = new BukkitMsgBuilder("&r"+name).get();
         return this;
     }
 

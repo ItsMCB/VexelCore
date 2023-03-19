@@ -1,6 +1,5 @@
 package me.itsmcb.vexelcore.bukkit.api.menuv2;
 
-import me.itsmcb.vexelcore.bukkit.api.text.BukkitMsgBuilder;
 import org.bukkit.Bukkit;
 import org.bukkit.NamespacedKey;
 import org.bukkit.entity.Player;
@@ -8,14 +7,16 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.inventory.InventoryCloseEvent;
-import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.InventoryHolder;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.persistence.PersistentDataContainer;
 import org.bukkit.persistence.PersistentDataType;
 import org.bukkit.plugin.java.JavaPlugin;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.NoSuchElementException;
+import java.util.Optional;
+import java.util.UUID;
 
 public class MenuV2Manager implements Listener {
 
@@ -36,7 +37,6 @@ public class MenuV2Manager implements Listener {
         if (holder instanceof MenuHolder menuHolder) {
             try {
                 menus.remove(getMenuFromUUID(menuHolder.getUUID()));
-                System.out.println("Removed menu with UUID " + menuHolder.getUUID().toString());
             } catch (NoSuchElementException e) {
                 // Do nothing
             }
@@ -66,8 +66,12 @@ public class MenuV2Manager implements Listener {
         }
         Optional<MenuV2Item> optional = menu.getItems().stream().filter(item -> item.getUUID().equals(getMenuItemUUID(currentItem))).findFirst();
         if (optional.isEmpty()) {
-            // Did not click a valid item
-            return;
+            // Check if it's a static item
+            optional = menu.getStaticItems().stream().filter(item -> item.getUUID().equals(getMenuItemUUID(currentItem))).findFirst();
+            if (optional.isEmpty()) {
+                // Did not click a valid item
+                return;
+            }
         }
         MenuV2Item item = optional.get();
         if (!item.isMovable()) {
@@ -110,23 +114,7 @@ public class MenuV2Manager implements Listener {
 
     public void open(MenuV2 menu, Player player) {
         menus.add(menu);
-        // Create inventory and set UUID holder
-        Inventory inventory = Bukkit.createInventory(new MenuHolder(menu.getUUID()), menu.getInventoryType(), new BukkitMsgBuilder(menu.getTitle()).get());
-
-        // TODO check that items can fit inside inventory screen
-
-        // Set inventory items with specified slots
-        menu.getItems().stream().filter(item -> (item.getSlot() != -1)).sorted(Comparator.comparingInt(MenuV2Item::getSlot)).forEach(item -> {
-            inventory.setItem(item.getSlot(), item.getItemBuilder().getItemStack());
-        });
-
-        // Set inventory items without any specified slots
-
-        menu.getItems().stream().filter(item -> (item.getSlot() == -1)).forEach(item -> {
-            inventory.addItem(item.getItemBuilder().getItemStack());
-        });
-
-        player.openInventory(inventory);
+        player.openInventory(menu.generate(player));
     }
 
 }
