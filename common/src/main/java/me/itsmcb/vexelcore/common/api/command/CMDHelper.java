@@ -121,7 +121,7 @@ public class CMDHelper {
 
     public String getStringOfArgsAfterIndex(int argIndex, int endArgIndex) {
         StringBuilder stringBuilder = new StringBuilder();
-        for (int i = 1; i < endArgIndex; i++) {
+        for (int i = argIndex+1; i < endArgIndex; i++) {
             stringBuilder.append(args[i]);
             if (i+1 < endArgIndex) {
                 stringBuilder.append(" ");

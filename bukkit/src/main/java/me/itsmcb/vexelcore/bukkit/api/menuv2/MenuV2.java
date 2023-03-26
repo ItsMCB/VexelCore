@@ -139,7 +139,8 @@ public class MenuV2 {
             inventory.setItem(item.getSlot(), item.getItemBuilder().getItemStack());
         });
         // Set inventory items without any specified slots
-        currentItems.stream().filter(item -> (item.getSlot() == -1)).forEach(item -> {
+        // Size is limited to prevent lag and unnecessary processing
+        currentItems.stream().filter(item -> (item.getSlot() == -1)).limit(getSize()).forEach(item -> {
             inventory.addItem(item.getItemBuilder().getItemStack());
         });
     }

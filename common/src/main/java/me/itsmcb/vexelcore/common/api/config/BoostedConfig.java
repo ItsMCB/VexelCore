@@ -16,6 +16,8 @@ import java.io.InputStream;
 
 public class BoostedConfig {
 
+    private final String fileName;
+
     private final File customConfigFile;
     private YamlDocument customConfig;
     private final InputStream inputStream;
@@ -25,6 +27,7 @@ public class BoostedConfig {
     public BoostedConfig(File dataFolder, String fileName, InputStream inputStream) {
         this.inputStream = inputStream;
         this.customConfigFile = new File(dataFolder, fileName+".yml");
+        this.fileName = fileName;
         saveDefaultConfig();
     }
 
@@ -37,6 +40,7 @@ public class BoostedConfig {
             this.inputStream = inputStream;
         }
         this.customConfigFile = new File(dataFolder, fileName+".yml");
+        this.fileName = fileName;
         saveDefaultConfig();
     }
 
@@ -92,5 +96,9 @@ public class BoostedConfig {
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
+    }
+
+    public String getFileName() {
+        return fileName;
     }
 }

@@ -17,7 +17,7 @@ public class PaginatedMenu extends MenuV2 {
         addStaticItem(new MenuV2Item(new ItemBuilder(Material.BLACK_STAINED_GLASS_PANE).name("&7")).slot(27));
         addStaticItem(new MenuV2Item(new ItemBuilder(Material.BLACK_STAINED_GLASS_PANE).name("&7")).slot(28));
         // Back Button
-        String arrowLeft = "eyJ0ZXh0dXJlcyI6eyJTS0lOIjp7InVybCI6Imh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvYTE4NWM5N2RiYjgzNTNkZTY1MjY5OGQyNGI2NDMyN2I3OTNhM2YzMmE5OGJlNjdiNzE5ZmJlZGFiMzVlIn19fQ";
+        String arrowLeft = "eyJ0ZXh0dXJlcyI6eyJTS0lOIjp7InVybCI6Imh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvODY5NzFkZDg4MWRiYWY0ZmQ2YmNhYTkzNjE0NDkzYzYxMmY4Njk2NDFlZDU5ZDFjOTM2M2EzNjY2YTVmYTYifX19";
 
         addStaticItem(new MenuV2Item(new SkullBuilder(arrowLeft)
                 .name("&r&d&lLast Page"))
@@ -36,7 +36,7 @@ public class PaginatedMenu extends MenuV2 {
         addStaticItem(new MenuV2Item(new ItemBuilder(Material.BLACK_STAINED_GLASS_PANE).name("&7")).slot(31));
         addStaticItem(new MenuV2Item(new ItemBuilder(Material.BLACK_STAINED_GLASS_PANE).name("&7")).slot(32));
         // Forward Button
-        String arrowRight = "eyJ0ZXh0dXJlcyI6eyJTS0lOIjp7InVybCI6Imh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvMzFjMGVkZWRkNzExNWZjMWIyM2Q1MWNlOTY2MzU4YjI3MTk1ZGFmMjZlYmI2ZTQ1YTY2YzM0YzY5YzM0MDkxIn19fQ";
+        String arrowRight = "eyJ0ZXh0dXJlcyI6eyJTS0lOIjp7InVybCI6Imh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvZjMyY2E2NjA1NmI3Mjg2M2U5OGY3ZjMyYmQ3ZDk0YzdhMGQ3OTZhZjY5MWM5YWMzYTkxMzYzMzEzNTIyODhmOSJ9fX0";
         addStaticItem(new MenuV2Item(new SkullBuilder(arrowRight)
                 .name("&r&d&lNext Page"))
                 .slot(33)
@@ -61,7 +61,13 @@ public class PaginatedMenu extends MenuV2 {
     }
 
     private void updatePage(Player player, int firstItemIndex) {
-        setCurrentItems(new ArrayList<>(getItems().subList(firstItemIndex, getItems().size())), player);
+        // Limit amount to what's needed to update to prevent lag
+        int end = getItems().size();
+        int temp = firstItemIndex+getSize();
+        if (firstItemIndex+getSize() < end) {
+            end = temp;
+        }
+        setCurrentItems(new ArrayList<>(getItems().subList(firstItemIndex, end)), player);
     }
 
     private boolean canChangePage(int start) {
