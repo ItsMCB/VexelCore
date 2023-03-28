@@ -52,7 +52,7 @@ public class WorldGuardUtilities {
 
     public static boolean ownsCurrentRegion(Player player) {
         BlockVector3 locationVector = blockVector3FromLocation(player.getLocation());
-        RegionManager regionManager = WorldGuard.getInstance().getPlatform().getRegionContainer().get(BukkitAdapter.adapt(player.getWorld())) ;
+        RegionManager regionManager = WorldGuard.getInstance().getPlatform().getRegionContainer().get(BukkitAdapter.adapt(player.getWorld()));
         if (regionManager == null) {
             return false;
         }
@@ -67,6 +67,13 @@ public class WorldGuardUtilities {
             }
         });
         return ownsRegion.get();
+    }
+    public static ProtectedRegion findRegion(World world, String regionId) {
+        RegionManager regionManager = WorldGuard.getInstance().getPlatform().getRegionContainer().get(BukkitAdapter.adapt(world));
+        if (regionManager == null) {
+            return null;
+        }
+        return regionManager.getRegion(regionId);
     }
 
     public static ProtectedRegion expandAllDirections(ProtectedRegion region, World world, int expansionAmount) {

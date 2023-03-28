@@ -23,7 +23,7 @@ public class MenuV2 {
 
     private int page = 1;
 
-    private int size = 0;
+    private int size = 54;
 
     private Inventory inventory;
 
