@@ -118,6 +118,9 @@ public class MenuV2 {
     public Inventory generateInventory() {
         // Create inventory and set UUID holder
         MenuHolder menuHolder = new MenuHolder(uuid);
+        if (inventoryType.equals(InventoryType.CHEST)) {
+            return Bukkit.createInventory(menuHolder, size, new BukkitMsgBuilder(getTitle()).get());
+        }
         return Bukkit.createInventory(menuHolder, inventoryType, new BukkitMsgBuilder(getTitle()).get());
     }
 
