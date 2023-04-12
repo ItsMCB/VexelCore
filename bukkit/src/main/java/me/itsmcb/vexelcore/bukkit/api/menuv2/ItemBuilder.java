@@ -10,6 +10,7 @@ import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.persistence.PersistentDataType;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 public class ItemBuilder {
@@ -52,12 +53,26 @@ public class ItemBuilder {
     }
 
     public ItemBuilder lore(Component lore) {
-        this.lore = List.of(lore);
+        lore(List.of(lore));
         return this;
     }
 
     public ItemBuilder lore(String lore) {
-        this.lore = List.of(new BukkitMsgBuilder(lore).get());
+        lore(List.of(new BukkitMsgBuilder(lore).get()));
+        return this;
+    }
+
+    public ItemBuilder lore(String... lore) {
+        List<Component> components = new ArrayList<>();
+        for (String s : lore) {
+            components.add(new BukkitMsgBuilder(s).get());
+        }
+        lore(components);
+        return this;
+    }
+
+    public ItemBuilder lore (Component... lore) {
+        lore(Arrays.stream(lore).toList());
         return this;
     }
 
@@ -72,18 +87,6 @@ public class ItemBuilder {
     }
 
     public ItemStack getItemStack() {
-        ItemStack itemStack = getCleanItemStack();
-        ItemMeta itemMeta = itemStack.getItemMeta();
-        data.forEach(data -> {
-            if (data.getKey().getNamespace().equals(MenuV2Manager.menuSystemIdKey.getNamespace())) {
-                itemMeta.getPersistentDataContainer().set(data.getKey(), PersistentDataType.STRING, data.getString());
-            }
-        });
-        itemStack.setItemMeta(itemMeta);
-        return itemStack;
-    }
-
-    public ItemStack getCleanItemStack() {
         ItemStack itemStack = new ItemStack(material);
         itemStack.setAmount(amount);
         ItemMeta itemMeta = itemStack.getItemMeta();
@@ -92,11 +95,17 @@ public class ItemBuilder {
         }
         itemMeta.lore(lore);
         data.forEach(data -> {
-            if (data.getType().equals(PersistentDataType.STRING) || !(data.getKey().equals(MenuV2Manager.menuSystemIdKey))) {
+            if (data.getType().equals(PersistentDataType.STRING)) {
                 itemMeta.getPersistentDataContainer().set(data.getKey(), PersistentDataType.STRING, data.getString());
             }
         });
         itemStack.setItemMeta(itemMeta);
+        return itemStack;
+    }
+
+    public ItemStack getCleanItemStack() {
+        ItemStack itemStack = getItemStack();
+        itemStack.getItemMeta().getPersistentDataContainer().remove(MenuV2Manager.menuSystemIdKey);
         return itemStack;
     }
 }
