@@ -169,13 +169,16 @@ public class CustomCommand extends Command {
         }
         // TODO Don't return sub command names that the player doesn't have permission for
         if (args.length > 1) {
-            subCommands.forEach(scmd -> {
-                String subCmdArg = args[args.length-2];
-                if (scmd.getName().equalsIgnoreCase(subCmdArg)) {
-                    if (scmd.getCompletions(sender).size() != 0) {
-                        completions.set(scmd.getCompletions(sender).stream().filter(c -> (c != null) && c.toUpperCase().contains(args[args.length-1].toUpperCase())).collect(Collectors.toList()));
+            List<ArrayList<CustomCommand>> allSubCommands = List.of(subCommands,stipulatedSubCommands);
+            allSubCommands.forEach(subCommandType -> {
+                subCommandType.forEach(scmd -> {
+                    String subCmdArg = args[args.length-2];
+                    if (scmd.getName().equalsIgnoreCase(subCmdArg)) {
+                        if (scmd.getCompletions(sender).size() != 0) {
+                            completions.set(scmd.getCompletions(sender).stream().filter(c -> (c != null) && c.toUpperCase().contains(args[args.length-1].toUpperCase())).collect(Collectors.toList()));
+                        }
                     }
-                }
+                });
             });
         }
         return completions.get();

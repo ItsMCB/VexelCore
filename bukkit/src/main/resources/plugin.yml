@@ -6,6 +6,9 @@ load: STARTUP
 authors: [ ItsMCB ]
 description: A useful API to offload complexity.
 website: https://github.com/ItsMCB/VexelCore
+softdepend:
+  - FastAsyncWorldEdit
+  - WorldGuard
 libraries:
   - mysql:mysql-connector-java:8.0.27
 #  - dev.dejvokep:boosted-yaml-spigot:1.3
