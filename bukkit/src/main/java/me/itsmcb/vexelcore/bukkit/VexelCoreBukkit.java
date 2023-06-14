@@ -1,7 +1,7 @@
 package me.itsmcb.vexelcore.bukkit;
 
 import me.itsmcb.vexelcore.bukkit.api.text.BukkitMsgBuilder;
-import me.itsmcb.vexelcore.bukkit.api.utils.HookUtils;
+import me.itsmcb.vexelcore.bukkit.api.utils.PluginUtils;
 import me.itsmcb.vexelcore.bukkit.plugin.PAPI;
 import me.itsmcb.vexelcore.bukkit.plugin.PCMListener;
 import me.itsmcb.vexelcore.bukkit.plugin.ProxyManager;
@@ -50,7 +50,7 @@ public class VexelCoreBukkit extends JavaPlugin {
 
     private void loadFinalThings() {
         // Register PAPI placeholders
-        if (HookUtils.pluginIsLoaded("PlaceholderAPI")) {
+        if (PluginUtils.pluginIsLoaded("PlaceholderAPI")) {
             new PAPI(this).register();
         }
     }

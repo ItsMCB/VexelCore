@@ -135,7 +135,7 @@ public class CustomCommand extends Command {
         // TODO argument descriptions should be a hover message over the argument
         // TODO display help for current command too (not just subcommands)
         StringBuilder sb = new StringBuilder();
-        sb.append("&7===== Help - ").append(getName()).append(" =====");
+        sb.append("&7===== Help - &7&l").append(getName()).append("&r&7 =====");
         List<CustomCommand> commands = Stream.concat(subCommands.stream(), stipulatedSubCommands.stream()).toList();
         // Command
         sb.append("\n&a" + this.getName());

@@ -6,6 +6,7 @@ import com.sk89q.worldedit.regions.CuboidRegion;
 import com.sk89q.worldguard.WorldGuard;
 import com.sk89q.worldguard.protection.managers.RegionManager;
 import com.sk89q.worldguard.protection.managers.storage.StorageException;
+import com.sk89q.worldguard.protection.regions.GlobalProtectedRegion;
 import com.sk89q.worldguard.protection.regions.ProtectedCuboidRegion;
 import com.sk89q.worldguard.protection.regions.ProtectedRegion;
 import org.bukkit.Bukkit;
@@ -42,12 +43,32 @@ public class WorldGuardUtilities {
     }
 
     public static List<ProtectedRegion> getRegions(Player player) {
-        BlockVector3 locationVector = blockVector3FromLocation(player.getLocation());
-        RegionManager regionManager = WorldGuard.getInstance().getPlatform().getRegionContainer().get(BukkitAdapter.adapt(player.getWorld())) ;
+        return getRegions(player.getLocation());
+    }
+
+    public static List<ProtectedRegion> getRegions(Location location) {
+        BlockVector3 locationVector = blockVector3FromLocation(location);
+        RegionManager regionManager = WorldGuard.getInstance().getPlatform().getRegionContainer().get(BukkitAdapter.adapt(location.getWorld())) ;
         if (regionManager == null) {
             return null;
         }
-        return regionManager.getApplicableRegions(locationVector).getRegions().stream().toList();
+        List<ProtectedRegion> regions = new ArrayList<>(regionManager.getApplicableRegions(locationVector).getRegions().stream().toList());
+        regions.add(createGlobal(location.getWorld(),"__global__"));
+        return regions;
+    }
+
+    public static ProtectedRegion createGlobal(World world, String id) {
+        RegionManager regionManager = WorldGuard.getInstance().getPlatform().getRegionContainer().get(BukkitAdapter.adapt(world)) ;
+        if (regionManager == null) {
+            return null;
+        }
+        GlobalProtectedRegion region = (GlobalProtectedRegion) regionManager.getRegion("__global__");
+        if (region == null) {
+            region = new GlobalProtectedRegion(id);
+            regionManager.addRegion(region);
+            saveAllWorldRegions();
+        }
+        return region;
     }
 
     public static boolean ownsCurrentRegion(Player player) {

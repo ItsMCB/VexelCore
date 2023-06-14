@@ -23,13 +23,17 @@ repositories {
         name = 'sonatype'
         url = 'https://oss.sonatype.org/content/groups/public/'
     }
+    // CoreProtect
+    maven {
+        url = "https://maven.playpro.com/"
+    }
     maven { url "https://maven.enginehub.org/repo/" }
 }
 
 dependencies {
     implementation project(path: ':common')
     // Paper
-    compileOnly 'io.papermc.paper:paper-api:1.19-R0.1-SNAPSHOT'
+    compileOnly "io.papermc.paper:paper-api:1.19.4-R0.1-SNAPSHOT"
     // WorldGuard
     compileOnly 'com.sk89q.worldguard:worldguard-bukkit:7.0.7'
     // FAWE
@@ -38,6 +42,8 @@ dependencies {
     compileOnly("com.fastasyncworldedit:FastAsyncWorldEdit-Bukkit")
     // PlaceholderAPI
     compileOnly 'me.clip:placeholderapi:2.11.1'
+    // CoreProtect
+    compileOnly "net.coreprotect:coreprotect:21.3"
 
     compileOnly 'mysql:mysql-connector-java:8.0.30'
     implementation "dev.dejvokep:boosted-yaml-spigot:1.3"
