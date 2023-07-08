@@ -2,6 +2,7 @@ package me.itsmcb.vexelcore.bukkit.api.command;
 
 import me.itsmcb.vexelcore.bukkit.api.text.BukkitMsgBuilder;
 import me.itsmcb.vexelcore.common.api.command.CMDHelper;
+import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.TextComponent;
 import org.bukkit.Sound;
 import org.bukkit.command.Command;
@@ -90,11 +91,11 @@ public class CustomCommand extends Command {
     }
 
     public void executeAsPlayer(Player player, String[] args) {
-        player.sendMessage(help());
+        help(player);
     }
 
     public void executeAsConsole(CommandSender console, String[] args) {
-        console.sendMessage(help());
+        help(console);
     }
 
     public void registerSubCommand(CustomCommand subCommand) {
@@ -113,13 +114,18 @@ public class CustomCommand extends Command {
         return parameters;
     }
 
+    public ArrayList<CustomCommand> getSubCommands() {
+        ArrayList<CustomCommand> allSubCommands = new ArrayList<>(subCommands);
+        allSubCommands.addAll(stipulatedSubCommands);
+        return allSubCommands;
+    }
+
     public List<String> getCompletions(CommandSender sender) {
         List<String> arguments = new ArrayList<>();
-        subCommands.forEach(subcommand -> {
-            arguments.add(subcommand.getName());
-        });
-        stipulatedSubCommands.forEach(subcommand -> {
-            arguments.add(subcommand.getName());
+        getSubCommands().forEach(subCommand -> {
+            if (subCommand.hasPermission(sender)) {
+                arguments.add(subCommand.getName());
+            }
         });
         arguments.addAll(getAdditionalCompletions(sender));
         return arguments;
@@ -129,11 +135,37 @@ public class CustomCommand extends Command {
         return List.of();
     }
 
+    public void help(CommandSender sender) {
+        new BukkitMsgBuilder("&8--=== &7Command Help&r&8: &a"+getName()+"&r&8 ===--").send(sender);
+        ArrayList<CustomCommand> subCommands = getSubCommands();
+        sendFormattedCommandUsage(this, sender, true);
+        subCommands.forEach(scmd -> {
+            sendFormattedCommandUsage(scmd, sender, false);
+        });
+    }
+
+    private void sendFormattedCommandUsage(CustomCommand command, CommandSender sender, boolean isMain) {
+        String subChar = "&7&l> ";
+        TextComponent cmd = new BukkitMsgBuilder((isMain ? "" : subChar)+"&a"+command.getName())
+                .hover("&7Permission required: &e"+(Objects.equals(getPermission(), "") ? "None" : getPermission()))
+                .get();
+        TextComponent usage = formatUsage(command.getParameters());
+        TextComponent about = new BukkitMsgBuilder(" &7- &e"+command.getDescription()).get();
+        sender.sendMessage(cmd.append(usage).append(about));
+    }
+
+    private TextComponent formatUsage(HashMap<String, String> input) {
+        TextComponent.Builder component = Component.text();
+        input.forEach((parameter, description) -> {
+            component.append(new BukkitMsgBuilder(" &a"+parameter)
+                    .hover("&7"+description)
+                    .get());
+        });
+        return component.build();
+    }
+
+    @Deprecated
     public TextComponent help() {
-        // TODO allow for localization
-        // TODO maybe list permission if the player doesn't have it? Likely in a hover message
-        // TODO argument descriptions should be a hover message over the argument
-        // TODO display help for current command too (not just subcommands)
         StringBuilder sb = new StringBuilder();
         sb.append("&8--=== &7Command Help&r&8: &a").append(getName()).append("&r&8 ===--");
         List<CustomCommand> commands = Stream.concat(subCommands.stream(), stipulatedSubCommands.stream()).toList();
@@ -181,7 +213,7 @@ public class CustomCommand extends Command {
                     for (CustomCommand customCommand : fl) {
                         almostFinalCompletions.addAll(customCommand.getCompletions(sender));
                     }
-                    completions.set(almostFinalCompletions);
+                    completions.set(almostFinalCompletions.stream().filter(c -> c.toUpperCase().contains(args[args.length-1].toUpperCase())).collect(Collectors.toList()));
                 } else {
                     ArrayList<CustomCommand> subCommandsSave = new ArrayList<>(allSubCommands);
                     allSubCommands.clear();
@@ -194,20 +226,11 @@ public class CustomCommand extends Command {
 
     private ArrayList<CustomCommand> getSubCommandsFromCommandList(ArrayList<CustomCommand> customCommandsList) {
         AtomicReference<ArrayList<CustomCommand>> subCommands = new AtomicReference<>(new ArrayList<>());
-        customCommandsList.forEach(cmd -> {
-            cmd.getSubCommands().forEach(subCmd -> {
-                ArrayList<CustomCommand> temp = subCommands.get();
-                temp.add(subCmd);
-                subCommands.set(temp);
-            });
-
-        });
+        customCommandsList.forEach(cmd -> cmd.getSubCommands().forEach(subCmd -> {
+            ArrayList<CustomCommand> temp = subCommands.get();
+            temp.add(subCmd);
+            subCommands.set(temp);
+        }));
         return subCommands.get();
-    }
-
-    public ArrayList<CustomCommand> getSubCommands() {
-        ArrayList<CustomCommand> allSubCommands = new ArrayList<>(subCommands);
-        allSubCommands.addAll(stipulatedSubCommands);
-        return allSubCommands;
     }
 }
