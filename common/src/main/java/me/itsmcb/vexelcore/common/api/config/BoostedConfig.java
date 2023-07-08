@@ -49,7 +49,7 @@ public class BoostedConfig {
             customConfig = YamlDocument.create(
                     customConfigFile,
                     inputStream,
-                    GeneralSettings.builder().setSerializer(serializer).build(),
+                    GeneralSettings.builder().setDefaultNumber(-1).setUseDefaults(false).setSerializer(serializer).build(),
                     LoaderSettings.builder().setAutoUpdate(true).build(),
                     DumperSettings.DEFAULT,
                     UpdaterSettings.builder().setVersioning(new BasicVersioning("file-version")).build()

@@ -135,7 +135,7 @@ public class CustomCommand extends Command {
         // TODO argument descriptions should be a hover message over the argument
         // TODO display help for current command too (not just subcommands)
         StringBuilder sb = new StringBuilder();
-        sb.append("&7===== Help - &7&l").append(getName()).append("&r&7 =====");
+        sb.append("&8--=== &7Command Help&r&8: &a").append(getName()).append("&r&8 ===--");
         List<CustomCommand> commands = Stream.concat(subCommands.stream(), stipulatedSubCommands.stream()).toList();
         // Command
         sb.append("\n&a" + this.getName());
@@ -167,20 +167,47 @@ public class CustomCommand extends Command {
         if (args.length == 1) {
             completions.set(getCompletions(sender).stream().filter(c -> c.toUpperCase().contains(args[0].toUpperCase())).collect(Collectors.toList()));
         }
-        // TODO Don't return sub command names that the player doesn't have permission for
-        if (args.length > 1) {
-            List<ArrayList<CustomCommand>> allSubCommands = List.of(subCommands,stipulatedSubCommands);
-            allSubCommands.forEach(subCommandType -> {
-                subCommandType.forEach(scmd -> {
-                    String subCmdArg = args[args.length-2];
-                    if (scmd.getName().equalsIgnoreCase(subCmdArg)) {
-                        if (scmd.getCompletions(sender).size() != 0) {
-                            completions.set(scmd.getCompletions(sender).stream().filter(c -> (c != null) && c.toUpperCase().contains(args[args.length-1].toUpperCase())).collect(Collectors.toList()));
-                        }
+        if (args.length > 1) { // 2+
+            ArrayList<CustomCommand> allSubCommands = new ArrayList<>();
+            allSubCommands.add(this);
+            for (int i = 0; i < args.length; i++) {
+                int finalI = i;
+                ArrayList<CustomCommand> fl = new ArrayList<>(allSubCommands);
+                if (i > 0) { // 1+
+                    fl = new ArrayList<>(allSubCommands.stream().filter(sc -> sc.getName().equalsIgnoreCase(args[finalI-1])).toList());
+                }
+                if (i+1 == args.length) { // Stop, get completions
+                    ArrayList<String> almostFinalCompletions = new ArrayList<>();
+                    for (CustomCommand customCommand : fl) {
+                        almostFinalCompletions.addAll(customCommand.getCompletions(sender));
                     }
-                });
-            });
+                    completions.set(almostFinalCompletions);
+                } else {
+                    ArrayList<CustomCommand> subCommandsSave = new ArrayList<>(allSubCommands);
+                    allSubCommands.clear();
+                    allSubCommands.addAll(getSubCommandsFromCommandList(subCommandsSave));
+                }
+            }
         }
         return completions.get();
+    }
+
+    private ArrayList<CustomCommand> getSubCommandsFromCommandList(ArrayList<CustomCommand> customCommandsList) {
+        AtomicReference<ArrayList<CustomCommand>> subCommands = new AtomicReference<>(new ArrayList<>());
+        customCommandsList.forEach(cmd -> {
+            cmd.getSubCommands().forEach(subCmd -> {
+                ArrayList<CustomCommand> temp = subCommands.get();
+                temp.add(subCmd);
+                subCommands.set(temp);
+            });
+
+        });
+        return subCommands.get();
+    }
+
+    public ArrayList<CustomCommand> getSubCommands() {
+        ArrayList<CustomCommand> allSubCommands = new ArrayList<>(subCommands);
+        allSubCommands.addAll(stipulatedSubCommands);
+        return allSubCommands;
     }
 }
