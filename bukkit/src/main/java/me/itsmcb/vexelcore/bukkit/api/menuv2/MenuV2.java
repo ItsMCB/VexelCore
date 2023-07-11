@@ -49,6 +49,15 @@ public class MenuV2 {
         this.size = size;
     }
 
+    public MenuV2 createNewCopy(Player player) {
+        // Reset IDs for items and static items to not conflict with other menus
+        this.items = new ArrayList<>(items.stream().map(MenuV2Item::createNewCopy).toList());
+        this.staticItems = new ArrayList<>(staticItems.stream().map(MenuV2Item::createNewCopy).toList());
+        // Refresh inv
+        generate(player);
+        return this;
+    }
+
     public MenuV2 title(String title) {
         this.title = title;
         return this;
@@ -117,16 +126,20 @@ public class MenuV2 {
 
     public Inventory generateInventory() {
         // Create inventory and set UUID holder
-        MenuHolder menuHolder = new MenuHolder(uuid);
+        MenuHolder menuHolder = getMenuHolder();
         if (inventoryType.equals(InventoryType.CHEST)) {
             return Bukkit.createInventory(menuHolder, size, new BukkitMsgBuilder(getTitle()).get());
         }
         return Bukkit.createInventory(menuHolder, inventoryType, new BukkitMsgBuilder(getTitle()).get());
     }
 
+    public MenuHolder getMenuHolder() {
+        return new MenuHolder(uuid);
+    }
+
     public Inventory generate(Player player) {
         inventory = generateInventory();
-        setInventoryItems(player);
+        setCurrentItems(new ArrayList<>(getItems().subList(0, Math.min(inventory.getSize(), items.size()))), player);
         return inventory;
     }
 
@@ -134,17 +147,26 @@ public class MenuV2 {
         inventory.clear();
         // Set static inventory items
         staticItems.stream().forEach(item -> {
-            inventory.setItem(item.getSlot(), item.getItemBuilder().getItemStack());
+            if (item.shouldUpdate()) {
+                item.update();
+            }
+            inventory.setItem(item.getSlot(), item);
         });
 
         // Set inventory items with specified slots
-        currentItems.stream().filter(item -> (item.getSlot() != -1)).sorted(Comparator.comparingInt(MenuV2Item::getSlot)).forEach(item -> {
-            inventory.setItem(item.getSlot(), item.getItemBuilder().getItemStack());
+        currentItems.stream().filter(item -> (item.getSlot() != -1)).sorted(Comparator.comparingInt(MenuV2Item::getSlot)).toList().forEach(item -> {
+            if (item.shouldUpdate()) {
+                item.update();
+            }
+            inventory.setItem(item.getSlot(), item);
         });
         // Set inventory items without any specified slots
         // Size is limited to prevent lag and unnecessary processing
         currentItems.stream().filter(item -> (item.getSlot() == -1)).limit(getSize()).forEach(item -> {
-            inventory.addItem(item.getItemBuilder().getItemStack());
+            if (item.shouldUpdate()) {
+                item.update();
+            }
+            inventory.addItem(item);
         });
     }
 

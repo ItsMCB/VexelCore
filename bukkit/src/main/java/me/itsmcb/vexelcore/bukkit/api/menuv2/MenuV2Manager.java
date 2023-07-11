@@ -52,7 +52,12 @@ public class MenuV2Manager implements Listener {
         if (!(holder instanceof MenuHolder)) {
             return;
         }
+
         MenuHolder menuHolder = (MenuHolder) holder;
+        Optional<MenuV2> optionalMenuV2 = getMenuFromHolder(menuHolder);
+        if (optionalMenuV2.isEmpty()) {
+            return;
+        }
         MenuV2 menu;
         try {
             menu = getMenuFromUUID(menuHolder.getUUID());
@@ -64,10 +69,11 @@ public class MenuV2Manager implements Listener {
         if (currentItem == null) {
             return;
         }
-        Optional<MenuV2Item> optional = menu.getItems().stream().filter(item -> item.getUUID().equals(getMenuItemUUID(currentItem))).findFirst();
+        UUID itemUUID = getMenuItemUUID(currentItem);
+        Optional<MenuV2Item> optional = menu.getItems().stream().filter(item -> item.getUUID().equals(itemUUID)).findFirst();
         if (optional.isEmpty()) {
             // Check if it's a static item
-            optional = menu.getStaticItems().stream().filter(item -> item.getUUID().equals(getMenuItemUUID(currentItem))).findFirst();
+            optional = menu.getStaticItems().stream().filter(item -> item.getUUID().equals(itemUUID)).findFirst();
             if (optional.isEmpty()) {
                 // Did not click a valid item
                 return;
@@ -110,6 +116,10 @@ public class MenuV2Manager implements Listener {
             throw new NoSuchElementException("Menu with UUID \""+uuid+"\" does not exist in stored list!");
         }
         return optional.get();
+    }
+
+    private Optional<MenuV2> getMenuFromHolder(MenuHolder menuHolder) {
+        return menus.stream().filter(menu -> menu.getMenuHolder().getUUID() == menu.getUUID()).findFirst();
     }
 
     public void open(MenuV2 menu, Player player) {
