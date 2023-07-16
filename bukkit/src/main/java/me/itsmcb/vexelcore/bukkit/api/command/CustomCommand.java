@@ -49,7 +49,6 @@ public class CustomCommand extends Command {
             for (int x = i; x < args.length; x++) {
                 sb.append(args[x]+"");
                 if (args[x].endsWith("\"")) {
-                    wipArgs.add(sb.toString().replaceAll("\"",""));
                     i = x;
                     break;
                 } else {
@@ -57,7 +56,7 @@ public class CustomCommand extends Command {
                 }
             }
             // If no quote ending is found, don't skip the arg.
-            wipArgs.add(args[i].replaceAll("\"",""));
+            wipArgs.add(sb.toString().replaceAll("\"",""));
         }
         String[] newArgs = wipArgs.toArray(new String[0]);
 

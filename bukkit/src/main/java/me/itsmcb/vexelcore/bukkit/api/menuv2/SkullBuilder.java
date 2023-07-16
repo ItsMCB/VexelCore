@@ -51,7 +51,6 @@ public class SkullBuilder extends MenuV2Item {
         try {
             PlayerProfile playerProfile = Bukkit.createProfile(UUID.randomUUID(), null);
             playerProfile.setProperty(new ProfileProperty("textures",texture));
-            //playerProfile.update(); Don't update! This will perform Mojang API calls that are rate limited.
             playerProfile.completeFromCache();
             skullMeta.setPlayerProfile(playerProfile);
             setItemMeta(skullMeta);

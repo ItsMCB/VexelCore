@@ -6,17 +6,13 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.inventory.InventoryClickEvent;
-import org.bukkit.event.inventory.InventoryCloseEvent;
 import org.bukkit.inventory.InventoryHolder;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.persistence.PersistentDataContainer;
 import org.bukkit.persistence.PersistentDataType;
 import org.bukkit.plugin.java.JavaPlugin;
 
-import java.util.ArrayList;
-import java.util.NoSuchElementException;
-import java.util.Optional;
-import java.util.UUID;
+import java.util.*;
 
 public class MenuV2Manager implements Listener {
 
@@ -28,6 +24,7 @@ public class MenuV2Manager implements Listener {
         Bukkit.getPluginManager().registerEvents(this, instance);
     }
 
+    /*
     @EventHandler
     public void InventoryClose(InventoryCloseEvent event) {
         InventoryHolder holder = event.getInventory().getHolder();
@@ -43,32 +40,44 @@ public class MenuV2Manager implements Listener {
         }
     }
 
-    @EventHandler
-    public void InventoryClick(InventoryClickEvent event) {
-        InventoryHolder holder = event.getInventory().getHolder();
+     */
+
+    private Optional<MenuV2> getOptionalMenu(InventoryHolder holder) {
         if (holder == null) {
-            return;
+            return Optional.empty();
         }
         if (!(holder instanceof MenuHolder)) {
-            return;
+            return Optional.empty();
         }
 
         MenuHolder menuHolder = (MenuHolder) holder;
         Optional<MenuV2> optionalMenuV2 = getMenuFromHolder(menuHolder);
         if (optionalMenuV2.isEmpty()) {
-            return;
+            return Optional.empty();
         }
         MenuV2 menu;
         try {
             menu = getMenuFromUUID(menuHolder.getUUID());
         } catch (NoSuchElementException e) {
             // Not a valid menu
+            return Optional.empty();
+        }
+        return Optional.of(menu);
+    }
+
+    @EventHandler
+    public void InventoryClick(InventoryClickEvent event) {
+        Optional<MenuV2> optionalMenu = getOptionalMenu(event.getInventory().getHolder());
+        if (optionalMenu.isEmpty()) {
             return;
         }
+        MenuV2 menu = optionalMenu.get();
         ItemStack currentItem = event.getCurrentItem();
+
         if (currentItem == null) {
             return;
         }
+
         UUID itemUUID = getMenuItemUUID(currentItem);
         Optional<MenuV2Item> optional = menu.getItems().stream().filter(item -> item.getUUID().equals(itemUUID)).findFirst();
         if (optional.isEmpty()) {
@@ -80,6 +89,7 @@ public class MenuV2Manager implements Listener {
             }
         }
         MenuV2Item item = optional.get();
+
         if (!item.isMovable()) {
             // Item is not movable, cancel take event
             event.setCancelled(true);
@@ -119,12 +129,18 @@ public class MenuV2Manager implements Listener {
     }
 
     private Optional<MenuV2> getMenuFromHolder(MenuHolder menuHolder) {
-        return menus.stream().filter(menu -> menu.getMenuHolder().getUUID() == menu.getUUID()).findFirst();
+        return menus.stream().filter(menu -> menu.getMenuHolder().getUUID() == menuHolder.getUUID()).findFirst();
     }
 
     public void open(MenuV2 menu, Player player) {
         menus.add(menu);
         player.openInventory(menu.generate(player));
+    }
+
+    public void open(MenuV2 menu, Player player, MenuV2 previousMenu) {
+        menu.setManager(this);
+        menu.setPreviousMenu(previousMenu);
+        open(menu,player);
     }
 
 }

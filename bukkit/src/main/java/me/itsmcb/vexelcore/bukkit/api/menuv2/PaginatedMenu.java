@@ -26,12 +26,11 @@ public class PaginatedMenu extends MenuV2 {
                         setPage(getPage()-1);
                         updatePage(player,newIndex);
                     } else {
-                        new BukkitMsgBuilder("&cCan't go backward").send(player);
+                        new BukkitMsgBuilder("&7You've reached the beginning!").send(player);
                     }
         }));
         // Middle
         addStaticItem(new MenuV2Item(Material.BLACK_STAINED_GLASS_PANE).name("&7").slot(30));
-        addStaticItem(new MenuV2Item(Material.BLACK_STAINED_GLASS_PANE).name("&7").slot(31));
         addStaticItem(new MenuV2Item(Material.BLACK_STAINED_GLASS_PANE).name("&7").slot(32));
         // Forward Button
         String arrowRight = "eyJ0ZXh0dXJlcyI6eyJTS0lOIjp7InVybCI6Imh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvZjMyY2E2NjA1NmI3Mjg2M2U5OGY3ZjMyYmQ3ZDk0YzdhMGQ3OTZhZjY5MWM5YWMzYTkxMzYzMzEzNTIyODhmOSJ9fX0";
@@ -44,7 +43,7 @@ public class PaginatedMenu extends MenuV2 {
                         setPage(getPage()+1);
                         updatePage(player,newIndex);
                     } else {
-                        new BukkitMsgBuilder("&cCan't go forward").send(player);
+                        new BukkitMsgBuilder("&7You've reached the end!").send(player);
                     }
         }));
         // End
@@ -60,20 +59,36 @@ public class PaginatedMenu extends MenuV2 {
 
     private void updatePage(Player player, int firstItemIndex) {
         // Limit amount to what's needed to update to prevent lag
-        int end = getItems().size();
-        int temp = (firstItemIndex+getSize())-(getStaticItems().size());
-        if (firstItemIndex+getSize() < end) {
-            end = temp;
+        int amountOfItems = getItems().size();
+        int end = (firstItemIndex+(getSize()-getStaticItems().size()));
+        int temp = end;
+        if (amountOfItems < end) {
+            temp = amountOfItems;
         }
-        setCurrentItems(new ArrayList<>(getItems().subList(firstItemIndex, end)), player);
-        //setCurrentItems(new ArrayList<>(getItems().subList(firstItemIndex, end-getStaticItems().size())), player);
+        setCurrentItems(new ArrayList<>(getItems().subList(firstItemIndex, temp)), player);
     }
 
     private boolean canChangePage(int start) {
-        if (start > getItems().size() || start < 0) {
+        if (start >= getItems().size() || start < 0) {
             return false;
         }
         return true;
     }
 
+    @Override
+    public void setInventoryItems(Player player) {
+        if (getPreviousMenu() != null) {
+            // Show back arrow
+            String arrowBack = "eyJ0ZXh0dXJlcyI6eyJTS0lOIjp7InVybCI6Imh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvYmU5YWU3YTRiZTY1ZmNiYWVlNjUxODEzODlhMmY3ZDQ3ZTJlMzI2ZGI1OWVhM2ViNzg5YTkyYzg1ZWE0NiJ9fX0";
+            addStaticItem(new SkullBuilder(arrowBack)
+                    .name("&r&d&lBack")
+                    .slot(31)
+                    .leftClickAction(event -> {
+                        getManager().open(getPreviousMenu(),player,this);
+                    }));
+        } else {
+            addStaticItem(new MenuV2Item(Material.BLACK_STAINED_GLASS_PANE).name("&7").slot(31));
+        }
+        super.setInventoryItems(player);
+    }
 }

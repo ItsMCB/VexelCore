@@ -52,10 +52,21 @@ public class PlayerUtils {
         return playerProfile;
     }
 
+    public static String[] getValueAndSignature(Player player) {
+        String[] names = new String[2];
+        player.getPlayerProfile().getProperties().forEach(profileProperty -> {
+            if (profileProperty.getName().equals("textures")) {
+                names[0] = profileProperty.getValue();
+                names[1] = profileProperty.getSignature();
+            }
+        });
+        return names;
+    }
+
     public static void copy(Player from, Player to) {
         from.getPlayerProfile().getProperties().forEach(profileProperty -> {
             if (profileProperty.getName().equals("textures")) {
-                PlayerUtils.setSkin(to, profileProperty.getValue(), profileProperty.getSignature());
+                setSkin(to, profileProperty.getValue(), profileProperty.getSignature());
             }
         });
     }

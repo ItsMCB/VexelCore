@@ -118,32 +118,45 @@ public class MenuV2Item extends ItemStack {
         return this;
     }
 
-    public MenuV2Item lore(TextComponent lore) {
-        ArrayList<Component> components = this.getItemMeta().hasLore() ? new ArrayList<>(this.getItemMeta().lore()) : new ArrayList<>();
+    public MenuV2Item setLore(TextComponent lore) {
+        ArrayList<Component> components = new ArrayList<>();
         components.add(lore);
         ItemMeta itemMeta = getItemMeta();
-        // TODO figure out why it doesn't remove the italics
         itemMeta.lore(components.stream().map(c -> c.decoration(TextDecoration.ITALIC, false)).toList());
         setItemMeta(itemMeta);
         return this;
     }
 
-    public MenuV2Item lore(String lore) {
-        lore(List.of(new BukkitMsgBuilder(lore).get()));
+    public MenuV2Item addLore(List<TextComponent> lore) {
+        ArrayList<Component> components = this.getItemMeta().hasLore() ? new ArrayList<>(this.getItemMeta().lore()) : new ArrayList<>();
+        components.addAll(lore);
+        ItemMeta itemMeta = getItemMeta();
+        itemMeta.lore(components.stream().map(c -> c.decoration(TextDecoration.ITALIC, false)).toList());
+        setItemMeta(itemMeta);
         return this;
     }
 
-    public MenuV2Item lore(String... lore) {
-        List<Component> components = new ArrayList<>();
+    public MenuV2Item addLore(String lore) {
+        addLore(List.of(new BukkitMsgBuilder(lore).get()));
+        return this;
+    }
+
+    public MenuV2Item addLore(String... lore) {
+        List<TextComponent> components = new ArrayList<>();
         for (String s : lore) {
             components.add(new BukkitMsgBuilder(s).get());
         }
-        lore(components);
+        addLore(components);
         return this;
     }
 
-    public MenuV2Item lore (TextComponent... lore) {
-        lore(Arrays.stream(lore).toList());
+    public MenuV2Item addLore(TextComponent lore) {
+        addLore(List.of(lore));
+        return this;
+    }
+
+    public MenuV2Item addLore(TextComponent... lore) {
+        addLore(Arrays.stream(lore).toList());
         return this;
     }
 

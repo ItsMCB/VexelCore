@@ -154,4 +154,16 @@ public class CMDHelper {
         return false;
     }
 
+    public boolean isLong(int argIndex) {
+        if (hasArgIndex(argIndex)) {
+            try {
+                Long.parseLong(args[argIndex]);
+                return true;
+            } catch (NumberFormatException e) {
+                return false;
+            }
+        }
+        return false;
+    }
+
 }

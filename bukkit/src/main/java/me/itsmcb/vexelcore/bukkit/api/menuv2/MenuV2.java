@@ -8,6 +8,7 @@ import org.bukkit.inventory.Inventory;
 
 import java.util.ArrayList;
 import java.util.Comparator;
+import java.util.Optional;
 import java.util.UUID;
 
 public class MenuV2 {
@@ -29,6 +30,9 @@ public class MenuV2 {
 
     private UUID uuid = UUID.randomUUID();
 
+    private MenuV2 previousMenu = null;
+    private MenuV2Manager manager = null;
+
     public MenuV2() {}
 
     public MenuV2(String title) {
@@ -47,6 +51,22 @@ public class MenuV2 {
         this.currentItems = items;
         this.inventoryType = inventoryType;
         this.size = size;
+    }
+
+    public void setPreviousMenu(MenuV2 previousMenu) {
+        this.previousMenu = previousMenu;
+    }
+
+    public MenuV2 getPreviousMenu() {
+        return previousMenu;
+    }
+
+    public void setManager(MenuV2Manager manager) {
+        this.manager = manager;
+    }
+
+    public MenuV2Manager getManager() {
+        return manager;
     }
 
     public MenuV2 createNewCopy(Player player) {
@@ -77,11 +97,22 @@ public class MenuV2 {
     }
 
     public MenuV2 addItem(MenuV2Item menuItem) {
+        // Remove if slot is already taken
+        if (menuItem.getSlot() != -1) {
+            Optional<MenuV2Item> optionalItem = items.stream().filter(item -> item.getSlot() == menuItem.getSlot()).findFirst();
+            optionalItem.ifPresent(menuV2Item -> items.remove(menuV2Item));
+        }
         this.items.add(menuItem);
         return this;
     }
 
     public MenuV2 addStaticItem(MenuV2Item menuItem) {
+        // Remove if slot is already taken
+        if (menuItem.getSlot() != -1) {
+            Optional<MenuV2Item> optionalItem = staticItems.stream().filter(item -> item.getSlot() == menuItem.getSlot()).findFirst();
+            optionalItem.ifPresent(menuV2Item -> staticItems.remove(menuV2Item));
+        }
+        // Add
         this.staticItems.add(menuItem);
         return this;
     }
