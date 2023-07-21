@@ -21,6 +21,10 @@ public class BukkitMsgBuilder extends CommonMsgBuilder implements ConfigurationS
         super(messageText);
     }
 
+    public BukkitMsgBuilder messageText(@NotNull String messageText) {
+        return (BukkitMsgBuilder) super.text(messageText);
+    }
+
     public BukkitMsgBuilder hover(@NotNull String hoverText) {
         return (BukkitMsgBuilder) super.hover(hoverText);
     }
