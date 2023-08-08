@@ -99,9 +99,11 @@ public class MenuV2Manager implements Listener {
         player.updateInventory();
         if (event.getClick().isRightClick() && item.getRightClickAction() != null) {
             item.getRightClickAction().accept(event);
+            player.closeInventory();
         }
         if (event.getClick().isLeftClick() && item.getLeftClickAction() != null) {
             item.getLeftClickAction().accept(event);
+            player.closeInventory();
         }
     }
 

@@ -30,6 +30,8 @@ public class MenuV2 {
 
     private UUID uuid = UUID.randomUUID();
 
+    boolean clickClosesMenu = false;
+
     private MenuV2 previousMenu = null;
     private MenuV2Manager manager = null;
 
@@ -119,6 +121,15 @@ public class MenuV2 {
 
     public UUID getUUID() {
         return uuid;
+    }
+
+    public MenuV2 clickCloseMenu(boolean bool) {
+        this.clickClosesMenu = bool;
+        return this;
+    }
+
+    public boolean shouldClickCloseMenu() {
+        return clickClosesMenu;
     }
 
     public ArrayList<MenuV2Item> getItems() {
