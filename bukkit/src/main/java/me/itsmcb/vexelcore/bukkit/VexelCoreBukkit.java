@@ -1,10 +1,12 @@
 package me.itsmcb.vexelcore.bukkit;
 
+import dev.dejvokep.boostedyaml.spigot.SpigotSerializer;
 import me.itsmcb.vexelcore.bukkit.api.text.BukkitMsgBuilder;
 import me.itsmcb.vexelcore.bukkit.api.utils.PluginUtils;
 import me.itsmcb.vexelcore.bukkit.plugin.PAPI;
 import me.itsmcb.vexelcore.bukkit.plugin.PCMListener;
 import me.itsmcb.vexelcore.bukkit.plugin.ProxyManager;
+import me.itsmcb.vexelcore.common.api.config.BoostedConfig;
 import org.bukkit.Bukkit;
 import org.bukkit.configuration.serialization.ConfigurationSerialization;
 import org.bukkit.plugin.java.JavaPlugin;
@@ -33,6 +35,7 @@ public class VexelCoreBukkit extends JavaPlugin {
 
         // Load final things after that server has started
         getServer().getScheduler().scheduleSyncDelayedTask(this,this::loadFinalThings);
+
 
         System.out.println("VexelCore API ${version} for Bukkit has loaded.");
         // New WIP VexelCore Plugin system
