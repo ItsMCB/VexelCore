@@ -142,6 +142,18 @@ public class CMDHelper {
         return false;
     }
 
+    public boolean isDouble(int argIndex) {
+        if (hasArgIndex(argIndex)) {
+            try {
+                Double.parseDouble(args[argIndex]);
+                return true;
+            } catch (NumberFormatException e) {
+                return false;
+            }
+        }
+        return false;
+    }
+
     public boolean isFloat(int argIndex) {
         if (hasArgIndex(argIndex)) {
             try {

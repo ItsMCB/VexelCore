@@ -75,6 +75,8 @@ public class PaginatedMenu extends MenuV2 {
         return true;
     }
 
+
+
     @Override
     public void setInventoryItems(Player player) {
         if (getPreviousMenu() != null) {
