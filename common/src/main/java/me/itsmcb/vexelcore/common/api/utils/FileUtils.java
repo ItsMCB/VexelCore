@@ -2,8 +2,10 @@ package me.itsmcb.vexelcore.common.api.utils;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.CopyOption;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.StandardCopyOption;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.List;
@@ -37,7 +39,7 @@ public class FileUtils {
                 Path targetPath = target.resolve(relativePath);
                 if (!(ignoredFiles.contains(relativePath))) {
                     try {
-                        Files.copy(sourcePath, targetPath);
+                        Files.copy(sourcePath,targetPath, StandardCopyOption.REPLACE_EXISTING);
                     } catch (IOException e) {
                         throw new RuntimeException(e);
                     }
