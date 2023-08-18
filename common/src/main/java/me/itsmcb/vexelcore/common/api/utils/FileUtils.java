@@ -26,6 +26,25 @@ public class FileUtils {
         return (path.delete());
     }
 
+    public static void copyDirectory(Path source, Path target) throws IOException {
+        copyDirectory(source,target,List.of());
+    }
+
+    public static void copyDirectory(Path source, Path target, List<Path> ignoredFiles) throws IOException {
+        Files.walk(source)
+            .forEach(sourcePath -> {
+                Path relativePath = source.relativize(sourcePath);
+                Path targetPath = target.resolve(relativePath);
+                if (!(ignoredFiles.contains(relativePath))) {
+                    try {
+                        Files.copy(sourcePath, targetPath);
+                    } catch (IOException e) {
+                        throw new RuntimeException(e);
+                    }
+                }
+            });
+    }
+
     public static String getLastTextInstanceFromFile(Path path, String textWhere) {
         AtomicReference<String> foundText = null;
         try (Stream<String> stream = Files.lines(path)) {
