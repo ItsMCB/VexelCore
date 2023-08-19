@@ -28,11 +28,14 @@ public class FileUtils {
         return (path.delete());
     }
 
-    public static void copyDirectory(Path source, Path target) throws IOException {
-        copyDirectory(source,target,List.of());
+    public static boolean copyDirectory(Path source, Path target) throws IOException {
+        return copyDirectory(source,target,List.of());
     }
 
-    public static void copyDirectory(Path source, Path target, List<Path> ignoredFiles) throws IOException {
+    public static boolean copyDirectory(Path source, Path target, List<Path> ignoredFiles) throws IOException {
+        if (!(source.toFile().exists())) {
+            return false;
+        }
         Files.walk(source)
             .forEach(sourcePath -> {
                 Path relativePath = source.relativize(sourcePath);
@@ -45,6 +48,7 @@ public class FileUtils {
                     }
                 }
             });
+        return true;
     }
 
     public static String getLastTextInstanceFromFile(Path path, String textWhere) {
