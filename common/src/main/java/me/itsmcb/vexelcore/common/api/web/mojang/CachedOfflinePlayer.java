@@ -56,8 +56,8 @@ public class CachedOfflinePlayer {
         }
     }
 
-    public CachedOfflinePlayer(UUID uuid, File dataFolder) {
-        this.vexelCoreCommon = new VexelCoreCommon(dataFolder);
+    public CachedOfflinePlayer(UUID uuid) {
+        this.vexelCoreCommon = new VexelCoreCommon(new File(getClass().getProtectionDomain().getCodeSource().getLocation().getFile()).getParentFile());
         this.uuid = uuid;
         // Check if exists in cache
         setFromCache();
@@ -65,11 +65,42 @@ public class CachedOfflinePlayer {
         if (notCached) {
             setSkin();
         }
-
     }
 
+    public CachedOfflinePlayer(String name) {
+        this.vexelCoreCommon = new VexelCoreCommon(new File(getClass().getProtectionDomain().getCodeSource().getLocation().getFile()).getParentFile());
+        this.name = name;
+        setFromCache();
+        // Get from Mojang API if not already cached
+        if (notCached) {
+            try {
+                JSONParser parser = new JSONParser();
+                WebRequest webRequest = new WebRequest("https://api.mojang.com/users/profiles/minecraft/" + name);
+                JSONObject jsonObject = (JSONObject) parser.parse(webRequest.getWebRequestResponse().getWebsiteData());
+                this.name = (String) jsonObject.get("name");
+                String uuidString = (String) jsonObject.get("id");
+                this.uuid = UUID.fromString(uuidString.replaceAll("(.{8})(.{4})(.{4})(.{4})(.+)", "$1-$2-$3-$4-$5"));
+                setSkin();
+                writeToFile();
+            } catch (ParseException | IOException ignored) {}
+        }
+    }
+
+    @Deprecated
+    public CachedOfflinePlayer(UUID uuid, File dataFolder) {
+        this.vexelCoreCommon = new VexelCoreCommon(dataFolder.getParentFile());
+        this.uuid = uuid;
+        // Check if exists in cache
+        setFromCache();
+        // Get from Mojang API if not already cached
+        if (notCached) {
+            setSkin();
+        }
+    }
+
+    @Deprecated
     public CachedOfflinePlayer(String name, File dataFolder) {
-        this.vexelCoreCommon = new VexelCoreCommon(dataFolder);
+        this.vexelCoreCommon = new VexelCoreCommon(dataFolder.getParentFile());
         this.name = name;
         setFromCache();
         // Get from Mojang API if not already cached
@@ -87,7 +118,6 @@ public class CachedOfflinePlayer {
                 // ignore
             }
         }
-
     }
 
     private void writeToFile() {

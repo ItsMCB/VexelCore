@@ -34,7 +34,7 @@ public class VexelCoreCommon {
     public VexelCoreCommon(File dataFolder) {
         this();
         try {
-            offlinePlayerCacheConfig = new BoostedConfig(new File(dataFolder.getParentFile()+File.separator+"VexelCore"),"player_cache", null,standardSerializer);
+            offlinePlayerCacheConfig = new BoostedConfig(new File(dataFolder+File.separator+"VexelCore"),"player_cache", null,standardSerializer);
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
