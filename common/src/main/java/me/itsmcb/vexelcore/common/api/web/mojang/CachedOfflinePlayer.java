@@ -36,7 +36,8 @@ public class CachedOfflinePlayer {
             this.setPlayerSkin(cachedOfflinePlayer.getPlayerSkin());
             this.notCached = false;
             // If it has been 3 days, refresh cache.
-            if (System.currentTimeMillis() > this.lastRefresh+259200000) {
+            if (lastRefresh-System.currentTimeMillis() > 259200000) {
+                System.out.println("Refreshing CachedOfflinePlayer for "+getName() + " ("+getUuid()+")");
                 this.notCached = true;
             }
         }
