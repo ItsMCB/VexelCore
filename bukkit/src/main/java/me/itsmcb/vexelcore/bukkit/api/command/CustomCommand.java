@@ -2,6 +2,7 @@ package me.itsmcb.vexelcore.bukkit.api.command;
 
 import me.itsmcb.vexelcore.bukkit.api.text.BukkitMsgBuilder;
 import me.itsmcb.vexelcore.common.api.command.CMDHelper;
+import me.itsmcb.vexelcore.common.api.utils.ArgUtils;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.TextComponent;
 import org.bukkit.Sound;
@@ -65,7 +66,7 @@ public class CustomCommand extends Command {
         AtomicBoolean subCommandCalled = new AtomicBoolean(false);
         subCommands.forEach(subCommand -> {
             if (cmdHelper.isCalling(subCommand.getName())) {
-                subCommand.execute(sender,newArgs[0],Arrays.copyOfRange(newArgs,1,newArgs.length));
+                subCommand.execute(sender,newArgs[0],ArgUtils.shift(args));
                 subCommandCalled.set(true);
             }
         });
