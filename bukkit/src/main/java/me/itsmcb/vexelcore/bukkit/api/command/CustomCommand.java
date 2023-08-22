@@ -66,7 +66,7 @@ public class CustomCommand extends Command {
         AtomicBoolean subCommandCalled = new AtomicBoolean(false);
         subCommands.forEach(subCommand -> {
             if (cmdHelper.isCalling(subCommand.getName())) {
-                subCommand.execute(sender,newArgs[0],ArgUtils.shift(args));
+                subCommand.execute(sender,newArgs[0],ArgUtils.shift(newArgs));
                 subCommandCalled.set(true);
             }
         });

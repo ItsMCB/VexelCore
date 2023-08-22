@@ -8,10 +8,10 @@ public class ArgUtils {
      * Removes the first element
      */
     public static String[] shift(String[] args) {
-        if (args.length == 0) {
+        if (2 > args.length) {
             return new String[] {};
         }
-        return Arrays.copyOfRange(args,0,args.length-1);
+        return Arrays.copyOfRange(args,1,args.length);
     }
 
 
@@ -22,6 +22,6 @@ public class ArgUtils {
         if (args.length == 0) {
             return new String[] {};
         }
-        return Arrays.copyOfRange(args,1,args.length);
+        return Arrays.copyOfRange(args,0,args.length-1);
     }
 }
