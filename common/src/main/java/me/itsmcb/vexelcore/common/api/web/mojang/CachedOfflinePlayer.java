@@ -4,6 +4,7 @@ import dev.dejvokep.boostedyaml.serialization.standard.TypeAdapter;
 import me.itsmcb.vexelcore.common.api.VexelCoreCommon;
 import me.itsmcb.vexelcore.common.api.config.BoostedConfig;
 import me.itsmcb.vexelcore.common.api.web.WebRequest;
+import org.geysermc.floodgate.api.FloodgateApi;
 import org.jetbrains.annotations.NotNull;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
@@ -13,6 +14,7 @@ import org.json.simple.parser.ParseException;
 import java.io.File;
 import java.io.IOException;
 import java.util.*;
+import java.util.concurrent.ExecutionException;
 
 public class CachedOfflinePlayer {
     private UUID uuid;
@@ -43,7 +45,7 @@ public class CachedOfflinePlayer {
         }
     }
 
-    private void setSkin() {
+    private void setJavaSkinFromMojangAPI() {
         try {
             JSONParser parser = new JSONParser();
             WebRequest skinWR = new WebRequest("https://sessionserver.mojang.com/session/minecraft/profile/" + uuid + "?unsigned=false");
@@ -62,9 +64,13 @@ public class CachedOfflinePlayer {
         this.uuid = uuid;
         // Check if exists in cache
         setFromCache();
+        // Check if Bedrock player
+        if (isBedrockPlayerClean(uuid)) {
+            return;
+        }
         // Get from Mojang API if not already cached
         if (notCached) {
-            setSkin();
+            setJavaSkinFromMojangAPI();
         }
     }
 
@@ -72,6 +78,10 @@ public class CachedOfflinePlayer {
         this.vexelCoreCommon = new VexelCoreCommon(new File(getClass().getProtectionDomain().getCodeSource().getLocation().getFile()).getParentFile());
         this.name = name;
         setFromCache();
+        // Check if Bedrock player
+        if (isBedrockPlayerClean(name)) {
+            return;
+        }
         // Get from Mojang API if not already cached
         if (notCached) {
             try {
@@ -81,9 +91,58 @@ public class CachedOfflinePlayer {
                 this.name = (String) jsonObject.get("name");
                 String uuidString = (String) jsonObject.get("id");
                 this.uuid = UUID.fromString(uuidString.replaceAll("(.{8})(.{4})(.{4})(.{4})(.+)", "$1-$2-$3-$4-$5"));
-                setSkin();
+                setJavaSkinFromMojangAPI();
                 writeToFile();
             } catch (ParseException | IOException ignored) {}
+        }
+    }
+
+    private boolean isBedrockPlayerClean(UUID uuid) {
+        try {
+            FloodgateApi api = FloodgateApi.getInstance();
+            // Is a bedrock player
+            if (!(api.isFloodgateId(uuid))) {
+                return false;
+            }
+            // Is Bedrock player online?
+            if (api.isFloodgatePlayer(uuid)) {
+                this.setName(api.getPlayer(uuid).getJavaUsername());
+            }
+            this.setPlayerSkin(
+                    new PlayerSkin(
+                            "ewogICJ0aW1lc3RhbXAiIDogMTYxNjYwMDc4Mzc1NywKICAicHJvZmlsZUlkIiA6ICI4MmM2MDZjNWM2NTI0Yjc5OGI5MWExMmQzYTYxNjk3NyIsCiAgInByb2ZpbGVOYW1lIiA6ICJOb3ROb3RvcmlvdXNOZW1vIiwKICAic2lnbmF0dXJlUmVxdWlyZWQiIDogdHJ1ZSwKICAidGV4dHVyZXMiIDogewogICAgIlNLSU4iIDogewogICAgICAidXJsIiA6ICJodHRwOi8vdGV4dHVyZXMubWluZWNyYWZ0Lm5ldC90ZXh0dXJlLzc2MTVjYTJlMWU4ZmVlZDcxYTQ3YzQ1NWM2MGM0NjEzMjY1NTdlZWI3YzRlNTYwYjZiOGYwMDY1YTMxNzgzNGYiLAogICAgICAibWV0YWRhdGEiIDogewogICAgICAgICJtb2RlbCIgOiAic2xpbSIKICAgICAgfQogICAgfQogIH0KfQ==",
+                            "R+6skz5tHQtnqqsSZyEAWIFSejKFcGoBynqR5SymlzLefLPwFL1JsbXJkpsAg2HR4jSvXoUl45AeyQ8rIET+D0d0S1W6zhlPqLYikl8GVuKgsUV+DuTLTWSXLq8sub/n3+HjivHjLZSN5udJdI9J4iA0QNwe/ftdutut1p5cRW65nbb0kPAedFM+VoWzICXHhPa6aFOC36pqI1ZJVThm+xhDHo0U0MUID/gA98va4xkGB2AWyUn3fxDTjA1IQ1ItDnDNJoXQv3+Duce+ZakaSjkZGReApE4Q/ygsGWRiOHquJpGS6fXAaPga2LbNX8lVXxgfkKfnu4TmnqxPwie0TZMxIPHoGPt9vnepRS/JFH3A12OqUHlLBEigtNRWQqeTlVJsX0+Gy16DVmguSPh7St3Y3zjuwUe0C3zyuBiMuqHBjYRwagQ0UhwmIZlCsYQYahUv2XroxguBaLwhnvb/WEcDaYqj23IViMUhsHbu0h02l+qIvG98OVXW8ZbY6gcFTF3a7+uFsmqKmiSkeCT9vUU9HWkhVqeRmdq1vI9Uq/FQRcW4KSSWMuSVk+8u0nM15lJWddqgtkJVVJxEoYWja1zIOmgXBxpXZHpkNCM8NHixWQt9bnsEABLyP9lwgL9zpkFDAo8WDPS1wWDAUhmpx0yh/9JrXWz5exoizATebLQ="
+                    )
+            );
+            writeToFile();
+            return true;
+        } catch (Exception e) {
+            System.out.println("ERROR BTW: "+e.getMessage());
+            return false;
+        }
+
+    }
+
+    private boolean isBedrockPlayerClean(String name) {
+        try {
+            FloodgateApi api = FloodgateApi.getInstance();
+            // If username is bedrock player
+            if (!(api.isFloodgatePlayer(uuid))) {
+                return false;
+            }
+            this.setUuid(api.getUuidFor(name).get());
+            this.setPlayerSkin(
+                    new PlayerSkin(
+                            "ewogICJ0aW1lc3RhbXAiIDogMTYxNjYwMDc4Mzc1NywKICAicHJvZmlsZUlkIiA6ICI4MmM2MDZjNWM2NTI0Yjc5OGI5MWExMmQzYTYxNjk3NyIsCiAgInByb2ZpbGVOYW1lIiA6ICJOb3ROb3RvcmlvdXNOZW1vIiwKICAic2lnbmF0dXJlUmVxdWlyZWQiIDogdHJ1ZSwKICAidGV4dHVyZXMiIDogewogICAgIlNLSU4iIDogewogICAgICAidXJsIiA6ICJodHRwOi8vdGV4dHVyZXMubWluZWNyYWZ0Lm5ldC90ZXh0dXJlLzc2MTVjYTJlMWU4ZmVlZDcxYTQ3YzQ1NWM2MGM0NjEzMjY1NTdlZWI3YzRlNTYwYjZiOGYwMDY1YTMxNzgzNGYiLAogICAgICAibWV0YWRhdGEiIDogewogICAgICAgICJtb2RlbCIgOiAic2xpbSIKICAgICAgfQogICAgfQogIH0KfQ==",
+                            "R+6skz5tHQtnqqsSZyEAWIFSejKFcGoBynqR5SymlzLefLPwFL1JsbXJkpsAg2HR4jSvXoUl45AeyQ8rIET+D0d0S1W6zhlPqLYikl8GVuKgsUV+DuTLTWSXLq8sub/n3+HjivHjLZSN5udJdI9J4iA0QNwe/ftdutut1p5cRW65nbb0kPAedFM+VoWzICXHhPa6aFOC36pqI1ZJVThm+xhDHo0U0MUID/gA98va4xkGB2AWyUn3fxDTjA1IQ1ItDnDNJoXQv3+Duce+ZakaSjkZGReApE4Q/ygsGWRiOHquJpGS6fXAaPga2LbNX8lVXxgfkKfnu4TmnqxPwie0TZMxIPHoGPt9vnepRS/JFH3A12OqUHlLBEigtNRWQqeTlVJsX0+Gy16DVmguSPh7St3Y3zjuwUe0C3zyuBiMuqHBjYRwagQ0UhwmIZlCsYQYahUv2XroxguBaLwhnvb/WEcDaYqj23IViMUhsHbu0h02l+qIvG98OVXW8ZbY6gcFTF3a7+uFsmqKmiSkeCT9vUU9HWkhVqeRmdq1vI9Uq/FQRcW4KSSWMuSVk+8u0nM15lJWddqgtkJVVJxEoYWja1zIOmgXBxpXZHpkNCM8NHixWQt9bnsEABLyP9lwgL9zpkFDAo8WDPS1wWDAUhmpx0yh/9JrXWz5exoizATebLQ="
+                    )
+            );
+            writeToFile();
+            return true;
+
+        } catch (ExecutionException | InterruptedException e) {
+            System.out.println("ERROR BTW: "+e.getMessage());
+            return false;
         }
     }
 
@@ -95,7 +154,7 @@ public class CachedOfflinePlayer {
         setFromCache();
         // Get from Mojang API if not already cached
         if (notCached) {
-            setSkin();
+            setJavaSkinFromMojangAPI();
         }
     }
 
@@ -113,7 +172,7 @@ public class CachedOfflinePlayer {
                 this.name = (String) jsonObject.get("name");
                 String uuidString = (String) jsonObject.get("id");
                 this.uuid = UUID.fromString(uuidString.replaceAll("(.{8})(.{4})(.{4})(.{4})(.+)", "$1-$2-$3-$4-$5"));
-                setSkin();
+                setJavaSkinFromMojangAPI();
                 writeToFile();
             } catch (ParseException | IOException e) {
                 // ignore
@@ -139,6 +198,12 @@ public class CachedOfflinePlayer {
     }
 
     public String getName() {
+        if (name == null && uuid != null) {
+            return "Unknown Player ("+uuid+")";
+        }
+        if (name == null) {
+            return "Unknown Player";
+        }
         return name;
     }
 
