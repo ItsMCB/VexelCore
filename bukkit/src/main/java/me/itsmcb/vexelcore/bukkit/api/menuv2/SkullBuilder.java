@@ -2,8 +2,7 @@ package me.itsmcb.vexelcore.bukkit.api.menuv2;
 
 import com.destroystokyo.paper.profile.PlayerProfile;
 import com.destroystokyo.paper.profile.ProfileProperty;
-import me.itsmcb.vexelcore.common.api.web.mojang.CachedOfflinePlayer;
-import me.itsmcb.vexelcore.common.api.web.mojang.OnlinePlayerSkin;
+import me.itsmcb.vexelcore.common.api.web.mojang.PlayerInformation;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.TextComponent;
 import org.bukkit.Bukkit;
@@ -36,8 +35,7 @@ public class SkullBuilder extends MenuV2Item {
 
     public SkullBuilder(OfflinePlayer offlinePlayer) {
         super(Material.PLAYER_HEAD);
-        //texture = new OnlinePlayerSkin(offlinePlayer.getName()).getPlayerSkin().getValue();
-        texture = new CachedOfflinePlayer(offlinePlayer.getUniqueId()).getPlayerSkin().getValue();
+        texture = new PlayerInformation(offlinePlayer.getUniqueId()).getPlayerSkin().getValue();
     }
 
     @Override
