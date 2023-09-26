@@ -13,6 +13,7 @@ public class CachedPlayer {
     private UUID uuid;
     private PlayerSkin playerSkin;
     private long lastRefresh = System.currentTimeMillis();
+    private long ttl = 86400000;
 
     public CachedPlayer() {}
     public CachedPlayer(UUID uuid) {
@@ -54,6 +55,14 @@ public class CachedPlayer {
         this.lastRefresh = lastRefresh;
     }
 
+    public long getTTL() {
+        return ttl;
+    }
+
+    public void setTTL(long ttl) {
+        this.ttl = ttl;
+    }
+
     public static TypeAdapter<CachedPlayer> adapter = new TypeAdapter<>() {
 
         @NotNull
@@ -63,6 +72,7 @@ public class CachedPlayer {
             lhm.put("name", p.getName());
             lhm.put("uuid", p.getUUID().toString());
             lhm.put("last", p.getLastRefresh());
+            lhm.put("llt",p.getTTL());
             if (p.playerSkin != null) {
                 lhm.put("value", p.getPlayerSkin().getValue());
                 lhm.put("signature", p.getPlayerSkin().getSignature());
@@ -77,6 +87,9 @@ public class CachedPlayer {
             cachedPlayer.setName((String) map.get("name"));
             cachedPlayer.setUUID(UUID.fromString((String) map.get("uuid")));
             cachedPlayer.setLastRefresh((long) map.get("last"));
+            if (map.containsKey("ttl")) {
+                cachedPlayer.setTTL(Long.parseLong((String) map.get("llt")));
+            }
             if (map.containsKey("value")) {
                 cachedPlayer.setPlayerSkin(new PlayerSkin(
                         (String) map.get("value"),

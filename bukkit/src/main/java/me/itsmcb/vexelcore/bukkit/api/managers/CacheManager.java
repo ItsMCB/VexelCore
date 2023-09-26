@@ -9,6 +9,7 @@ import org.bukkit.Bukkit;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.geysermc.floodgate.api.FloodgateApi;
+import org.geysermc.floodgate.api.player.FloodgatePlayer;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -17,6 +18,7 @@ import java.util.UUID;
 
 public class CacheManager {
     private BoostedConfig playerCacheConfig;
+    // TODO On player login, refresh cache data. This is especially important for Bedrock players. This would make a TTL time of -1 work because it would never updated the Bedrock player info until they login again.
 
     public CacheManager(JavaPlugin plugin) {
         // Save player cache
@@ -72,8 +74,19 @@ public class CacheManager {
         CachedPlayer cachedPlayer = new CachedPlayer(uuid);
         if (api.isFloodgateId(uuid)) {
             // Is Bedrock
-            // Set UUID
-            cachedPlayer.setName(api.getPlayer(uuid).getJavaUsername());
+            // Set username
+            FloodgatePlayer floodgatePlayer = api.getPlayer(uuid);
+            String javaUsername = "Offline Bedrock Player";
+            if (floodgatePlayer != null) {
+                javaUsername = floodgatePlayer.getJavaUsername();
+            }
+            if (floodgatePlayer != null && javaUsername != null) {
+                cachedPlayer.setName(floodgatePlayer.getJavaUsername());
+            } else {
+                int oneMinMilliseconds = 60000;
+                cachedPlayer.setName("Offline Bedrock Player");
+                cachedPlayer.setTTL(oneMinMilliseconds);
+            }
             // Set skin
             setSkin(cachedPlayer,Bukkit.getOfflinePlayer(uuid));
         } else {
@@ -114,7 +127,7 @@ public class CacheManager {
     }
 
     private void clearIfOld(CachedPlayer cachedPlayer) {
-        if (System.currentTimeMillis()-cachedPlayer.getLastRefresh() > 86400000) {
+        if (System.currentTimeMillis()-cachedPlayer.getLastRefresh() > cachedPlayer.getTTL()) {
             // if 3+ days old, remove
             ArrayList<CachedPlayer> cache = (ArrayList<CachedPlayer>) playerCacheConfig.get().getList("cache");
             Optional<CachedPlayer> optional = cache.stream().filter(cap -> cap.getUUID().equals(cachedPlayer.getUUID())).findFirst();
