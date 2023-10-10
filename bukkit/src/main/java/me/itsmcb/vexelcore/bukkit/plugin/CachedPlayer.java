@@ -1,5 +1,6 @@
 package me.itsmcb.vexelcore.bukkit.plugin;
 
+import com.destroystokyo.paper.profile.PlayerProfile;
 import dev.dejvokep.boostedyaml.serialization.standard.TypeAdapter;
 import me.itsmcb.vexelcore.common.api.web.mojang.PlayerSkin;
 import org.jetbrains.annotations.NotNull;
@@ -21,6 +22,16 @@ public class CachedPlayer {
     }
     public CachedPlayer(String name) {
         this.name = name;
+    }
+
+    public CachedPlayer(PlayerProfile playerProfile) {
+        setName(playerProfile.getName());
+        setUUID(playerProfile.getId());
+        playerProfile.getProperties().forEach(profileProperty -> {
+            if (profileProperty.getName().equals("textures")) {
+                setPlayerSkin(new PlayerSkin(profileProperty.getValue(),profileProperty.getSignature()));
+            }
+        });
     }
 
     public String getName() {

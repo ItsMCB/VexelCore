@@ -36,14 +36,25 @@ public class CacheManager {
     }
 
     private CachedPlayer getPlayer(String name) {
+        // Check cache
         ArrayList<CachedPlayer> cache = (ArrayList<CachedPlayer>) playerCacheConfig.get().getList("cache");
         Optional<CachedPlayer> optional = cache.stream().filter(p -> p.getName().equalsIgnoreCase(name)).findFirst();
         if (optional.isPresent()) {
             clearIfOld(optional.get());
             return optional.get();
         }
+        // Check if cached on server
+        CachedPlayer cachedPlayer = new CachedPlayer();
+        OfflinePlayer offlinePlayer = Bukkit.getOfflinePlayer(name);
+        if (offlinePlayer.hasPlayedBefore()) {
+            cachedPlayer = new CachedPlayer(offlinePlayer.getPlayerProfile());
+            if (cachedPlayer.getPlayerSkin() != null) {
+                return cachedPlayer;
+            }
+        }
+        // Check if Java or Bedrock
         FloodgateApi api = FloodgateApi.getInstance();
-        CachedPlayer cachedPlayer = new CachedPlayer(name);
+        cachedPlayer.setName(name);
         if (name.contains(api.getPlayerPrefix())) {
             // Is Bedrock
             try {
@@ -64,14 +75,23 @@ public class CacheManager {
     }
 
     public CachedPlayer request(UUID uuid) {
+        // Check if in cache
         ArrayList<CachedPlayer> cache = (ArrayList<CachedPlayer>) playerCacheConfig.get().getList("cache");
         Optional<CachedPlayer> optional = cache.stream().filter(p -> p.getUUID().equals(uuid)).findFirst();
         if (optional.isPresent()) {
             clearIfOld(optional.get());
             return optional.get();
         }
+        // Check if cached on server
+        CachedPlayer cachedPlayer = new CachedPlayer();
+        OfflinePlayer offlinePlayer = Bukkit.getOfflinePlayer(uuid);
+        if (offlinePlayer.hasPlayedBefore()) {
+            cachedPlayer = new CachedPlayer(offlinePlayer.getPlayerProfile());
+            cachedPlayer.setName(offlinePlayer.getName());
+        }
+        // Check if Bedrock or Java
         FloodgateApi api = FloodgateApi.getInstance();
-        CachedPlayer cachedPlayer = new CachedPlayer(uuid);
+        cachedPlayer.setUUID(uuid);
         if (api.isFloodgateId(uuid)) {
             // Is Bedrock
             // Set username
@@ -83,9 +103,13 @@ public class CacheManager {
             if (floodgatePlayer != null && javaUsername != null) {
                 cachedPlayer.setName(floodgatePlayer.getJavaUsername());
             } else {
-                int oneMinMilliseconds = 60000;
-                cachedPlayer.setName("Offline Bedrock Player");
-                cachedPlayer.setTTL(oneMinMilliseconds);
+                if (cachedPlayer.getName() == null) {
+                    cachedPlayer.setName("Offline Bedrock Player");
+                } else {
+                    int oneMinMilliseconds = 60000;
+                    cachedPlayer.setTTL(oneMinMilliseconds);
+                }
+
             }
             // Set skin
             setSkin(cachedPlayer,Bukkit.getOfflinePlayer(uuid));
