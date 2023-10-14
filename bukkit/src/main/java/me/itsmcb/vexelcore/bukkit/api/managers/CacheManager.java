@@ -7,6 +7,7 @@ import me.itsmcb.vexelcore.common.api.web.mojang.PlayerInformation;
 import me.itsmcb.vexelcore.common.api.web.mojang.PlayerSkin;
 import org.bukkit.Bukkit;
 import org.bukkit.OfflinePlayer;
+import org.bukkit.entity.Player;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.geysermc.floodgate.api.FloodgateApi;
 import org.geysermc.floodgate.api.player.FloodgatePlayer;
@@ -74,6 +75,9 @@ public class CacheManager {
         return cachedPlayer;
     }
 
+    public CachedPlayer request(Player player) {
+        return request(player.getUniqueId());
+    }
     public CachedPlayer request(UUID uuid) {
         // Check if in cache
         ArrayList<CachedPlayer> cache = (ArrayList<CachedPlayer>) playerCacheConfig.get().getList("cache");
