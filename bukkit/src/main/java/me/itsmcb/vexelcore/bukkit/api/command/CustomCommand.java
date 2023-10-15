@@ -29,6 +29,10 @@ public class CustomCommand extends Command {
         this.setPermission(permission);
     }
 
+    public boolean execute(@NotNull CommandSender sender, @NotNull String[] args) {
+        return execute(sender, this.getName(),args);
+    }
+
     @Override
     public boolean execute(@NotNull CommandSender sender, @NotNull String commandLabel, @NotNull String[] args) {
         if (!hasPermission(sender)) {
@@ -39,7 +43,7 @@ public class CustomCommand extends Command {
             sender.sendMessage(permissionError());
             return true;
         }
-        // Process args to merge quotes into one argument
+        // Process args to merge set of quotes into one argument
         List<String> wipArgs = new ArrayList<>();
         for (int i = 0; i < args.length; i++) {
             StringBuilder sb = new StringBuilder();

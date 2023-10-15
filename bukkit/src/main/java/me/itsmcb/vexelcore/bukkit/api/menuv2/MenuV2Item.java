@@ -103,8 +103,6 @@ public class MenuV2Item extends ItemStack {
 
     private ArrayList<MenuV2ItemData> data = new ArrayList<>();
 
-    private int amount = 1;
-
     public MenuV2Item name(TextComponent name) {
         // Remove default italic decoration
         ItemMeta itemMeta = getItemMeta();
@@ -161,7 +159,7 @@ public class MenuV2Item extends ItemStack {
     }
 
     public MenuV2Item amount(int amount) {
-        this.amount(amount);
+        this.setAmount(Math.max(amount, 1));
         return this;
     }
 
