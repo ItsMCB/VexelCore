@@ -30,7 +30,7 @@ public class MenuV2 {
 
     private UUID uuid = UUID.randomUUID();
 
-    boolean clickClosesMenu = false;
+    private boolean clickClosesMenu = false;
 
     private MenuV2 previousMenu = null;
     private MenuV2Manager manager = null;
