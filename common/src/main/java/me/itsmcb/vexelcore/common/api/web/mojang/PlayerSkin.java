@@ -18,4 +18,12 @@ public class PlayerSkin {
     public String getSignature() {
         return signature;
     }
+
+    public boolean hasValue() {
+        return value != null && !value.isEmpty();
+    }
+
+    public boolean hasSignature() {
+        return signature != null && !signature.isEmpty();
+    }
 }

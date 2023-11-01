@@ -3,6 +3,7 @@ package me.itsmcb.vexelcore.bukkit.plugin;
 import com.destroystokyo.paper.profile.PlayerProfile;
 import dev.dejvokep.boostedyaml.serialization.standard.TypeAdapter;
 import me.itsmcb.vexelcore.common.api.web.mojang.PlayerSkin;
+import org.bukkit.Bukkit;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.LinkedHashMap;
@@ -12,16 +13,18 @@ import java.util.UUID;
 public class CachedPlayer {
     private String name;
     private UUID uuid;
-    private PlayerSkin playerSkin;
+    private PlayerSkin playerSkin = new PlayerSkin("","");
     private long lastRefresh = System.currentTimeMillis();
     private long ttl = 86400000;
 
     public CachedPlayer() {}
     public CachedPlayer(UUID uuid) {
-        this.uuid = uuid;
+        //this.uuid = uuid;
+        this(Bukkit.getOfflinePlayer(uuid).getPlayerProfile());
     }
     public CachedPlayer(String name) {
-        this.name = name;
+        //this.name = name;
+        this(Bukkit.getOfflinePlayer(name).getPlayerProfile());
     }
 
     public CachedPlayer(PlayerProfile playerProfile) {

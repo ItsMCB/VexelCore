@@ -15,6 +15,7 @@ import org.geysermc.floodgate.api.player.FloodgatePlayer;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Optional;
+import java.util.Random;
 import java.util.UUID;
 
 public class CacheManager {
@@ -78,6 +79,9 @@ public class CacheManager {
     public CachedPlayer request(Player player) {
         return request(player.getUniqueId());
     }
+
+    private long oneDayTTL = 86400000;
+
     public CachedPlayer request(UUID uuid) {
         // Check if in cache
         ArrayList<CachedPlayer> cache = (ArrayList<CachedPlayer>) playerCacheConfig.get().getList("cache");
@@ -86,13 +90,25 @@ public class CacheManager {
             clearIfOld(optional.get());
             return optional.get();
         }
-        // Check if cached on server
+
+        // Create new cached player object
         CachedPlayer cachedPlayer = new CachedPlayer();
+        // Set TTL to be between 1 and 7 days. This ensures that the cache won't get invalidated at the same time thus avoiding rate limiting problems
+        cachedPlayer.setTTL(oneDayTTL+ oneDayTTL *new Random().nextInt(7));
+        // Check if cached on server
         OfflinePlayer offlinePlayer = Bukkit.getOfflinePlayer(uuid);
         if (offlinePlayer.hasPlayedBefore()) {
             cachedPlayer = new CachedPlayer(offlinePlayer.getPlayerProfile());
             cachedPlayer.setName(offlinePlayer.getName());
+            // Extend bedrock TTL if all data is present because data can't be fetched after they log off like Java
+            if (cachedPlayer.getPlayerSkin().hasValue() && cachedPlayer.getPlayerSkin().hasSignature()) {
+                cachedPlayer.setTTL(oneDayTTL*365);
+            } else {
+                // 1 min TTL
+                cachedPlayer.setTTL(oneDayTTL/24/60);
+            }
         }
+
         // Check if Bedrock or Java
         FloodgateApi api = FloodgateApi.getInstance();
         cachedPlayer.setUUID(uuid);
@@ -109,11 +125,7 @@ public class CacheManager {
             } else {
                 if (cachedPlayer.getName() == null) {
                     cachedPlayer.setName("Offline Bedrock Player");
-                } else {
-                    int oneMinMilliseconds = 60000;
-                    cachedPlayer.setTTL(oneMinMilliseconds);
                 }
-
             }
             // Set skin
             setSkin(cachedPlayer,Bukkit.getOfflinePlayer(uuid));
@@ -156,7 +168,7 @@ public class CacheManager {
 
     private void clearIfOld(CachedPlayer cachedPlayer) {
         if (System.currentTimeMillis()-cachedPlayer.getLastRefresh() > cachedPlayer.getTTL()) {
-            // if 3+ days old, remove
+            // Remove if old
             ArrayList<CachedPlayer> cache = (ArrayList<CachedPlayer>) playerCacheConfig.get().getList("cache");
             Optional<CachedPlayer> optional = cache.stream().filter(cap -> cap.getUUID().equals(cachedPlayer.getUUID())).findFirst();
             if (optional.isPresent()) {
