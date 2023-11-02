@@ -26,4 +26,8 @@ public class PlayerSkin {
     public boolean hasSignature() {
         return signature != null && !signature.isEmpty();
     }
+
+    public boolean isComplete() {
+        return hasValue() && hasSignature();
+    }
 }
