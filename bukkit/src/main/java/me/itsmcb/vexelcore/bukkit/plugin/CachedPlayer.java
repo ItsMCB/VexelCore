@@ -77,6 +77,10 @@ public class CachedPlayer {
         this.ttl = ttl;
     }
 
+    public boolean isComplete() {
+        return this.name != null && this.uuid != null && this.playerSkin.hasValue() && this.playerSkin.hasSignature();
+    }
+
     public static TypeAdapter<CachedPlayer> adapter = new TypeAdapter<>() {
 
         @NotNull
