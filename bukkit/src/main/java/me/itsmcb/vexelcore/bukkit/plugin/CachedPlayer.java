@@ -99,8 +99,12 @@ public class CachedPlayer {
         @Override
         public Map<Object, Object> serialize(@NotNull CachedPlayer p) {
             LinkedHashMap<Object, Object> lhm = new LinkedHashMap<>();
-            lhm.put("name", p.getName());
-            lhm.put("uuid", p.getUUID().toString());
+            if (p.getName() != null) {
+                lhm.put("name", p.getName());
+            }
+            if (p.getUUID() != null) {
+                lhm.put("uuid", p.getUUID().toString());
+            }
             lhm.put("last", p.getLastRefresh());
             lhm.put("llt",p.getTTL());
             if (p.playerSkin != null) {
@@ -115,7 +119,10 @@ public class CachedPlayer {
         public CachedPlayer deserialize(@NotNull Map<Object, Object> map) {
             CachedPlayer cachedPlayer = new CachedPlayer();
             cachedPlayer.setName((String) map.get("name"));
-            cachedPlayer.setUUID(UUID.fromString((String) map.get("uuid")));
+            String uuidStr = (String) map.get("uuid");
+            if (uuidStr != null) {
+                cachedPlayer.setUUID(UUID.fromString(uuidStr));
+            }
             cachedPlayer.setLastRefresh((long) map.get("last"));
             if (map.containsKey("ttl")) {
                 cachedPlayer.setTTL(Long.parseLong((String) map.get("llt")));

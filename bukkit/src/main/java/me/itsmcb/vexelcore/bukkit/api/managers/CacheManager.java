@@ -79,7 +79,7 @@ public class CacheManager {
 
     private Optional<CachedPlayer> get(UUID uuid) {
         ArrayList<CachedPlayer> cache = (ArrayList<CachedPlayer>) playerCacheConfig.get().getList("cache");
-        Optional<CachedPlayer> optional = cache.stream().filter(p -> p.getUUID().equals(uuid)).findFirst();
+        Optional<CachedPlayer> optional = cache.stream().filter(p -> p != null && p.getUUID() != null && p.getUUID().equals(uuid)).findFirst();
         optional.ifPresent(this::clearIfOld);
         return optional;
     }
@@ -98,11 +98,12 @@ public class CacheManager {
         // Check if cached on server
         if (offlinePlayer.hasPlayedBefore()) {
             cachedPlayer = new CachedPlayer(offlinePlayer.getPlayerProfile());
-            cachedPlayer.setName(offlinePlayer.getName());
-            cachedPlayer.setUUID(offlinePlayer.getUniqueId());
-        }
-        if (cachedPlayer.isComplete()) {
-            addToCache(cachedPlayer);
+            if (offlinePlayer.getName() != null) {
+                cachedPlayer.setName(offlinePlayer.getName());
+            }
+            if (offlinePlayer.getUniqueId().toString() != null) {
+                cachedPlayer.setUUID(offlinePlayer.getUniqueId());
+            }
         }
         return cachedPlayer;
     }
@@ -153,6 +154,7 @@ public class CacheManager {
             // Is Java
             PlayerInformation playerInformation = new PlayerInformation(uuid);
             cachedPlayer.setName(playerInformation.getName());
+            cachedPlayer.setUUID(uuid);
             cachedPlayer.setPlayerSkin(playerInformation.getPlayerSkin());
         }
         addToCache(cachedPlayer);
