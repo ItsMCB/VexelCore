@@ -182,7 +182,13 @@ public class CacheManager {
         if (System.currentTimeMillis()-cachedPlayer.getLastRefresh() > cachedPlayer.getTTL()) {
             // Remove if old
             ArrayList<CachedPlayer> cache = (ArrayList<CachedPlayer>) playerCacheConfig.get().getList("cache");
-            Optional<CachedPlayer> optional = cache.stream().filter(cap -> cap.getUUID().equals(cachedPlayer.getUUID())).findFirst();
+            cache.forEach(cps -> {
+                if (cps.getUUID() == null) {
+                    System.out.println("\n\nERROR ON CLEARIFOLD IN CACHEMANAGER: UUID NULL FOR "+cps.getName() + " | "+cps.getLastRefresh());
+                    cache.remove(cps);
+                }
+            });
+            Optional<CachedPlayer> optional = cache.stream().filter(cap -> cap.getUUID() != null && cap.getUUID().equals(cachedPlayer.getUUID())).findFirst();
             if (optional.isPresent()) {
                 cache.remove(optional.get());
             }
