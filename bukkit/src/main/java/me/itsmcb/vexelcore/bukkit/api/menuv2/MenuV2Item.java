@@ -44,9 +44,10 @@ public class MenuV2Item extends ItemStack {
     }
 
     public MenuV2Item createNewCopy() {
-        this.uuid = UUID.randomUUID();
-        replaceData(new MenuV2ItemData(MenuV2Manager.menuSystemIdKey, uuid.toString()));
-        return this;
+        MenuV2Item newItem = this;
+        newItem.uuid = UUID.randomUUID();
+        newItem.replaceData(new MenuV2ItemData(MenuV2Manager.menuSystemIdKey, uuid.toString()));
+        return newItem;
     }
 
     public MenuV2Item shouldUpdate(boolean answer) {
