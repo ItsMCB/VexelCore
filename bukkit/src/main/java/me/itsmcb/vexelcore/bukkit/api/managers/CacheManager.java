@@ -50,8 +50,7 @@ public class CacheManager {
             return fileData.get();
         }
         // From server cache or API
-        CachedPlayer cachedPlayer = new CachedPlayer(name);
-        cachedPlayer.finishIfNotCompleted();
+        CachedPlayer cachedPlayer = new CachedPlayer(name).finishIfNotCompleted();
         addToCache(cachedPlayer);
         return cachedPlayer;
     }
@@ -67,13 +66,15 @@ public class CacheManager {
             return fileData.get();
         }
         // From server cache or API
-        CachedPlayer cachedPlayer = new CachedPlayer(uuid);
-        cachedPlayer.finishIfNotCompleted();
+        CachedPlayer cachedPlayer = new CachedPlayer(uuid).finishIfNotCompleted();
         addToCache(cachedPlayer);
         return cachedPlayer;
     }
 
     private void addToCache(CachedPlayer cachedPlayer) {
+        if (!cachedPlayer.isComplete()) {
+            return;
+        }
         ArrayList<CachedPlayer> cache = (ArrayList<CachedPlayer>) playerCacheConfig.get().getList("cache");
         // Set TTL to be between 1 and 30 days. This ensures that the cache won't get invalidated at the same time thus avoiding rate limiting problems
         if (cachedPlayer.getTTL() == CachedPlayer.defaultTTL) {

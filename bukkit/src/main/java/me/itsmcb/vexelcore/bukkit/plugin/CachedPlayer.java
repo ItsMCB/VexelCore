@@ -35,6 +35,7 @@ public class CachedPlayer {
             "R+6skz5tHQtnqqsSZyEAWIFSejKFcGoBynqR5SymlzLefLPwFL1JsbXJkpsAg2HR4jSvXoUl45AeyQ8rIET+D0d0S1W6zhlPqLYikl8GVuKgsUV+DuTLTWSXLq8sub/n3+HjivHjLZSN5udJdI9J4iA0QNwe/ftdutut1p5cRW65nbb0kPAedFM+VoWzICXHhPa6aFOC36pqI1ZJVThm+xhDHo0U0MUID/gA98va4xkGB2AWyUn3fxDTjA1IQ1ItDnDNJoXQv3+Duce+ZakaSjkZGReApE4Q/ygsGWRiOHquJpGS6fXAaPga2LbNX8lVXxgfkKfnu4TmnqxPwie0TZMxIPHoGPt9vnepRS/JFH3A12OqUHlLBEigtNRWQqeTlVJsX0+Gy16DVmguSPh7St3Y3zjuwUe0C3zyuBiMuqHBjYRwagQ0UhwmIZlCsYQYahUv2XroxguBaLwhnvb/WEcDaYqj23IViMUhsHbu0h02l+qIvG98OVXW8ZbY6gcFTF3a7+uFsmqKmiSkeCT9vUU9HWkhVqeRmdq1vI9Uq/FQRcW4KSSWMuSVk+8u0nM15lJWddqgtkJVVJxEoYWja1zIOmgXBxpXZHpkNCM8NHixWQt9bnsEABLyP9lwgL9zpkFDAo8WDPS1wWDAUhmpx0yh/9JrXWz5exoizATebLQ="
     );
     public static String incompleteOfflineBedrockPlayerName = "Unavailable Bedrock Player";
+    public static String incompleteOfflineJavaPlayerName = "Name Unavailable";
     public static UUID notchUUID = UUID.fromString("069a79f4-44e9-4726-a5be-fca90e38aaf5");
     public static PlayerSkin incompletePlayerSkin = new PlayerSkin("ewogICJ0aW1lc3RhbXAiIDogMTY5ODkyODg5ODkzMywKICAicHJvZmlsZUlkIiA6ICJlN2E3MzZhMjFlM2I0YzA2YmVhOGVmMjVmODg0MmJhZiIsCiAgInByb2ZpbGVOYW1lIiA6ICJKZWVwMDIwNiIsCiAgInNpZ25hdHVyZVJlcXVpcmVkIiA6IHRydWUsCiAgInRleHR1cmVzIiA6IHsKICAgICJTS0lOIiA6IHsKICAgICAgInVybCIgOiAiaHR0cDovL3RleHR1cmVzLm1pbmVjcmFmdC5uZXQvdGV4dHVyZS82YWYyMTVhNDdhMjUwZDA5YTI5MDY4YTRmNGQzNzBkMWNlNzAzY2Y2ZDczYzA5YWFlNGNlOTI3ZTIwODFkZmIxIiwKICAgICAgIm1ldGFkYXRhIiA6IHsKICAgICAgICAibW9kZWwiIDogInNsaW0iCiAgICAgIH0KICAgIH0KICB9Cn0=","jYpDbz/V9MTyJgPdyh+vDFh8qxXTmpTixknx25DtzzqK4ZU3El6xumKAQF89/rVXGi3AlAF4K50clHmqZX6/o7edaoVMh5Emqethh8M8De3ybiFv5yTTRdtganq5Iusax+wvzOZkYpzDpyNxCChKk2nM99+q/bb3AM9Cxd/cLal3n6Ct2qaM0BqsO8wdIbOSObdoF1S90W4MNjVtspD0IYKobAtzhGXHA7/NwIU7zVX6wnyggRBHORxZmpVTqz0Fr8ZuED8AaN+Jqj/dJa8IwYPQ6VJxIVY0eDmg8TtGah9/hQLVPNqK9ahWYLIhe/x34Xae+iccXJNq5e0OtJPWuK+cm6ywjwpeU4cj81EqWfDznVAoK2u92W1pKsn3v9yenZu17ySre6ehZD4GDi4hUBFIJSNMMNhukwhohdHfoNzbVUH3vUnEsl8GPJK+L+5x/cim0icXsGIsO8QSnTFW0oKU8rClZA0xtvbSAukUPt9bmCs/jGSgq+sqoKJk3pGCwpWTgjaSoKzIqWvX/VUtQOakalmIjlHCA295Srvpn3a4Gi627y+U0fG48As00snou2X7QJt1UshDbjczKAYeLjRVW/YH9DHGytQJ4+lFdXLU/EmV60EdTrzsFWOJSQUZ/39uEdRzE1QQAgZIGptPbsdlo1N5lv3mDVkDtAN5WB0=");
 
@@ -58,27 +59,30 @@ public class CachedPlayer {
             isBedrock = true;
             try {
                 setUUID(api.getUuidFor(name.substring(api.getPlayerPrefix().length())).get());
-                if (isComplete()) {
-                    return this;
-                }
             } catch(Exception e) {
                 e.printStackTrace();
             }
-        }
-        // Floodgate UUID check
-        if (api.isFloodgateId(uuid)) { // Is Bedrock
-            isBedrock = true;
-            // Set username
-            FloodgatePlayer floodgatePlayer = api.getPlayer(uuid);
-            String javaUsername = "";
-            if (floodgatePlayer != null) {
-                javaUsername = floodgatePlayer.getJavaUsername();
-                if (javaUsername != null) {
-                    setName(floodgatePlayer.getJavaUsername());
-                } else {
-                    setName(incompleteOfflineBedrockPlayerName);
+        } else {
+            // Floodgate UUID check
+            if (api.isFloodgateId(uuid)) { // Is Bedrock
+                isBedrock = true;
+                // Set username
+                FloodgatePlayer floodgatePlayer = api.getPlayer(uuid);
+                String javaUsername = "";
+                if (floodgatePlayer != null) {
+                    javaUsername = floodgatePlayer.getJavaUsername();
+                    if (javaUsername != null) {
+                        setName(floodgatePlayer.getJavaUsername());
+                    } else {
+                        if (getName() == null ) {
+                            setName(incompleteOfflineBedrockPlayerName);
+                        }
+                    }
                 }
             }
+        }
+        if (isBedrock) {
+            setTTL(defaultTTL*365);
         }
         if (isComplete()) {
             return this;
@@ -96,7 +100,7 @@ public class CachedPlayer {
             setPlayerSkin(playerInformation.getPlayerSkin());
         }
         if (name == null) {
-            setName("Name Unavailable");
+            setName(incompleteOfflineJavaPlayerName);
         }
         if (uuid == null) {
             setUUID(notchUUID);
@@ -148,7 +152,7 @@ public class CachedPlayer {
     }
 
     public boolean isComplete() {
-        return this.name != null && !this.name.equals(incompleteOfflineBedrockPlayerName) && this.uuid != null && this.playerSkin.hasValue() && this.playerSkin.hasSignature() && this.playerSkin != bedrockDefault && this.playerSkin != incompletePlayerSkin;
+        return this.name != null && !this.name.equals(incompleteOfflineBedrockPlayerName) && !this.name.equals(incompleteOfflineJavaPlayerName) && this.uuid != null && this.playerSkin.hasValue() && this.playerSkin.hasSignature() && this.playerSkin != bedrockDefault && this.playerSkin != incompletePlayerSkin;
     }
 
     public static TypeAdapter<CachedPlayer> adapter = new TypeAdapter<>() {

@@ -43,6 +43,11 @@ public class MenuV2Item extends ItemStack {
         addData(new MenuV2ItemData(MenuV2Manager.menuSystemIdKey, uuid.toString()));
     }
 
+    public MenuV2Item material(Material material) {
+        this.setType(material);
+        return this;
+    }
+
     public MenuV2Item createNewCopy() {
         MenuV2Item newItem = this;
         newItem.uuid = UUID.randomUUID();
