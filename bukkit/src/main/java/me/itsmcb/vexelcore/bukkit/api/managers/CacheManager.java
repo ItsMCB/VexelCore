@@ -29,150 +29,56 @@ public class CacheManager {
         this.playerCacheConfig = new BoostedConfig(new File(plugin.getDataFolder().getParentFile()+File.separator+"VexelCore"),"player_cache",null,standardSerializer);
     }
 
-    public CachedPlayer request(String name) {
-        CachedPlayer cachedPlayer = getPlayer(name);
-        if (cachedPlayer.getName() != null && cachedPlayer.getUUID() != null) {
-            addToCache(cachedPlayer);
-        }
-        return cachedPlayer;
-    }
-
-    private CachedPlayer getPlayer(String name) {
-        // Check if in cache
-        Optional<CachedPlayer> optional = get(name);
-        if (optional.isPresent()) {
-            return optional.get();
-        }
-        // Create new cached player object
-        CachedPlayer cachedPlayer = createCacheFromBukkitCache(Bukkit.getOfflinePlayer(name));
-        if (cachedPlayer.isComplete()) {
-            return cachedPlayer;
-        }
-        // Information is missing. Call Mojang or Floodgate API
-        // Determine if Bedrock or Java
-        FloodgateApi api = FloodgateApi.getInstance();
-        cachedPlayer.setName(name);
-        if (name.contains(api.getPlayerPrefix())) {
-            // Is Bedrock
-            try {
-                // Set UUID
-                cachedPlayer.setUUID(api.getUuidFor(name.substring(api.getPlayerPrefix().length())).get());
-                // Set skin
-                cachedPlayer.setBedrockSkin();
-            } catch(Exception e) {
-                e.printStackTrace();
-            }
-        } else {
-            // Is Java
-            PlayerInformation playerInformation = new PlayerInformation(name);
-            cachedPlayer.setUUID(playerInformation.getUuid());
-            cachedPlayer.setPlayerSkin(playerInformation.getPlayerSkin());
-        }
-        return cachedPlayer;
-    }
-
-    public CachedPlayer request(Player player) {
-        return request(player.getUniqueId());
-    }
-
-    private long oneDayTTL = 86400000;
-
-    private Optional<CachedPlayer> get(UUID uuid) {
-        ArrayList<CachedPlayer> cache = (ArrayList<CachedPlayer>) playerCacheConfig.get().getList("cache");
-        Optional<CachedPlayer> optional = cache.stream().filter(p -> p != null && p.getUUID() != null && p.getUUID().equals(uuid)).findFirst();
-        optional.ifPresent(this::clearIfOld);
-        return optional;
-    }
-
-    private Optional<CachedPlayer> get(String name) {
+    private Optional<CachedPlayer> getFromFile(String name) {
         ArrayList<CachedPlayer> cache = (ArrayList<CachedPlayer>) playerCacheConfig.get().getList("cache");
         Optional<CachedPlayer> optional = cache.stream().filter(p -> p.getName().equalsIgnoreCase(name)).findFirst();
         optional.ifPresent(this::clearIfOld);
         return optional;
     }
 
-    private CachedPlayer createCacheFromBukkitCache(OfflinePlayer offlinePlayer) {
-        CachedPlayer cachedPlayer = new CachedPlayer();
-        // Set TTL to be between 1 and 7 days. This ensures that the cache won't get invalidated at the same time thus avoiding rate limiting problems
-        cachedPlayer.setTTL(oneDayTTL+ oneDayTTL *new Random().nextInt(7));
-        // Check if cached on server
-        if (offlinePlayer.hasPlayedBefore()) {
-            cachedPlayer = new CachedPlayer(offlinePlayer.getPlayerProfile());
-            if (offlinePlayer.getName() != null) {
-                cachedPlayer.setName(offlinePlayer.getName());
-            }
-            if (offlinePlayer.getUniqueId().toString() != null) {
-                cachedPlayer.setUUID(offlinePlayer.getUniqueId());
-            }
-        }
-        return cachedPlayer;
+    private Optional<CachedPlayer> getFromFile(UUID uuid) {
+        ArrayList<CachedPlayer> cache = (ArrayList<CachedPlayer>) playerCacheConfig.get().getList("cache");
+        Optional<CachedPlayer> optional = cache.stream().filter(p -> p.getUUID().equals(uuid)).findFirst();
+        optional.ifPresent(this::clearIfOld);
+        return optional;
     }
 
-    private void setFloodgateTTLIfComplete(CachedPlayer cachedPlayer) {
-        // Extend bedrock TTL if all data is present because data can't be fetched after they log off like Java
-        if (cachedPlayer.isComplete()) {
-            cachedPlayer.setTTL(oneDayTTL*365);
-        } else {
-            // 1 min TTL
-            cachedPlayer.setTTL(oneDayTTL/24/60);
+    public CachedPlayer get(String name) {
+        // From file
+        Optional<CachedPlayer> fileData = getFromFile(name);
+        if (fileData.isPresent()) {
+            return fileData.get();
         }
-    }
-
-    public CachedPlayer request(UUID uuid) {
-        // Check if in cache
-        Optional<CachedPlayer> optional = get(uuid);
-        if (optional.isPresent()) {
-            return optional.get();
-        }
-        // Create new cached player object
-        CachedPlayer cachedPlayer = createCacheFromBukkitCache(Bukkit.getOfflinePlayer(uuid));
-        if (cachedPlayer.isComplete()) {
-            return cachedPlayer;
-        }
-        // Information is missing. Call Mojang or Floodgate API
-        // Determine if Bedrock or Java
-        FloodgateApi api = FloodgateApi.getInstance();
-        //cachedPlayer.setUUID(uuid);
-        if (api.isFloodgateId(uuid)) { // Is Bedrock
-            // Set username
-            FloodgatePlayer floodgatePlayer = api.getPlayer(uuid);
-            String javaUsername = "Offline Bedrock Player";
-            if (floodgatePlayer != null) {
-                javaUsername = floodgatePlayer.getJavaUsername();
-            }
-            if (floodgatePlayer != null && javaUsername != null) {
-                cachedPlayer.setName(floodgatePlayer.getJavaUsername());
-            } else {
-                if (cachedPlayer.getName() == null) {
-                    cachedPlayer.setName("Offline Bedrock Player");
-                }
-            }
-            // Set skin
-            cachedPlayer.setBedrockSkin();
-            setFloodgateTTLIfComplete(cachedPlayer);
-        } else {
-            // Is Java
-            PlayerInformation playerInformation = new PlayerInformation(uuid);
-            cachedPlayer.setName(playerInformation.getName());
-            cachedPlayer.setUUID(uuid);
-            cachedPlayer.setPlayerSkin(playerInformation.getPlayerSkin());
-        }
+        // From server cache or API
+        CachedPlayer cachedPlayer = new CachedPlayer(name);
+        cachedPlayer.finishIfNotCompleted();
         addToCache(cachedPlayer);
         return cachedPlayer;
     }
 
-    public boolean isValid(String name) {
-        CachedPlayer cachedPlayer = getPlayer(name);
-        if (cachedPlayer.getUUID() != null) {
-            return true;
-        }
-        PlayerInformation playerInformation = new PlayerInformation(name);
-        return playerInformation.isValid();
+    public CachedPlayer get(OfflinePlayer offlinePlayer) {
+        return get(offlinePlayer.getUniqueId());
     }
 
+    public CachedPlayer get(UUID uuid) {
+        // From file
+        Optional<CachedPlayer> fileData = getFromFile(uuid);
+        if (fileData.isPresent()) {
+            return fileData.get();
+        }
+        // From server cache or API
+        CachedPlayer cachedPlayer = new CachedPlayer(uuid);
+        cachedPlayer.finishIfNotCompleted();
+        addToCache(cachedPlayer);
+        return cachedPlayer;
+    }
 
     private void addToCache(CachedPlayer cachedPlayer) {
         ArrayList<CachedPlayer> cache = (ArrayList<CachedPlayer>) playerCacheConfig.get().getList("cache");
+        // Set TTL to be between 1 and 30 days. This ensures that the cache won't get invalidated at the same time thus avoiding rate limiting problems
+        if (cachedPlayer.getTTL() == CachedPlayer.defaultTTL) {
+            cachedPlayer.setTTL(CachedPlayer.defaultTTL+ CachedPlayer.defaultTTL * new Random().nextInt(30));
+        }
         cache.add(cachedPlayer);
         playerCacheConfig.get().set("cache",cache);
         playerCacheConfig.save();
