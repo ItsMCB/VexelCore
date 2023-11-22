@@ -83,6 +83,12 @@ public class MenuV2Item extends ItemStack {
         return this;
     }
 
+    public MenuV2Item clickAction(Consumer<InventoryClickEvent> clickAction) {
+        rightClickAction(clickAction);
+        leftClickAction(clickAction);
+        return this;
+    }
+
     public boolean isMovable() {
         return this.movable;
     }
