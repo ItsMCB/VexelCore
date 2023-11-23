@@ -11,6 +11,7 @@ import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 
@@ -44,8 +45,32 @@ public class BukkitMsgBuilder extends CommonMsgBuilder implements ConfigurationS
 
     public void sendAll() {
         for (Player onlinePlayer : Bukkit.getOnlinePlayers()) {
-            onlinePlayer.sendMessage(new CustomMsg(this).get());
+            send(onlinePlayer);
         }
+    }
+
+    public void sendAllExcept(@NotNull List<Player> excluded) {
+        for (Player onlinePlayer : Bukkit.getOnlinePlayers()) {
+            if (!excluded.contains(onlinePlayer)) {
+                send(onlinePlayer);
+            }
+        }
+    }
+
+    public void sendAllExcept(@NotNull Player excluded) {
+        sendAllExcept(List.of(excluded));
+    }
+
+    public void sendOnly(@NotNull List<Player> included) {
+        for (Player onlinePlayer : Bukkit.getOnlinePlayers()) {
+            if (included.contains(onlinePlayer)) {
+                send(onlinePlayer);
+            }
+        }
+    }
+
+    public void sendOnly(@NotNull Player included) {
+        sendOnly(List.of(included));
     }
 
     @Override

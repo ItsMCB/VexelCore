@@ -13,6 +13,9 @@ public class LocationUtils {
     }
 
     public static String getAsString(Location location, LocationStringStyle style) {
+        if (location == null) {
+            return "No Location";
+        }
         switch (style) {
             case SEMICOLON -> {
                 return location.getBlockX()+";"+ location.getBlockY()+";"+ location.getBlockZ();

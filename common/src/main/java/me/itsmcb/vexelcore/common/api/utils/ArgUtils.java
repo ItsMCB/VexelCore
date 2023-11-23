@@ -5,13 +5,20 @@ import java.util.Arrays;
 public class ArgUtils {
 
     /**
+     * Removes by the amount provided
+     */
+    public static String[] shift(String[] args, int amount) {
+        if (2 > args.length) {
+            return args;
+        }
+        return Arrays.copyOfRange(args,amount,args.length);
+    }
+
+    /**
      * Removes the first element
      */
     public static String[] shift(String[] args) {
-        if (2 > args.length) {
-            return new String[] {};
-        }
-        return Arrays.copyOfRange(args,1,args.length);
+        return shift(args,1);
     }
 
 
@@ -23,5 +30,12 @@ public class ArgUtils {
             return new String[] {};
         }
         return Arrays.copyOfRange(args,0,args.length-1);
+    }
+
+    /**
+     * Get a string from the arguments
+     */
+    public static String mergeWithSpace(String[] args, int startIndex) {
+        return String.join(" ",shift(args, startIndex));
     }
 }
