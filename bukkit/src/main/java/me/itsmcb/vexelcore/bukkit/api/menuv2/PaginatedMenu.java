@@ -88,6 +88,12 @@ public class PaginatedMenu extends MenuV2 {
     }
 
     @Override
+    public PaginatedMenu clickCloseMenu(boolean bool) {
+        super.clickCloseMenu(bool);
+        return this;
+    }
+
+    @Override
     public void setInventoryItems(Player player) {
         if (getPreviousMenu() != null) {
             // Show back arrow

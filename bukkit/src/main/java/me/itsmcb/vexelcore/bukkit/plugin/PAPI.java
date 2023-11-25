@@ -45,6 +45,10 @@ public class PAPI extends PlaceholderExpansion {
             String input = params.replace("player_brand_by_uuid_", "");
             return instance.getProxyManager().getPlayerBrand(UUID.fromString(input));
         }
+        if (params.contains("cachedplayer_complete_")) {
+            String input = params.replace("cachedplayer_complete_", "");
+            return new CachedPlayer(input).isComplete()+"";
+        }
         return null;
     }
 }
