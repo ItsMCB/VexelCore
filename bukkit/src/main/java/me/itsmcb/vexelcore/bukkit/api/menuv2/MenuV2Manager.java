@@ -98,16 +98,14 @@ public class MenuV2Manager implements Listener {
         // Update player inventory to prevent client-side glitches
         player.updateInventory();
         if (event.getClick().isRightClick() && item.getRightClickAction() != null) {
-            if (menu.shouldClickCloseMenu()) {
-                player.closeInventory();
-            }
             item.getRightClickAction().accept(event);
         }
         if (event.getClick().isLeftClick() && item.getLeftClickAction() != null) {
-            if (menu.shouldClickCloseMenu()) {
-                player.closeInventory();
-            }
             item.getLeftClickAction().accept(event);
+        }
+        // If still viewing menu because a new one didn't open, check closing click
+        if (menu.shouldClickCloseMenu() && !event.getInventory().getViewers().isEmpty()) {
+            player.closeInventory();
         }
     }
 

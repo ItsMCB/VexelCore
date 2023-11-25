@@ -58,7 +58,9 @@ public class MenuV2 {
     public MenuV2 setPreviousMenu(MenuV2 previousMenu) {
         this.previousMenu = previousMenu;
         if (manager == null) {
-            manager = previousMenu.getManager();
+            if (previousMenu != null) {
+                manager = previousMenu.getManager();
+            }
         }
         return this;
     }
