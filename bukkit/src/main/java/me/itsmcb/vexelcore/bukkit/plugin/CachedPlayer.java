@@ -98,7 +98,6 @@ public class CachedPlayer {
             setName(playerInformation.getName());
             setUUID(playerInformation.getUuid());
             setPlayerSkin(playerInformation.getPlayerSkin());
-            System.out.println("Player info setting done! | " +isComplete());
         }
         if (name == null) {
             setName(incompleteOfflineJavaPlayerName);
