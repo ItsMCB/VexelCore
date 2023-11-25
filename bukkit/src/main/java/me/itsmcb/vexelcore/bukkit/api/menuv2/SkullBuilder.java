@@ -2,6 +2,7 @@ package me.itsmcb.vexelcore.bukkit.api.menuv2;
 
 import com.destroystokyo.paper.profile.PlayerProfile;
 import com.destroystokyo.paper.profile.ProfileProperty;
+import me.itsmcb.vexelcore.bukkit.plugin.CachedPlayer;
 import me.itsmcb.vexelcore.common.api.web.mojang.PlayerInformation;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.TextComponent;
@@ -28,6 +29,12 @@ public class SkullBuilder extends MenuV2Item {
         super(Material.PLAYER_HEAD);
         this.texture = texture;
         this.signature = signature;
+    }
+
+    public SkullBuilder(CachedPlayer cachedPlayer) {
+        super(Material.PLAYER_HEAD);
+        this.texture = cachedPlayer.getPlayerSkin().getValue();
+        this.signature = cachedPlayer.getPlayerSkin().getSignature();
     }
 
     public SkullBuilder(Player player) {
