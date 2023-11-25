@@ -55,16 +55,21 @@ public class MenuV2 {
         this.size = size;
     }
 
-    public void setPreviousMenu(MenuV2 previousMenu) {
+    public MenuV2 setPreviousMenu(MenuV2 previousMenu) {
         this.previousMenu = previousMenu;
+        if (manager == null) {
+            manager = previousMenu.getManager();
+        }
+        return this;
     }
 
     public MenuV2 getPreviousMenu() {
         return previousMenu;
     }
 
-    public void setManager(MenuV2Manager manager) {
+    public MenuV2 setManager(MenuV2Manager manager) {
         this.manager = manager;
+        return this;
     }
 
     public MenuV2Manager getManager() {

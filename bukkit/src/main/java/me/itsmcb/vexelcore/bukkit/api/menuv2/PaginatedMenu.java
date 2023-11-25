@@ -75,7 +75,17 @@ public class PaginatedMenu extends MenuV2 {
         return true;
     }
 
+    @Override
+    public PaginatedMenu setPreviousMenu(MenuV2 previousMenu) {
+        super.setPreviousMenu(previousMenu);
+        return this;
+    }
 
+    @Override
+    public PaginatedMenu setManager(MenuV2Manager manager) {
+        super.setManager(manager);
+        return this;
+    }
 
     @Override
     public void setInventoryItems(Player player) {
