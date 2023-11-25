@@ -204,9 +204,11 @@ public class MenuV2Item extends ItemStack {
     }
 
     public ItemStack getCleanItemStack() {
-        ItemStack itemStack = this.clone();
-        itemStack.getItemMeta().getPersistentDataContainer().remove(MenuV2Manager.menuSystemIdKey);
-        return itemStack;
+        ItemStack is = new ItemStack(this);
+        ItemMeta im = is.getItemMeta();
+        im.getPersistentDataContainer().remove(MenuV2Manager.menuSystemIdKey);
+        is.setItemMeta(im);
+        return is;
     }
 
     public MenuV2Item update() {
