@@ -2,6 +2,7 @@ package me.itsmcb.vexelcore.bukkit.api.utils;
 
 import com.destroystokyo.paper.profile.PlayerProfile;
 import com.destroystokyo.paper.profile.ProfileProperty;
+import me.itsmcb.vexelcore.bukkit.api.managers.CacheManager;
 import me.itsmcb.vexelcore.bukkit.plugin.CachedPlayer;
 import me.itsmcb.vexelcore.common.api.web.mojang.OnlinePlayerSkin;
 import org.bukkit.Bukkit;
@@ -13,12 +14,12 @@ import org.bukkit.scheduler.BukkitRunnable;
 
 public class PlayerUtils {
 
-    public static boolean isValid(String name) {
-        OfflinePlayer offlinePlayer = Bukkit.getOfflinePlayer(name);
-        if (offlinePlayer.isOnline() || offlinePlayer.hasPlayedBefore()) {
+    public static boolean isValid(String name, CacheManager cacheManager) {
+        OfflinePlayer offlinePlayer = Bukkit.getOfflinePlayerIfCached(name);
+        if (offlinePlayer != null && (offlinePlayer.isOnline() || offlinePlayer.hasPlayedBefore())) {
             return true;
         }
-        CachedPlayer cachedPlayer = new CachedPlayer(name);
+        CachedPlayer cachedPlayer = cacheManager.get(name);
         cachedPlayer.finishIfNotCompleted();
         return cachedPlayer.isComplete();
     }
