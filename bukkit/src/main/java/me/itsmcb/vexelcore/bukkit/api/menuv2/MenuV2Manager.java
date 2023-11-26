@@ -140,14 +140,12 @@ public class MenuV2Manager implements Listener {
     }
 
     public void open(MenuV2 menu, Player player) {
-        System.out.println("Setting manager");
         menu.setManager(this);
         menus.add(menu);
         player.openInventory(menu.generate(player));
     }
 
     public void open(MenuV2 menu, Player player, MenuV2 previousMenu) {
-        System.out.println("Setting pm");
         menu.setPreviousMenu(previousMenu);
         open(menu,player);
     }
