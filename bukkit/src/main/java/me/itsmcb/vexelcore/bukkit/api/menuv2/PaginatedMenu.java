@@ -95,14 +95,14 @@ public class PaginatedMenu extends MenuV2 {
 
     @Override
     public void setInventoryItems(Player player) {
-        if (getPreviousMenu() != null) {
+        if (super.getPreviousMenu() != null) {
             // Show back arrow
             String arrowBack = "eyJ0ZXh0dXJlcyI6eyJTS0lOIjp7InVybCI6Imh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvYmU5YWU3YTRiZTY1ZmNiYWVlNjUxODEzODlhMmY3ZDQ3ZTJlMzI2ZGI1OWVhM2ViNzg5YTkyYzg1ZWE0NiJ9fX0";
             addStaticItem(new MenuButton(arrowBack)
                     .name("&r&d&lBack")
                     .slot(super.getSize()-5)
                     .leftClickAction(event -> {
-                        getManager().open(getPreviousMenu(),player,this);
+                        getManager().open(super.getPreviousMenu(),player,this);
                     }));
         } else {
             addStaticItem(new MenuV2Item(Material.BLACK_STAINED_GLASS_PANE).name("&7").slot(super.getSize()-5));
