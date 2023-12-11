@@ -25,6 +25,7 @@ public class CachedPlayer {
     public CachedPlayer() {}
     public CachedPlayer(UUID uuid) {
         this(Bukkit.getOfflinePlayer(uuid).getPlayerProfile());
+        this.uuid = uuid;
     }
     public CachedPlayer(String name) {
         this(Bukkit.getOfflinePlayer(name).getPlayerProfile());
@@ -40,10 +41,16 @@ public class CachedPlayer {
     public static PlayerSkin incompletePlayerSkin = new PlayerSkin("ewogICJ0aW1lc3RhbXAiIDogMTY5ODkyODg5ODkzMywKICAicHJvZmlsZUlkIiA6ICJlN2E3MzZhMjFlM2I0YzA2YmVhOGVmMjVmODg0MmJhZiIsCiAgInByb2ZpbGVOYW1lIiA6ICJKZWVwMDIwNiIsCiAgInNpZ25hdHVyZVJlcXVpcmVkIiA6IHRydWUsCiAgInRleHR1cmVzIiA6IHsKICAgICJTS0lOIiA6IHsKICAgICAgInVybCIgOiAiaHR0cDovL3RleHR1cmVzLm1pbmVjcmFmdC5uZXQvdGV4dHVyZS82YWYyMTVhNDdhMjUwZDA5YTI5MDY4YTRmNGQzNzBkMWNlNzAzY2Y2ZDczYzA5YWFlNGNlOTI3ZTIwODFkZmIxIiwKICAgICAgIm1ldGFkYXRhIiA6IHsKICAgICAgICAibW9kZWwiIDogInNsaW0iCiAgICAgIH0KICAgIH0KICB9Cn0=","jYpDbz/V9MTyJgPdyh+vDFh8qxXTmpTixknx25DtzzqK4ZU3El6xumKAQF89/rVXGi3AlAF4K50clHmqZX6/o7edaoVMh5Emqethh8M8De3ybiFv5yTTRdtganq5Iusax+wvzOZkYpzDpyNxCChKk2nM99+q/bb3AM9Cxd/cLal3n6Ct2qaM0BqsO8wdIbOSObdoF1S90W4MNjVtspD0IYKobAtzhGXHA7/NwIU7zVX6wnyggRBHORxZmpVTqz0Fr8ZuED8AaN+Jqj/dJa8IwYPQ6VJxIVY0eDmg8TtGah9/hQLVPNqK9ahWYLIhe/x34Xae+iccXJNq5e0OtJPWuK+cm6ywjwpeU4cj81EqWfDznVAoK2u92W1pKsn3v9yenZu17ySre6ehZD4GDi4hUBFIJSNMMNhukwhohdHfoNzbVUH3vUnEsl8GPJK+L+5x/cim0icXsGIsO8QSnTFW0oKU8rClZA0xtvbSAukUPt9bmCs/jGSgq+sqoKJk3pGCwpWTgjaSoKzIqWvX/VUtQOakalmIjlHCA295Srvpn3a4Gi627y+U0fG48As00snou2X7QJt1UshDbjczKAYeLjRVW/YH9DHGytQJ4+lFdXLU/EmV60EdTrzsFWOJSQUZ/39uEdRzE1QQAgZIGptPbsdlo1N5lv3mDVkDtAN5WB0=");
 
     public CachedPlayer(PlayerProfile playerProfile) {
-        setName(playerProfile.getName());
-        setUUID(playerProfile.getId());
+        String playerProfileName = playerProfile.getName();
+        if (playerProfileName != null && !playerProfileName.isEmpty()) {
+            setName(playerProfile.getName());
+        }
+        UUID playerUUID = playerProfile.getId();
+        if (playerUUID != null) {
+            setUUID(playerProfile.getId());
+        }
         playerProfile.getProperties().forEach(profileProperty -> {
-            if (profileProperty.getName().equals("textures")) {
+            if (profileProperty.getSignature() != null) {
                 setPlayerSkin(new PlayerSkin(profileProperty.getValue(),profileProperty.getSignature()));
             }
         });
@@ -64,11 +71,11 @@ public class CachedPlayer {
             }
         } else {
             // Floodgate UUID check
-            if (api.isFloodgateId(uuid)) { // Is Bedrock
+            if (uuid != null && api.isFloodgateId(uuid)) { // Is Bedrock
                 isBedrock = true;
                 // Set username
                 FloodgatePlayer floodgatePlayer = api.getPlayer(uuid);
-                String javaUsername = "";
+                String javaUsername;
                 if (floodgatePlayer != null) {
                     javaUsername = floodgatePlayer.getJavaUsername();
                     if (javaUsername != null) {
@@ -153,6 +160,10 @@ public class CachedPlayer {
 
     public boolean isComplete() {
         return this.name != null && !this.name.equals(incompleteOfflineBedrockPlayerName) && !this.name.equals(incompleteOfflineJavaPlayerName) && this.uuid != null && this.playerSkin.hasValue() && this.playerSkin.hasSignature() && this.playerSkin != bedrockDefault && this.playerSkin != incompletePlayerSkin;
+    }
+
+    public String debug() {
+        return "--==== Profile of "+getName()+" ====--\nUUID: "+getUUID()+"Skin Complete: "+getPlayerSkin().isComplete();
     }
 
     public static TypeAdapter<CachedPlayer> adapter = new TypeAdapter<>() {

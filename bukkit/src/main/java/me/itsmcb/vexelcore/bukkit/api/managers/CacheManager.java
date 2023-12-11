@@ -3,14 +3,9 @@ package me.itsmcb.vexelcore.bukkit.api.managers;
 import dev.dejvokep.boostedyaml.serialization.standard.StandardSerializer;
 import me.itsmcb.vexelcore.bukkit.plugin.CachedPlayer;
 import me.itsmcb.vexelcore.common.api.config.BoostedConfig;
-import me.itsmcb.vexelcore.common.api.web.mojang.PlayerInformation;
-import me.itsmcb.vexelcore.common.api.web.mojang.PlayerSkin;
-import org.bukkit.Bukkit;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.java.JavaPlugin;
-import org.geysermc.floodgate.api.FloodgateApi;
-import org.geysermc.floodgate.api.player.FloodgatePlayer;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -32,14 +27,18 @@ public class CacheManager {
     private Optional<CachedPlayer> getFromFile(String name) {
         ArrayList<CachedPlayer> cache = (ArrayList<CachedPlayer>) playerCacheConfig.get().getList("cache");
         Optional<CachedPlayer> optional = cache.stream().filter(p -> p.getName().equalsIgnoreCase(name)).findFirst();
-        optional.ifPresent(this::clearIfOld);
+        optional.ifPresent(p -> {
+            clearIfOld(p,false);
+        });
         return optional;
     }
 
     private Optional<CachedPlayer> getFromFile(UUID uuid) {
         ArrayList<CachedPlayer> cache = (ArrayList<CachedPlayer>) playerCacheConfig.get().getList("cache");
         Optional<CachedPlayer> optional = cache.stream().filter(p -> p.getUUID().equals(uuid)).findFirst();
-        optional.ifPresent(this::clearIfOld);
+        optional.ifPresent(p -> {
+            clearIfOld(p,false);
+        });
         return optional;
     }
 
@@ -85,8 +84,16 @@ public class CacheManager {
         playerCacheConfig.save();
     }
 
-    private void clearIfOld(CachedPlayer cachedPlayer) {
-        if (System.currentTimeMillis()-cachedPlayer.getLastRefresh() > cachedPlayer.getTTL()) {
+    public void update(Player player) {
+        CachedPlayer cachedPlayer = new CachedPlayer(player.getPlayerProfile());
+        clearIfOld(cachedPlayer,true);
+        addToCache(cachedPlayer);
+    }
+
+    private void clearIfOld(CachedPlayer cachedPlayer, boolean force) {
+        // Temporarily not having the last cache time matter
+        // System.currentTimeMillis()-cachedPlayer.getLastRefresh() > cachedPlayer.getTTL()
+        if (force) {
             // Remove if old
             ArrayList<CachedPlayer> cache = (ArrayList<CachedPlayer>) playerCacheConfig.get().getList("cache");
             cache.forEach(cps -> {

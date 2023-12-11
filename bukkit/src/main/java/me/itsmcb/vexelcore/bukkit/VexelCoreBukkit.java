@@ -1,6 +1,7 @@
 package me.itsmcb.vexelcore.bukkit;
 
 import dev.dejvokep.boostedyaml.spigot.SpigotSerializer;
+import me.itsmcb.vexelcore.bukkit.api.managers.CacheManager;
 import me.itsmcb.vexelcore.bukkit.api.text.BukkitMsgBuilder;
 import me.itsmcb.vexelcore.bukkit.api.utils.PluginUtils;
 import me.itsmcb.vexelcore.bukkit.plugin.PAPI;
@@ -9,15 +10,23 @@ import me.itsmcb.vexelcore.bukkit.plugin.ProxyManager;
 import me.itsmcb.vexelcore.common.api.config.BoostedConfig;
 import org.bukkit.Bukkit;
 import org.bukkit.configuration.serialization.ConfigurationSerialization;
+import org.bukkit.event.EventHandler;
+import org.bukkit.event.Listener;
+import org.bukkit.event.player.PlayerLoginEvent;
 import org.bukkit.plugin.java.JavaPlugin;
 
-public class VexelCoreBukkit extends JavaPlugin {
+public class VexelCoreBukkit extends JavaPlugin implements Listener {
 
     private static VexelCoreBukkit instance;
     private ProxyManager proxyManager;
 
     public ProxyManager getProxyManager() {
         return proxyManager;
+    }
+    private CacheManager cacheManager;
+
+    public CacheManager getCacheManager() {
+        return cacheManager;
     }
 
     @Override
@@ -32,6 +41,9 @@ public class VexelCoreBukkit extends JavaPlugin {
         proxyManager = new ProxyManager(instance);
         Bukkit.getPluginManager().registerEvents(proxyManager,this);
         ConfigurationSerialization.registerClass(BukkitMsgBuilder.class, "MsgBuilder");
+
+        cacheManager = new CacheManager(this);
+        Bukkit.getPluginManager().registerEvents(this,this);
 
         // Load final things after that server has started
         getServer().getScheduler().scheduleSyncDelayedTask(this,this::loadFinalThings);
@@ -60,6 +72,11 @@ public class VexelCoreBukkit extends JavaPlugin {
 
     public static VexelCoreBukkit getInstance() {
         return instance;
+    }
+
+    @EventHandler
+    public void onLogin(PlayerLoginEvent e) {
+        getCacheManager().update(e.getPlayer());
     }
 
 }
