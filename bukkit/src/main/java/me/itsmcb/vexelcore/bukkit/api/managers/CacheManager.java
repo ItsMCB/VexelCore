@@ -27,18 +27,12 @@ public class CacheManager {
     private Optional<CachedPlayer> getFromFile(String name) {
         ArrayList<CachedPlayer> cache = (ArrayList<CachedPlayer>) playerCacheConfig.get().getList("cache");
         Optional<CachedPlayer> optional = cache.stream().filter(p -> p.getName().equalsIgnoreCase(name)).findFirst();
-        optional.ifPresent(p -> {
-            clearIfOld(p,false);
-        });
         return optional;
     }
 
     private Optional<CachedPlayer> getFromFile(UUID uuid) {
         ArrayList<CachedPlayer> cache = (ArrayList<CachedPlayer>) playerCacheConfig.get().getList("cache");
         Optional<CachedPlayer> optional = cache.stream().filter(p -> p.getUUID().equals(uuid)).findFirst();
-        optional.ifPresent(p -> {
-            clearIfOld(p,false);
-        });
         return optional;
     }
 
