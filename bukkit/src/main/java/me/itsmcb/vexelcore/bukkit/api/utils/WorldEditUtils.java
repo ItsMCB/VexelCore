@@ -57,6 +57,7 @@ public class WorldEditUtils {
 
         ForwardExtentCopy forwardExtentCopy = new ForwardExtentCopy(editSession, region, clipboard, region.getMinimumPoint());
         forwardExtentCopy.setCopyingEntities(true);
+        forwardExtentCopy.setRemovingEntities(false);
         forwardExtentCopy.setCopyingBiomes(true);
         Operations.complete(forwardExtentCopy);
 
