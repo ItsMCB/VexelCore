@@ -53,6 +53,14 @@ public class SkullBuilder extends MenuV2Item {
         signature = new PlayerInformation(offlinePlayer.getUniqueId()).getPlayerSkin().getSignature();
     }
 
+    public String getSignature() {
+        return signature;
+    }
+
+    public String getTexture() {
+        return texture;
+    }
+
     @Override
     public SkullBuilder update() {
         setHeadMeta();
