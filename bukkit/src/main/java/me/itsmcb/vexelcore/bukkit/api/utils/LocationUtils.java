@@ -44,4 +44,8 @@ public class LocationUtils {
         return (float) Math.toDegrees(angle);
     }
 
+    public static Location toCenter(Location location) {
+        return location.set(location.getBlockX()+0.5,location.getBlockY(),location.getBlockZ()+0.5);
+    }
+
 }

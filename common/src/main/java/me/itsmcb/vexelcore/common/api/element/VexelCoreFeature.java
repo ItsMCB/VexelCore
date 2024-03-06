@@ -79,15 +79,13 @@ public abstract class VexelCoreFeature {
 
     public abstract void enable();
 
-    public void enableTriggers() {
+    public void enablePreLoadTriggers() {}
 
-    }
+    public void enableTriggers() {}
 
     public abstract void disable();
 
-    public void disableTriggers() {
-
-    }
+    public void disableTriggers() {}
 
     public void log(ElementType elementType, ElementState elementState, String featureName) {
         if (debug) {

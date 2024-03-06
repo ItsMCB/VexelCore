@@ -93,6 +93,7 @@ public class BukkitFeature extends VexelCoreFeature {
 
     private void enableLogic() {
         setStatus(FeatureStatus.ENABLED);
+        enablePreLoadTriggers();
         listeners.forEach(listener -> {
             Bukkit.getPluginManager().registerEvents(listener, instance);
             log(ElementType.BUKKITLISTENER, ElementState.REGISTERING, getName());
