@@ -63,6 +63,15 @@ public class CMDHelper {
         return false;
     }
 
+    public boolean emptyFlagExists(String flag) {
+        for (int i = 0; i < args.length; i++) {
+            if (args[i].equalsIgnoreCase(flag)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     public boolean argExists(int argIndex) {
         return hasArgIndex(argIndex);
     }
