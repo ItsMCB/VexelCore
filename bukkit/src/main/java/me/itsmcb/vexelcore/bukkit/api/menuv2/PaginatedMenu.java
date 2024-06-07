@@ -2,6 +2,7 @@ package me.itsmcb.vexelcore.bukkit.api.menuv2;
 
 import me.itsmcb.vexelcore.bukkit.api.text.BukkitMsgBuilder;
 import org.bukkit.Material;
+import org.bukkit.Sound;
 import org.bukkit.entity.Player;
 import org.bukkit.event.inventory.InventoryType;
 
@@ -27,6 +28,7 @@ public class PaginatedMenu extends MenuV2 {
                         updatePage(player,newIndex);
                     } else {
                         new BukkitMsgBuilder("&7You've reached the beginning!").send(player);
+                        player.playSound(player.getLocation(), Sound.BLOCK_NOTE_BLOCK_BASS, (float) 1, 0);
                     }
         }));
         // Middle
@@ -44,6 +46,7 @@ public class PaginatedMenu extends MenuV2 {
                         updatePage(player,newIndex);
                     } else {
                         new BukkitMsgBuilder("&7You've reached the end!").send(player);
+                        player.playSound(player.getLocation(), Sound.BLOCK_NOTE_BLOCK_BASS, (float) 1, 0);
                     }
         }));
         // End
