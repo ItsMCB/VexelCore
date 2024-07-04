@@ -26,6 +26,7 @@ public class BukkitYAMLConfig {
         this.dataFolder = dataFolder;
         this.fileName = fileName;
         this.inputStream = inputStream;
+        this.customConfig = new YamlConfiguration();
         saveDefaultConfig();
     }
 

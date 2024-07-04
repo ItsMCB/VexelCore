@@ -1,8 +1,10 @@
 package me.itsmcb.vexelcore.bukkit.api.utils;
 
+import com.fastasyncworldedit.core.entity.Metadatable;
 import com.sk89q.worldedit.EditSession;
 import com.sk89q.worldedit.WorldEdit;
 import com.sk89q.worldedit.bukkit.BukkitAdapter;
+import com.sk89q.worldedit.extension.platform.Actor;
 import com.sk89q.worldedit.extent.clipboard.BlockArrayClipboard;
 import com.sk89q.worldedit.extent.clipboard.Clipboard;
 import com.sk89q.worldedit.extent.clipboard.io.*;
@@ -36,7 +38,8 @@ public class WorldEditUtils {
         ClipboardFormat format = ClipboardFormats.findByFile(file);
         try (ClipboardReader reader = format.getReader(new FileInputStream(file))) {
             Clipboard clipboard = reader.read();
-            try (EditSession editSession = WorldEdit.getInstance().newEditSessionBuilder().world(BukkitAdapter.adapt(location.getWorld())).maxBlocks(-1).build()) {
+            Actor actor = BukkitAdapter.adapt(Bukkit.getConsoleSender()); // For plugins to check (such as LibreProperty ignoring world border limitations if the actor is console)
+            try (EditSession editSession = WorldEdit.getInstance().newEditSessionBuilder().world(BukkitAdapter.adapt(location.getWorld())).actor(actor).maxBlocks(-1).build()) {
                 Operation operation = new ClipboardHolder(clipboard)
                         .createPaste(editSession)
                         .to(BlockVector3.at(location.getBlockX(), location.getBlockY(), location.getBlockZ()))
