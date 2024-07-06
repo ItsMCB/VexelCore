@@ -5,35 +5,43 @@ import me.itsmcb.vexelcore.bukkit.plugin.CachedPlayer;
 import me.itsmcb.vexelcore.common.api.config.BoostedConfig;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.entity.Player;
+import org.bukkit.event.EventHandler;
+import org.bukkit.event.Listener;
+import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.plugin.java.JavaPlugin;
+import org.bukkit.scheduler.BukkitRunnable;
 
 import java.io.File;
-import java.util.ArrayList;
-import java.util.Optional;
-import java.util.Random;
-import java.util.UUID;
+import java.util.*;
 
-public class CacheManager {
+public class CacheManager implements Listener {
+    private JavaPlugin instance;
     private BoostedConfig playerCacheConfig;
-    // TODO On player login, refresh cache data. This is especially important for Bedrock players. This would make a TTL time of -1 work because it would never updated the Bedrock player info until they login again.
+
+    @EventHandler
+    public void onPlayerJoin(PlayerJoinEvent event) {
+        refresh();
+    }
 
     public CacheManager(JavaPlugin plugin) {
+        this.instance = plugin;
         // Save player cache
         StandardSerializer standardSerializer = StandardSerializer.getDefault();
         standardSerializer.register(CachedPlayer.class,CachedPlayer.adapter);
         this.playerCacheConfig = new BoostedConfig(new File(plugin.getDataFolder().getParentFile()+File.separator+"VexelCore"),"player_cache",null,standardSerializer);
+        plugin.getServer().getPluginManager().registerEvents(this, plugin);
+    }
+
+    public ArrayList<CachedPlayer> getFromFile() {
+        return (ArrayList<CachedPlayer>) playerCacheConfig.get().getList("cache");
     }
 
     private Optional<CachedPlayer> getFromFile(String name) {
-        ArrayList<CachedPlayer> cache = (ArrayList<CachedPlayer>) playerCacheConfig.get().getList("cache");
-        Optional<CachedPlayer> optional = cache.stream().filter(p -> p.getName().equalsIgnoreCase(name)).findFirst();
-        return optional;
+        return getFromFile().stream().filter(p -> p.getName().equalsIgnoreCase(name)).findFirst();
     }
 
     private Optional<CachedPlayer> getFromFile(UUID uuid) {
-        ArrayList<CachedPlayer> cache = (ArrayList<CachedPlayer>) playerCacheConfig.get().getList("cache");
-        Optional<CachedPlayer> optional = cache.stream().filter(p -> p.getUUID().equals(uuid)).findFirst();
-        return optional;
+        return getFromFile().stream().filter(p -> p.getUUID().equals(uuid)).findFirst();
     }
 
     public CachedPlayer get(String name) {
@@ -43,7 +51,7 @@ public class CacheManager {
             return fileData.get();
         }
         // From server cache or API
-        CachedPlayer cachedPlayer = new CachedPlayer(name).finishIfNotCompleted();
+        CachedPlayer cachedPlayer = new CachedPlayer(name);
         addToCache(cachedPlayer);
         return cachedPlayer;
     }
@@ -59,12 +67,13 @@ public class CacheManager {
             return fileData.get();
         }
         // From server cache or API
-        CachedPlayer cachedPlayer = new CachedPlayer(uuid).finishIfNotCompleted();
+        CachedPlayer cachedPlayer = new CachedPlayer(uuid);
         addToCache(cachedPlayer);
         return cachedPlayer;
     }
 
     private void addToCache(CachedPlayer cachedPlayer) {
+        cachedPlayer.tryToFindMissingValues();
         if (!cachedPlayer.isComplete()) {
             return;
         }
@@ -84,6 +93,16 @@ public class CacheManager {
         addToCache(cachedPlayer);
     }
 
+    public void refresh() {
+        // Slightly delay the refresh to allow for VexelCore to set the new data
+        new BukkitRunnable() {
+            @Override
+            public void run() {
+                playerCacheConfig.reload();
+            }
+        }.runTaskLater(instance,100);
+    }
+
     private void clearIfOld(CachedPlayer cachedPlayer, boolean force) {
         // Temporarily not having the last cache time matter
         // System.currentTimeMillis()-cachedPlayer.getLastRefresh() > cachedPlayer.getTTL()
@@ -96,10 +115,12 @@ public class CacheManager {
                     cache.remove(cps);
                 }
             });
-            Optional<CachedPlayer> optional = cache.stream().filter(cap -> cap.getUUID() != null && cap.getUUID().equals(cachedPlayer.getUUID())).findFirst();
-            if (optional.isPresent()) {
-                cache.remove(optional.get());
-            }
+            List<CachedPlayer> foundEntries = cache.stream().filter(cap -> cap.getUUID() != null && cap.getUUID().equals(cachedPlayer.getUUID())).toList();
+            //Optional<CachedPlayer> optional = cache.stream().filter(cap -> cap.getUUID() != null && cap.getUUID().equals(cachedPlayer.getUUID())).findFirst();
+            ///optional.ifPresent(cache::remove);
+            foundEntries.forEach(entry -> {
+                cache.remove(entry);
+            });
             playerCacheConfig.get().set("cache",cache);
             playerCacheConfig.save();
         }

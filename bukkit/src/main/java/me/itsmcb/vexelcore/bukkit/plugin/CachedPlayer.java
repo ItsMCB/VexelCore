@@ -5,6 +5,8 @@ import dev.dejvokep.boostedyaml.serialization.standard.TypeAdapter;
 import me.itsmcb.vexelcore.common.api.web.mojang.PlayerInformation;
 import me.itsmcb.vexelcore.common.api.web.mojang.PlayerSkin;
 import org.bukkit.Bukkit;
+import org.bukkit.OfflinePlayer;
+import org.bukkit.entity.Player;
 import org.geysermc.floodgate.api.FloodgateApi;
 import org.geysermc.floodgate.api.player.FloodgatePlayer;
 import org.jetbrains.annotations.NotNull;
@@ -31,71 +33,79 @@ public class CachedPlayer {
         this(Bukkit.getOfflinePlayer(name).getPlayerProfile());
     }
 
-    public static PlayerSkin bedrockDefault = new PlayerSkin(
-            "ewogICJ0aW1lc3RhbXAiIDogMTYxNjYwMDc4Mzc1NywKICAicHJvZmlsZUlkIiA6ICI4MmM2MDZjNWM2NTI0Yjc5OGI5MWExMmQzYTYxNjk3NyIsCiAgInByb2ZpbGVOYW1lIiA6ICJOb3ROb3RvcmlvdXNOZW1vIiwKICAic2lnbmF0dXJlUmVxdWlyZWQiIDogdHJ1ZSwKICAidGV4dHVyZXMiIDogewogICAgIlNLSU4iIDogewogICAgICAidXJsIiA6ICJodHRwOi8vdGV4dHVyZXMubWluZWNyYWZ0Lm5ldC90ZXh0dXJlLzc2MTVjYTJlMWU4ZmVlZDcxYTQ3YzQ1NWM2MGM0NjEzMjY1NTdlZWI3YzRlNTYwYjZiOGYwMDY1YTMxNzgzNGYiLAogICAgICAibWV0YWRhdGEiIDogewogICAgICAgICJtb2RlbCIgOiAic2xpbSIKICAgICAgfQogICAgfQogIH0KfQ==",
-            "R+6skz5tHQtnqqsSZyEAWIFSejKFcGoBynqR5SymlzLefLPwFL1JsbXJkpsAg2HR4jSvXoUl45AeyQ8rIET+D0d0S1W6zhlPqLYikl8GVuKgsUV+DuTLTWSXLq8sub/n3+HjivHjLZSN5udJdI9J4iA0QNwe/ftdutut1p5cRW65nbb0kPAedFM+VoWzICXHhPa6aFOC36pqI1ZJVThm+xhDHo0U0MUID/gA98va4xkGB2AWyUn3fxDTjA1IQ1ItDnDNJoXQv3+Duce+ZakaSjkZGReApE4Q/ygsGWRiOHquJpGS6fXAaPga2LbNX8lVXxgfkKfnu4TmnqxPwie0TZMxIPHoGPt9vnepRS/JFH3A12OqUHlLBEigtNRWQqeTlVJsX0+Gy16DVmguSPh7St3Y3zjuwUe0C3zyuBiMuqHBjYRwagQ0UhwmIZlCsYQYahUv2XroxguBaLwhnvb/WEcDaYqj23IViMUhsHbu0h02l+qIvG98OVXW8ZbY6gcFTF3a7+uFsmqKmiSkeCT9vUU9HWkhVqeRmdq1vI9Uq/FQRcW4KSSWMuSVk+8u0nM15lJWddqgtkJVVJxEoYWja1zIOmgXBxpXZHpkNCM8NHixWQt9bnsEABLyP9lwgL9zpkFDAo8WDPS1wWDAUhmpx0yh/9JrXWz5exoizATebLQ="
-    );
-    public static String incompleteOfflineBedrockPlayerName = "Unavailable Bedrock Player";
-    public static String incompleteOfflineJavaPlayerName = "Name Unavailable";
-    public static UUID notchUUID = UUID.fromString("069a79f4-44e9-4726-a5be-fca90e38aaf5");
-    public static PlayerSkin incompletePlayerSkin = new PlayerSkin("ewogICJ0aW1lc3RhbXAiIDogMTY5ODkyODg5ODkzMywKICAicHJvZmlsZUlkIiA6ICJlN2E3MzZhMjFlM2I0YzA2YmVhOGVmMjVmODg0MmJhZiIsCiAgInByb2ZpbGVOYW1lIiA6ICJKZWVwMDIwNiIsCiAgInNpZ25hdHVyZVJlcXVpcmVkIiA6IHRydWUsCiAgInRleHR1cmVzIiA6IHsKICAgICJTS0lOIiA6IHsKICAgICAgInVybCIgOiAiaHR0cDovL3RleHR1cmVzLm1pbmVjcmFmdC5uZXQvdGV4dHVyZS82YWYyMTVhNDdhMjUwZDA5YTI5MDY4YTRmNGQzNzBkMWNlNzAzY2Y2ZDczYzA5YWFlNGNlOTI3ZTIwODFkZmIxIiwKICAgICAgIm1ldGFkYXRhIiA6IHsKICAgICAgICAibW9kZWwiIDogInNsaW0iCiAgICAgIH0KICAgIH0KICB9Cn0=","jYpDbz/V9MTyJgPdyh+vDFh8qxXTmpTixknx25DtzzqK4ZU3El6xumKAQF89/rVXGi3AlAF4K50clHmqZX6/o7edaoVMh5Emqethh8M8De3ybiFv5yTTRdtganq5Iusax+wvzOZkYpzDpyNxCChKk2nM99+q/bb3AM9Cxd/cLal3n6Ct2qaM0BqsO8wdIbOSObdoF1S90W4MNjVtspD0IYKobAtzhGXHA7/NwIU7zVX6wnyggRBHORxZmpVTqz0Fr8ZuED8AaN+Jqj/dJa8IwYPQ6VJxIVY0eDmg8TtGah9/hQLVPNqK9ahWYLIhe/x34Xae+iccXJNq5e0OtJPWuK+cm6ywjwpeU4cj81EqWfDznVAoK2u92W1pKsn3v9yenZu17ySre6ehZD4GDi4hUBFIJSNMMNhukwhohdHfoNzbVUH3vUnEsl8GPJK+L+5x/cim0icXsGIsO8QSnTFW0oKU8rClZA0xtvbSAukUPt9bmCs/jGSgq+sqoKJk3pGCwpWTgjaSoKzIqWvX/VUtQOakalmIjlHCA295Srvpn3a4Gi627y+U0fG48As00snou2X7QJt1UshDbjczKAYeLjRVW/YH9DHGytQJ4+lFdXLU/EmV60EdTrzsFWOJSQUZ/39uEdRzE1QQAgZIGptPbsdlo1N5lv3mDVkDtAN5WB0=");
+    public static String incompleteOfflineBedrockPlayerName = ".Unknown_Bedrock_Player";
+    public static String incompleteOfflineJavaPlayerName = "Unknown_Java_Player";
+    // Steve
+    public static PlayerSkin incompletePlayerSkin = new PlayerSkin(
+           // "ewogICJ0aW1lc3RhbXAiIDogMTYyMTcxNTMxMjI5MCwKICAicHJvZmlsZUlkIiA6ICJiNTM5NTkyMjMwY2I0MmE0OWY5YTRlYmYxNmRlOTYwYiIsCiAgInByb2ZpbGVOYW1lIiA6ICJtYXJpYW5hZmFnIiwKICAic2lnbmF0dXJlUmVxdWlyZWQiIDogdHJ1ZSwKICAidGV4dHVyZXMiIDogewogICAgIlNLSU4iIDogewogICAgICAidXJsIiA6ICJodHRwOi8vdGV4dHVyZXMubWluZWNyYWZ0Lm5ldC90ZXh0dXJlLzFhNGFmNzE4NDU1ZDRhYWI1MjhlN2E2MWY4NmZhMjVlNmEzNjlkMTc2OGRjYjEzZjdkZjMxOWE3MTNlYjgxMGIiCiAgICB9CiAgfQp9",
+            //"otpbxDm9B+opW7jEzZF8BVDeZSqaqdF0dyLlnlyMh7Q5ysJFDL48/9J/IOHp8JqNm1oarmVdvxrroy9dlNI2Mz4BVuJM2pcCOJwk2h+aZ4dzNZGxst+MYNPSw+i4sMoYu7OV07UVHrQffolFF7MiaBUst1hFwM07IpTE6UtIQz4rqWisXe9Iz5+ooqX4wj0IB3dPntsh6u5nVlL8acWCBDAW4YqcPt2Y4CKK+KtskjzusjqGAdEO+4lRcW1S0ldo2RNtUHEzZADWQcADjg9KKiKq9QIpIpYURIoIAA+pDGb5Q8L5O6CGI+i1+FxqXbgdBvcm1EG0OPdw9WpSqAxGGeXSwlzjILvlvBzYbd6gnHFBhFO+X7iwRJYNd+qQakjUa6ZwR8NbkpbN3ABb9+6YqVkabaEmgfky3HdORE+bTp/AT6LHqEMQo0xdNkvF9gtFci7RWhFwuTLDvQ1esby1IhlgT+X32CPuVHuxEvPCjN7+lmRz2OyOZ4REo2tAIFUKakqu3nZ0NcF98b87wAdA9B9Qyd2H/rEtUToQhpBjP732Sov6TlJkb8echGYiLL5bu/Q7hum72y4+j2GNnuRiOJtJidPgDqrYMg81GfenfPyS6Ynw6KhdEhnwmJ1FJlJhYvXZyqZwLAV1c26DNYkrTMcFcv3VXmcd5/2Zn9FnZtw="
+            "eyJ0aW1lc3RhbXAiOjE1ODc5NTQzMzg0MTcsInByb2ZpbGVJZCI6IjIzZjFhNTlmNDY5YjQzZGRiZGI1MzdiZmVjMTA0NzFmIiwicHJvZmlsZU5hbWUiOiIyODA3Iiwic2lnbmF0dXJlUmVxdWlyZWQiOnRydWUsInRleHR1cmVzIjp7IlNLSU4iOnsidXJsIjoiaHR0cDovL3RleHR1cmVzLm1pbmVjcmFmdC5uZXQvdGV4dHVyZS84ZGM2MmQwOWZhMjZhMjJjZDY1NDFlOTdlMDYxNGYwODE0N2MwYzVhZjRlNDMzNzc2N2YzMTE4ZmFkMjgxMTk2In19fQ==",
+            "LgUIN2DNPtjDivMWH5xH7YGcaYn2XYeHS+1bBtR2GVNn/NT+JrAY7IY8NmDV1WZZIgk47PvqwNEAnT3BMoCG8XQcV64yF2IMGtv2ykwkG/67rdLrY+N4bV9W8g89cHbK+YyZ3a5GPgvyS6F1fXuqEW9aT2P2ySAvoDX05npXNUlS9EXGOaMZxqS1XTBYp94+tHpJgJKLgc1ndomDcPEUcgqof3ej+K03uhmaDgrDBYf6Q/lYoUukpDylcL4vTxaVU5SJQohrRA6jTcErFh/NrusZw678q+GCQwJ3QUsHUYX7ve+SN0MJzfwCl6CZRrPYYKpuMe8yJUwOCnmgUSxuCwKE8C+xGNS9WxEAMcZDG8yCgZI2cgL7SDTCFqlqD9rPj3PMB61VptRY2ORHBcz+rk2xDY9GsG/hYtPq+Nzca6xOdVtWtONdH58aq7SXFbh4dCqZ+AOx4DDBZdtcgAVz0gcwGby3kP9thCKRReB7wQiUAzieUnJmMspSjCeS+CQ5cYQrADwOn2lTYq+SUnMFbOTC4mhw3VxNSdQLrL2YrvWGro98JvwdJI/Wzs/oOOzmQzCPJRd9qKs7w8/Ec4xC93ytxk4wpuc29gYvlbhI9/FSGXHpr9vg23cSI6gWoqSWxRMHJtcMQa0C9WuAGejOm0cbxC0ZR3yDlFoVx0hjY5o=");
 
     public CachedPlayer(PlayerProfile playerProfile) {
-        String playerProfileName = playerProfile.getName();
-        if (playerProfileName != null && !playerProfileName.isEmpty()) {
-            setName(playerProfile.getName());
-        }
-        UUID playerUUID = playerProfile.getId();
-        if (playerUUID != null) {
-            setUUID(playerProfile.getId());
-        }
-        playerProfile.getProperties().forEach(profileProperty -> {
-            if (profileProperty.getSignature() != null) {
-                setPlayerSkin(new PlayerSkin(profileProperty.getValue(),profileProperty.getSignature()));
-            }
-        });
+        setFromPlayerProfile(playerProfile);
     }
 
-    public CachedPlayer finishIfNotCompleted() {
-        // Check if bedrock
-        FloodgateApi api = FloodgateApi.getInstance();
-        boolean isBedrock = false;
-        // Floodgate name check
-        if (name != null && name.contains(api.getPlayerPrefix())) {
-            // Is Bedrock
-            isBedrock = true;
-            try {
-                setUUID(api.getUuidFor(name.substring(api.getPlayerPrefix().length())).get());
-            } catch(Exception e) {
-                e.printStackTrace();
+    private void setFromPlayerProfile(PlayerProfile playerProfile) {
+        if (name == null) {
+            String playerProfileName = playerProfile.getName();
+            if (playerProfileName != null && !playerProfileName.isEmpty()) {
+                setName(playerProfile.getName());
             }
-        } else {
-            // Floodgate UUID check
-            if (uuid != null && api.isFloodgateId(uuid)) { // Is Bedrock
-                isBedrock = true;
-                // Set username
-                FloodgatePlayer floodgatePlayer = api.getPlayer(uuid);
-                String javaUsername;
-                if (floodgatePlayer != null) {
-                    javaUsername = floodgatePlayer.getJavaUsername();
-                    if (javaUsername != null) {
-                        setName(floodgatePlayer.getJavaUsername());
-                    } else {
-                        if (getName() == null ) {
-                            setName(incompleteOfflineBedrockPlayerName);
-                        }
-                    }
+        }
+        if (uuid == null) {
+            UUID playerUUID = playerProfile.getId();
+            if (playerUUID != null) {
+                setUUID(playerProfile.getId());
+            }
+        }
+        if (!playerSkin.isComplete()) {
+            playerProfile.getProperties().forEach(profileProperty -> {
+                if (profileProperty.getSignature() != null) {
+                    setPlayerSkin(new PlayerSkin(profileProperty.getValue(),profileProperty.getSignature()));
+                }
+            });
+        }
+    }
+
+    public boolean isBedrock() {
+        FloodgateApi floodgateApi = FloodgateApi.getInstance();
+        if (uuid != null) {
+            return floodgateApi.isFloodgateId(uuid);
+        }
+        if (name != null) {
+            return name.contains(floodgateApi.getPlayerPrefix());
+        }
+        return false;
+    }
+
+    public CachedPlayer tryToFindMissingValues() {
+        // Shortcut grab if online
+        if (uuid != null) {
+            Player possiblyOnlinePlayer = Bukkit.getPlayer(uuid);
+            if (possiblyOnlinePlayer != null) {
+                setFromPlayerProfile(possiblyOnlinePlayer.getPlayerProfile());
+            }
+        }
+
+        // Bedrock
+        FloodgateApi floodgateApi = FloodgateApi.getInstance();
+        if (isBedrock()) {
+            if (name != null) {
+                try {
+                    setUUID(floodgateApi.getUuidFor(name.substring(floodgateApi.getPlayerPrefix().length())).get());
+                } catch (Exception e) {
+                    e.printStackTrace();
                 }
             }
-        }
-        if (isBedrock) {
-            setTTL(defaultTTL*365);
-        }
-        if (isComplete()) {
-            return this;
-        }
-        // Java player
-        if (!isBedrock) {
+            if (uuid != null) {
+                FloodgatePlayer floodgatePlayer = floodgateApi.getPlayer(uuid);
+                if (floodgatePlayer != null) {
+                    setName(floodgatePlayer.getJavaUsername());
+                }
+            }
+        } else {
+            // Java
             PlayerInformation playerInformation;
             if (name != null) {
                 playerInformation = new PlayerInformation(name);
@@ -106,12 +116,8 @@ public class CachedPlayer {
             setUUID(playerInformation.getUuid());
             setPlayerSkin(playerInformation.getPlayerSkin());
         }
-        if (name == null) {
-            setName(incompleteOfflineJavaPlayerName);
-        }
-        if (uuid == null) {
-            setUUID(notchUUID);
-        }
+
+        // Set Steve skin if no other value is known
         if (playerSkin == null || !playerSkin.isComplete()) {
             playerSkin = incompletePlayerSkin;
         }
@@ -159,7 +165,11 @@ public class CachedPlayer {
     }
 
     public boolean isComplete() {
-        return this.name != null && !this.name.equals(incompleteOfflineBedrockPlayerName) && !this.name.equals(incompleteOfflineJavaPlayerName) && this.uuid != null && this.playerSkin.hasValue() && this.playerSkin.hasSignature() && this.playerSkin != bedrockDefault && this.playerSkin != incompletePlayerSkin;
+        return this.name != null &&
+                !this.name.equals(incompleteOfflineBedrockPlayerName) &&
+                !this.name.equals(incompleteOfflineJavaPlayerName) &&
+                this.uuid != null &&
+                this.playerSkin.isComplete();
     }
 
     public String debug() {

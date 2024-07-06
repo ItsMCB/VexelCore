@@ -20,7 +20,7 @@ public class PlayerUtils {
             return true;
         }
         CachedPlayer cachedPlayer = cacheManager.get(name);
-        cachedPlayer.finishIfNotCompleted();
+        cachedPlayer.tryToFindMissingValues();
         return cachedPlayer.isComplete();
     }
 

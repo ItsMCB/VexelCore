@@ -11,14 +11,13 @@ import org.bukkit.Material;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.meta.SkullMeta;
-import org.bukkit.scheduler.BukkitRunnable;
 
 import java.util.UUID;
 
 public class SkullBuilder extends MenuV2Item {
 
-    private String texture;
-    private String signature;
+    private String texture = CachedPlayer.incompletePlayerSkin.getValue();
+    private String signature = CachedPlayer.incompletePlayerSkin.getSignature();
 
     public SkullBuilder(String texture) {
         super(Material.PLAYER_HEAD);
@@ -39,6 +38,10 @@ public class SkullBuilder extends MenuV2Item {
 
     public SkullBuilder(Player player) {
         super(Material.PLAYER_HEAD);
+        // Invalid characters in the display name will cause an error for getPlayerProfile()
+        if (((TextComponent) player.displayName()).content().contains("§")) {
+            return;
+        }
         player.getPlayerProfile().getProperties().forEach(profileProperty -> {
             if (profileProperty.getName().equals("textures")) {
                 texture = profileProperty.getValue();
@@ -73,7 +76,7 @@ public class SkullBuilder extends MenuV2Item {
         SkullMeta skullMeta = (SkullMeta) getItemMeta();
         try {
             PlayerProfile playerProfile = Bukkit.createProfile(UUID.randomUUID(), null);
-            playerProfile.setProperty(new ProfileProperty("textures",texture,signature));
+            playerProfile.setProperty(new ProfileProperty("textures",this.texture,this.signature));
             skullMeta.setPlayerProfile(playerProfile);
             setItemMeta(skullMeta);
         } catch (Exception ex) {
