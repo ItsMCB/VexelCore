@@ -116,11 +116,7 @@ public class CacheManager implements Listener {
                 }
             });
             List<CachedPlayer> foundEntries = cache.stream().filter(cap -> cap.getUUID() != null && cap.getUUID().equals(cachedPlayer.getUUID())).toList();
-            //Optional<CachedPlayer> optional = cache.stream().filter(cap -> cap.getUUID() != null && cap.getUUID().equals(cachedPlayer.getUUID())).findFirst();
-            ///optional.ifPresent(cache::remove);
-            foundEntries.forEach(entry -> {
-                cache.remove(entry);
-            });
+            foundEntries.forEach(cache::remove);
             playerCacheConfig.get().set("cache",cache);
             playerCacheConfig.save();
         }
