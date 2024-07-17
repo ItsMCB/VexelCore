@@ -13,9 +13,10 @@ dependencies {
     compileOnly "net.kyori:adventure-api:4.11.0"
     compileOnly "net.kyori:adventure-text-serializer-legacy:4.11.0"
     // TODO ensure license for BOOSTED YAML is included in future artifacts
-    compileOnly "dev.dejvokep:boosted-yaml:1.3"
+    compileOnly "dev.dejvokep:boosted-yaml-spigot:1.5"
+    compileOnly "dev.dejvokep:boosted-yaml:1.3.6"
     // Geyser Floodgate
-    compileOnly('org.geysermc.floodgate:api:2.2.2-SNAPSHOT')
+    compileOnly('org.geysermc.floodgate:api:2.2.3-SNAPSHOT')
 }
 
 archivesBaseName = 'VexelCore-Common'

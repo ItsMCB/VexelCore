@@ -49,8 +49,9 @@ dependencies {
     // CoreProtect
     compileOnly "net.coreprotect:coreprotect:21.3"
 
-    compileOnly 'mysql:mysql-connector-java:8.0.30'
-    implementation "dev.dejvokep:boosted-yaml-spigot:1.3"
+    compileOnly 'mysql:mysql-connector-java:8.0.33'
+    implementation "dev.dejvokep:boosted-yaml-spigot:1.5"
+    implementation "dev.dejvokep:boosted-yaml:1.3.6"
     // Geyser Floodgate
     compileOnly('org.geysermc.floodgate:api:2.2.2-SNAPSHOT')
 }
