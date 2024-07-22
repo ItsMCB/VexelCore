@@ -68,6 +68,12 @@ public class CachedPlayer {
     }
 
     public boolean isBedrock() {
+        if (!Bukkit.getPluginManager().isPluginEnabled("Floodgate")) {
+            if (Bukkit.getPluginManager().isPluginEnabled("Geyser-Spigot")) {
+                System.err.println("Hey! VexelCore-based plugins can't save Bedrock player data properly because Floodgate isn't installed.");
+            }
+            return false;
+        }
         FloodgateApi floodgateApi = FloodgateApi.getInstance();
         if (uuid != null) {
             return floodgateApi.isFloodgateId(uuid);
@@ -88,8 +94,8 @@ public class CachedPlayer {
         }
 
         // Bedrock
-        FloodgateApi floodgateApi = FloodgateApi.getInstance();
         if (isBedrock()) {
+            FloodgateApi floodgateApi = FloodgateApi.getInstance();
             if (name != null) {
                 try {
                     setUUID(floodgateApi.getUuidFor(name.substring(floodgateApi.getPlayerPrefix().length())).get());
