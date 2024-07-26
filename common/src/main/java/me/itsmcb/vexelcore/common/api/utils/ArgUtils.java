@@ -8,6 +8,9 @@ public class ArgUtils {
      * Removes by the amount provided
      */
     public static String[] shift(String[] args, int amount) {
+        if (amount > args.length) {
+            return new String[]{};
+        }
         return Arrays.copyOfRange(args,amount,args.length);
     }
 
