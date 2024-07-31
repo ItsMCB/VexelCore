@@ -4,6 +4,7 @@ import dev.dejvokep.boostedyaml.spigot.SpigotSerializer;
 import me.itsmcb.vexelcore.bukkit.api.managers.CacheManager;
 import me.itsmcb.vexelcore.bukkit.api.text.BukkitMsgBuilder;
 import me.itsmcb.vexelcore.bukkit.api.utils.PluginUtils;
+import me.itsmcb.vexelcore.bukkit.api.utils.WorldEditUtils;
 import me.itsmcb.vexelcore.bukkit.plugin.PAPI;
 import me.itsmcb.vexelcore.bukkit.plugin.PCMListener;
 import me.itsmcb.vexelcore.bukkit.plugin.ProxyManager;
@@ -14,6 +15,7 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerLoginEvent;
 import org.bukkit.plugin.java.JavaPlugin;
+import org.bukkit.scheduler.BukkitRunnable;
 
 public class VexelCoreBukkit extends JavaPlugin implements Listener {
 
@@ -76,7 +78,14 @@ public class VexelCoreBukkit extends JavaPlugin implements Listener {
 
     @EventHandler
     public void onLogin(PlayerLoginEvent e) {
-        getCacheManager().update(e.getPlayer());
+        // Run async because it will lock the server up otherwise if there are rate limit problems
+        new BukkitRunnable() {
+            @Override
+            public void run() {
+                getCacheManager().update(e.getPlayer());
+                this.cancel();
+            }
+        }.runTaskAsynchronously(instance);
     }
 
 }

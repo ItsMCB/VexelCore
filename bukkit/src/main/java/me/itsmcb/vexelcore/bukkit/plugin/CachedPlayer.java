@@ -33,8 +33,6 @@ public class CachedPlayer {
         this(Bukkit.getOfflinePlayer(name).getPlayerProfile());
     }
 
-    public static String incompleteOfflineBedrockPlayerName = ".Unknown_Bedrock_Player";
-    public static String incompleteOfflineJavaPlayerName = "Unknown_Java_Player";
     // Steve
     public static PlayerSkin incompletePlayerSkin = new PlayerSkin(
             "ewogICJ0aW1lc3RhbXAiIDogMTYyMTcxNTMxMjI5MCwKICAicHJvZmlsZUlkIiA6ICJiNTM5NTkyMjMwY2I0MmE0OWY5YTRlYmYxNmRlOTYwYiIsCiAgInByb2ZpbGVOYW1lIiA6ICJtYXJpYW5hZmFnIiwKICAic2lnbmF0dXJlUmVxdWlyZWQiIDogdHJ1ZSwKICAidGV4dHVyZXMiIDogewogICAgIlNLSU4iIDogewogICAgICAidXJsIiA6ICJodHRwOi8vdGV4dHVyZXMubWluZWNyYWZ0Lm5ldC90ZXh0dXJlLzFhNGFmNzE4NDU1ZDRhYWI1MjhlN2E2MWY4NmZhMjVlNmEzNjlkMTc2OGRjYjEzZjdkZjMxOWE3MTNlYjgxMGIiCiAgICB9CiAgfQp9",
@@ -72,6 +70,9 @@ public class CachedPlayer {
             if (Bukkit.getPluginManager().isPluginEnabled("Geyser-Spigot")) {
                 System.err.println("Hey! VexelCore-based plugins can't save Bedrock player data properly because Floodgate isn't installed.");
             }
+            if (uuid.toString().contains("00000000-0000-0000")) {
+                System.err.println("Bedrock player data is being requested but it cannot be fulfilled because Floodgate is missing.");
+            }
             return false;
         }
         FloodgateApi floodgateApi = FloodgateApi.getInstance();
@@ -92,7 +93,6 @@ public class CachedPlayer {
                 setFromPlayerProfile(possiblyOnlinePlayer.getPlayerProfile());
             }
         }
-
         // Bedrock
         if (isBedrock()) {
             FloodgateApi floodgateApi = FloodgateApi.getInstance();
@@ -109,17 +109,20 @@ public class CachedPlayer {
                     setName(floodgatePlayer.getJavaUsername());
                 }
             }
-        } else {
-            // Java
-            PlayerInformation playerInformation;
-            if (name != null) {
-                playerInformation = new PlayerInformation(name);
-            } else {
-                playerInformation = new PlayerInformation(uuid);
+        }
+        // Java
+        if (!isBedrock()) {
+            if (name == null || uuid == null || playerSkin == null || !playerSkin.isComplete()) {
+                PlayerInformation playerInformation;
+                if (name != null) {
+                    playerInformation = new PlayerInformation(name);
+                } else {
+                    playerInformation = new PlayerInformation(uuid);
+                }
+                setName(playerInformation.getName());
+                setUUID(playerInformation.getUuid());
+                setPlayerSkin(playerInformation.getPlayerSkin());
             }
-            setName(playerInformation.getName());
-            setUUID(playerInformation.getUuid());
-            setPlayerSkin(playerInformation.getPlayerSkin());
         }
 
         // Set Steve skin if no other value is known
@@ -171,14 +174,12 @@ public class CachedPlayer {
 
     public boolean isComplete() {
         return this.name != null &&
-                !this.name.equals(incompleteOfflineBedrockPlayerName) &&
-                !this.name.equals(incompleteOfflineJavaPlayerName) &&
                 this.uuid != null &&
                 this.playerSkin.isComplete();
     }
 
     public String debug() {
-        return "--==== Profile of "+getName()+" ====--\nUUID: "+getUUID()+"Skin Complete: "+getPlayerSkin().isComplete();
+        return "--==== Profile of "+getName()+" ====--\nUUID: "+getUUID()+" | Skin Complete: "+getPlayerSkin().isComplete();
     }
 
     public static TypeAdapter<CachedPlayer> adapter = new TypeAdapter<>() {
