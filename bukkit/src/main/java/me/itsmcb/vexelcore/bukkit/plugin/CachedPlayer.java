@@ -5,7 +5,6 @@ import dev.dejvokep.boostedyaml.serialization.standard.TypeAdapter;
 import me.itsmcb.vexelcore.common.api.web.mojang.PlayerInformation;
 import me.itsmcb.vexelcore.common.api.web.mojang.PlayerSkin;
 import org.bukkit.Bukkit;
-import org.bukkit.OfflinePlayer;
 import org.bukkit.entity.Player;
 import org.geysermc.floodgate.api.FloodgateApi;
 import org.geysermc.floodgate.api.player.FloodgatePlayer;
