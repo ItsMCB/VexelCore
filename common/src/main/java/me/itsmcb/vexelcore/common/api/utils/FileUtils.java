@@ -2,7 +2,6 @@ package me.itsmcb.vexelcore.common.api.utils;
 
 import java.io.File;
 import java.io.IOException;
-import java.nio.file.CopyOption;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
@@ -14,12 +13,15 @@ import java.util.stream.Stream;
 
 public class FileUtils {
 
-    public static boolean deleteFile(File path) {
+    public static boolean delete(File path) {
         if (path.exists()) {
             File[] files = path.listFiles();
+            if (files == null) {
+                return false;
+            }
             for (File file : files) {
                 if (file.isDirectory()) {
-                    deleteFile(file);
+                    delete(file);
                 } else {
                     file.delete();
                 }
@@ -83,12 +85,35 @@ public class FileUtils {
         return fileList;
     }
 
-    public static long getAvailableDiskSpaceBytes(File file) {
-        return file.getUsableSpace();
+    public static long getSizeBytes(File file) {
+        long size = 0;
+        try (Stream<Path> walk = Files.walk(Path.of(file.getPath()))) {
+            size = walk
+                    .filter(Files::isRegularFile)
+                    .mapToLong(p -> {
+                        try {
+                            return Files.size(p);
+                        } catch (IOException e) {
+                            return 0L;
+                        }
+                    })
+                    .sum();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return size;
     }
 
-    public static long getTotalDiskSpaceBytes(File file) {
-        return file.getTotalSpace();
+    public static long getDiskUsedBytes() {
+        return getOSRoot().getTotalSpace();
+    }
+
+    public static long getDiskAvailableBytes() {
+        return getOSRoot().getUsableSpace();
+    }
+
+    public static long getDiskTotalBytes() {
+        return getOSRoot().getTotalSpace();
     }
 
     public static File getOSRoot() {
@@ -100,34 +125,22 @@ public class FileUtils {
         }
         return root;
     }
-
-    private static final String[] SIZE_SUFFIXES = {"B", "KB", "MB", "GB"};
+    private static final String[] SIZE_SUFFIXES = {"B", "KB", "MB", "GB","TB","PB"};
 
     public static String getRecursiveFileSizeFormatted(File file) {
-        return getRecursiveFileSizeFormatted(file, new DecimalFormat("#.##"));
+        return getRecursiveFileSizeFormatted(getSizeBytes(file), new DecimalFormat("#.##"));
     }
 
-    public static String getRecursiveFileSizeFormatted(File file, DecimalFormat decimalFormat) {
-        float size = getRecursiveFileSize(file);
+    public static String getRecursiveFileSizeFormatted(long bytes) {
+        return getRecursiveFileSizeFormatted(bytes, new DecimalFormat("#.##"));
+    }
+
+    public static String getRecursiveFileSizeFormatted(long bytes, DecimalFormat decimalFormat) {
         int suffixIndex = 0;
-        while (size >= 1024 && suffixIndex < SIZE_SUFFIXES.length - 1) {
-            size /= 1024;
+        while (bytes >= 1000 && suffixIndex < SIZE_SUFFIXES.length - 1) {
+            bytes /= 1000;
             suffixIndex++;
         }
-        return String.format("%s %s", decimalFormat.format(size), SIZE_SUFFIXES[suffixIndex]);
+        return String.format("%s %s", decimalFormat.format(bytes), SIZE_SUFFIXES[suffixIndex]);
     }
-
-    private static long getRecursiveFileSize(File file) {
-        if (file.isDirectory()) {
-            long size = 0;
-            for (File child : file.listFiles()) {
-                size += getRecursiveFileSize(child);
-            }
-            return size;
-        } else {
-            return file.length();
-        }
-    }
-
-
 }

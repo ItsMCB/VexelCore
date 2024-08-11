@@ -29,7 +29,7 @@ public class PlayerInformation {
             JSONArray properties = (JSONArray) skinJSON.get("properties");
             this.playerSkin = new PlayerSkin((String) ((JSONObject) properties.get(0)).get("value"), (String) ((JSONObject) properties.get(0)).get("signature"));
         } catch (ParseException | IOException e) {
-            System.out.println("Username error for "+uuid);
+            System.err.println("Username error for "+uuid);
             this.isValid = false;
             return null;
         }

@@ -201,7 +201,7 @@ public class CustomCommand extends Command {
         }
         AtomicReference<List<String>> completions = new AtomicReference<>(List.of());
         if (args.length == 1) {
-            completions.set(getCompletions(sender).stream().filter(c -> c.toUpperCase().contains(args[0].toUpperCase())).collect(Collectors.toList()));
+            completions.set(getCompletions(sender).stream().filter(c -> (c != null) && c.toUpperCase().contains(args[0].toUpperCase())).collect(Collectors.toList()));
         }
         if (args.length > 1) { // 2+
             ArrayList<CustomCommand> allSubCommands = new ArrayList<>();
