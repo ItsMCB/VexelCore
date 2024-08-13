@@ -9,23 +9,27 @@ import java.util.Date;
 
 public class TimeUtils {
 
-    public static String formatSecondsToTime(int seconds) {
-        long days = seconds / 86400;
-        long hours = (seconds % 86400) / 3600;
-        long minutes = ((seconds % 86400) % 3600) / 60;
+    public static String formatSecondsToTime(long seconds) {
+        long days = seconds / (24 * 3600);
+        seconds %= (24 * 3600);
+        long hours = seconds / 3600;
+        seconds %= 3600;
+        long minutes = seconds / 60;
+        seconds %= 60;
 
-        StringBuilder formattedTime = new StringBuilder();
+        StringBuilder result = new StringBuilder();
         if (days > 0) {
-            formattedTime.append(days).append("d ");
+            result.append(days).append("d ");
         }
-        if (hours > 0) {
-            formattedTime.append(hours).append("h ");
+        if (hours > 0 || days > 0) {
+            result.append(hours).append("h ");
         }
-        if (minutes > 0) {
-            formattedTime.append(minutes).append("m");
+        if (minutes > 0 || hours > 0 || days > 0) {
+            result.append(minutes).append("m ");
         }
+        result.append(seconds).append("s");
 
-        return formattedTime.toString().trim();
+        return result.toString().trim();
     }
 
     public static String convert(final long time){
