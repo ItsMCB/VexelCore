@@ -94,6 +94,10 @@ public class CustomCommand extends Command {
         return sender.hasPermission(super.getPermission());
     }
 
+    public void executeAsPlayer(Player player) {
+        executeAsPlayer(player,new String[]{});
+    }
+
     public void executeAsPlayer(Player player, String[] args) {
         help(player);
     }
