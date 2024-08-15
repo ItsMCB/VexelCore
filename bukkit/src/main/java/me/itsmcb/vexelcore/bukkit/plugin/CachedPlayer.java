@@ -64,16 +64,30 @@ public class CachedPlayer {
         }
     }
 
-    public boolean isBedrock() {
+    public static String bedrockUUIDPart = "00000000-0000-0000";
+
+    public boolean isFloodgateInstalled() {
         if (!Bukkit.getPluginManager().isPluginEnabled("Floodgate")) {
             if (Bukkit.getPluginManager().isPluginEnabled("Geyser-Spigot")) {
-                System.err.println("Hey! VexelCore-based plugins can't save Bedrock player data properly because Floodgate isn't installed.");
+                System.err.println("Hey! VexelCore-based plugins can't save Bedrock player data correctly because Floodgate isn't installed.");
             }
-            if (uuid.toString().contains("00000000-0000-0000")) {
+            if (uuid.toString().contains(bedrockUUIDPart)) {
                 System.err.println("Bedrock player data is being requested but it cannot be fulfilled because Floodgate is missing.");
             }
             return false;
         }
+        return true;
+    }
+
+    public boolean isBedrock() {
+        // Floodgate is unavailable
+        if (!isFloodgateInstalled()) {
+            if (uuid != null) {
+                return uuid.toString().contains(bedrockUUIDPart);
+            }
+            return false;
+        }
+        // Floodgate is available
         FloodgateApi floodgateApi = FloodgateApi.getInstance();
         if (uuid != null) {
             return floodgateApi.isFloodgateId(uuid);
@@ -93,7 +107,8 @@ public class CachedPlayer {
             }
         }
         // Bedrock
-        if (isBedrock()) {
+        boolean bedrockPlayer = isBedrock();
+        if (bedrockPlayer && isFloodgateInstalled()) {
             FloodgateApi floodgateApi = FloodgateApi.getInstance();
             if (name != null) {
                 try {
@@ -110,7 +125,7 @@ public class CachedPlayer {
             }
         }
         // Java
-        if (!isBedrock()) {
+        if (!bedrockPlayer) {
             if (name == null || uuid == null || playerSkin == null || !playerSkin.isComplete()) {
                 PlayerInformation playerInformation;
                 if (name != null) {

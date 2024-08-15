@@ -1,5 +1,7 @@
 package me.itsmcb.vexelcore.common.api.utils;
 
+import org.jetbrains.annotations.NotNull;
+
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
@@ -13,7 +15,7 @@ import java.util.stream.Stream;
 
 public class FileUtils {
 
-    public static boolean delete(File path) {
+    public static boolean delete(@NotNull File path) {
         if (path.exists()) {
             File[] files = path.listFiles();
             if (files == null) {
@@ -30,11 +32,11 @@ public class FileUtils {
         return (path.delete());
     }
 
-    public static boolean copyDirectory(Path source, Path target) throws IOException {
+    public static boolean copyDirectory(@NotNull Path source, @NotNull Path target) throws IOException {
         return copyDirectory(source,target,List.of());
     }
 
-    public static boolean copyDirectory(Path source, Path target, List<Path> ignoredFiles) throws IOException {
+    public static boolean copyDirectory(@NotNull Path source, @NotNull Path target, @NotNull List<Path> ignoredFiles) throws IOException {
         if (!(source.toFile().exists())) {
             return false;
         }
@@ -53,7 +55,7 @@ public class FileUtils {
         return true;
     }
 
-    public static String getLastTextInstanceFromFile(Path path, String textWhere) {
+    public static String getLastTextInstanceFromFile(@NotNull Path path, @NotNull String textWhere) {
         AtomicReference<String> foundText = null;
         try (Stream<String> stream = Files.lines(path)) {
             stream.filter(lines -> lines.contains(textWhere)).forEach(line -> {
@@ -66,7 +68,7 @@ public class FileUtils {
         return foundText.get();
     }
 
-    public static List<File> getSpecific(Path path, String endsWith) {
+    public static List<File> getSpecific(@NotNull Path path, @NotNull String endsWith) {
         List<File> fileList = new ArrayList<>();
 
         File modulesFolder = path.toFile();
@@ -85,7 +87,7 @@ public class FileUtils {
         return fileList;
     }
 
-    public static long getSizeBytes(File file) {
+    public static long getSizeBytes(@NotNull File file) {
         long size = 0;
         try (Stream<Path> walk = Files.walk(Path.of(file.getPath()))) {
             size = walk
@@ -127,20 +129,26 @@ public class FileUtils {
     }
     private static final String[] SIZE_SUFFIXES = {"B", "KB", "MB", "GB","TB","PB"};
 
-    public static String getRecursiveFileSizeFormatted(File file) {
-        return getRecursiveFileSizeFormatted(getSizeBytes(file), new DecimalFormat("#.##"));
+    public static String getRecursiveFileSizeFormatted(@NotNull File file) {
+        return getRecursiveFileSizeFormatted(getSizeBytes(file), null);
     }
 
     public static String getRecursiveFileSizeFormatted(long bytes) {
-        return getRecursiveFileSizeFormatted(bytes, new DecimalFormat("#.##"));
+        return getRecursiveFileSizeFormatted(bytes, null);
     }
 
-    public static String getRecursiveFileSizeFormatted(long bytes, DecimalFormat decimalFormat) {
+    public static String getRecursiveFileSizeFormatted(long bytes, DecimalFormat df) {
+        if (df == null) {
+            df = new DecimalFormat("#.##");
+        }
         int suffixIndex = 0;
-        while (bytes >= 1000 && suffixIndex < SIZE_SUFFIXES.length - 1) {
-            bytes /= 1000;
+        double size = bytes;
+
+        while (size >= 1000 && suffixIndex < SIZE_SUFFIXES.length - 1) {
+            size /= 1000;
             suffixIndex++;
         }
-        return String.format("%s %s", decimalFormat.format(bytes), SIZE_SUFFIXES[suffixIndex]);
+
+        return df.format(size) + " " + SIZE_SUFFIXES[suffixIndex];
     }
 }
