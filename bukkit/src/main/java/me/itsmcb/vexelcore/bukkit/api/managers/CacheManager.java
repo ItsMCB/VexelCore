@@ -32,21 +32,21 @@ public class CacheManager implements Listener {
         plugin.getServer().getPluginManager().registerEvents(this, plugin);
     }
 
-    public ArrayList<CachedPlayer> getFromFile() {
+    public ArrayList<CachedPlayer> getAllFromFile() {
         return (ArrayList<CachedPlayer>) playerCacheConfig.get().getList("cache");
     }
 
-    private Optional<CachedPlayer> getFromFile(String name) {
-        return getFromFile().stream().filter(p -> p.getName().equalsIgnoreCase(name)).findFirst();
+    private Optional<CachedPlayer> getAllFromFile(String name) {
+        return getAllFromFile().stream().filter(p -> p.getName().equalsIgnoreCase(name)).findFirst();
     }
 
-    private Optional<CachedPlayer> getFromFile(UUID uuid) {
-        return getFromFile().stream().filter(p -> p.getUUID().equals(uuid)).findFirst();
+    private Optional<CachedPlayer> getAllFromFile(UUID uuid) {
+        return getAllFromFile().stream().filter(p -> p.getUUID().equals(uuid)).findFirst();
     }
 
     public CachedPlayer get(String name) {
         // From file
-        Optional<CachedPlayer> fileData = getFromFile(name);
+        Optional<CachedPlayer> fileData = getAllFromFile(name);
         if (fileData.isPresent()) {
             return fileData.get();
         }
@@ -62,7 +62,7 @@ public class CacheManager implements Listener {
 
     public CachedPlayer get(UUID uuid) {
         // From file
-        Optional<CachedPlayer> fileData = getFromFile(uuid);
+        Optional<CachedPlayer> fileData = getAllFromFile(uuid);
         if (fileData.isPresent()) {
             return fileData.get();
         }
