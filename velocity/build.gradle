@@ -1,66 +1,66 @@
 plugins {
-    id "com.github.johnrengelman.shadow" version "7.0.0"
+    id 'java'
+    id 'com.github.johnrengelman.shadow' version '8.1.1'
 }
-
-import com.github.jengelman.gradle.plugins.shadow.tasks.ConfigureShadowRelocation
 
 repositories {
     mavenCentral()
-    // PaperMC (for Velocity)
     maven {
         name = 'papermc'
         url = 'https://repo.papermc.io/repository/maven-public/'
     }
-    // Minecraft
-    maven {
-        name = 'minecraft-libraries'
-        url = 'https://libraries.minecraft.net/'
-    }
 }
 
 dependencies {
-    // VexelCore
     implementation project(path: ':common')
-    // Velocity
-    compileOnly("com.velocitypowered:velocity-api:3.1.1")
-    annotationProcessor("com.velocitypowered:velocity-api:3.1.1")
-    // Boosted YAML
-    implementation "dev.dejvokep:boosted-yaml:1.3"
+    compileOnly 'com.velocitypowered:velocity-api:3.4.0-SNAPSHOT'
+    annotationProcessor 'com.velocitypowered:velocity-api:3.4.0-SNAPSHOT'
+    implementation "dev.dejvokep:boosted-yaml:1.3.6"
 }
 
-// Add gradle project version to each version placeholder in sources
+java {
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(17)
+    }
+}
+
+tasks.withType(JavaCompile).configureEach {
+    options.release = 17
+}
+
 processResources {
-    filter { String line -> line.replace('${version}', project.version.toString()) }
+    filesMatching('**/*.yml') {
+        expand project.properties
+    }
 }
 
-task processSources(type: Sync) {
-    from sourceSets.main.java.srcDirs
-    filter { String line -> line.replace('${version}', project.version.toString()) }
-    into "$buildDir/src"
+tasks.register('processSources', Sync) {
+    from sourceSets.main.java
+    into "$buildDir/generated-src"
+    filter { line -> line.replace('${version}', version.toString()) }
 }
 
-compileJava.source = processSources.outputs
-
+tasks.named('compileJava') {
+    source = processSources.outputs
+}
 
 shadowJar {
-    archiveFileName = 'VexelCore-Velocity-' + project.version.toString() + '.jar'
-    relocate('me.itsmcb.vexelcore.common.api', 'me.itsmcb.vexelcore.common.api') {}
+    archiveFileName = "VexelCore-Velocity-${project.version}.jar"
+    relocate 'me.itsmcb.vexelcore.common.api', 'me.itsmcb.vexelcore.common.api'
+    // TODO Experiment with minimization at some point
+    //minimize()
 }
 
-// Configure Auto Relocation
-
-task relocateShadowJar(type: ConfigureShadowRelocation) {
-    target = tasks.shadowJar
-    prefix = "libs" // Default value is "shadow"
+tasks.named('shadowJar') {
+    enableRelocation true
+    relocationPrefix "libs"
 }
-
-tasks.shadowJar.dependsOn tasks.relocateShadowJar
 
 artifacts {
-    shadowJar
+    archives shadowJar
 }
 
-jar {
+tasks.named('jar') {
     enabled = false
     dependsOn(shadowJar)
 }

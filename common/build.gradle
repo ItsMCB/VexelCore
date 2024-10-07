@@ -1,11 +1,6 @@
 repositories {
     mavenCentral()
-    // Geyser
-    repositories {
-        maven {
-            url = uri("https://repo.opencollab.dev/main/")
-        }
-    }
+    maven { url "https://repo.opencollab.dev/main/" } // Geyser
 }
 
 dependencies {
@@ -19,17 +14,14 @@ dependencies {
     compileOnly('org.geysermc.floodgate:api:2.2.3-SNAPSHOT')
 }
 
-archivesBaseName = 'VexelCore-Common'
+base.archivesName = 'VexelCore-Common'
 
-// Add gradle project version to each version placeholder in sources
-processResources {
-    filter { String line -> line.replace('${version}', project.version.toString()) }
+tasks.register('processSources', Sync) {
+    from sourceSets.main.java
+    into "$buildDir/generated-src"
+    filter { line -> line.replace('${version}', version.toString()) }
 }
 
-task processSources(type: Sync) {
-    from sourceSets.main.java.srcDirs
-    filter { String line -> line.replace('${version}', project.version.toString()) }
-    into "$buildDir/src"
+tasks.named('compileJava') {
+    source = processSources.outputs
 }
-
-compileJava.source = processSources.outputs
