@@ -66,6 +66,7 @@ public class CacheManager implements Listener {
         if (fileData.isPresent()) {
             return fileData.get();
         }
+        instance.getLogger().info("CacheManager Debug | "+uuid+" is not present in fileData");
         // From server cache or API
         CachedPlayer cachedPlayer = new CachedPlayer(uuid);
         addToCache(cachedPlayer);
@@ -74,9 +75,6 @@ public class CacheManager implements Listener {
 
     private void addToCache(CachedPlayer cachedPlayer) {
         cachedPlayer.tryToFindMissingValues();
-        if (!cachedPlayer.isComplete()) {
-            return;
-        }
         ArrayList<CachedPlayer> cache = (ArrayList<CachedPlayer>) playerCacheConfig.get().getList("cache");
         // Set TTL to be between 1 and 30 days. This ensures that the cache won't get invalidated at the same time thus avoiding rate limiting problems
         if (cachedPlayer.getTTL() == CachedPlayer.defaultTTL) {
@@ -111,7 +109,7 @@ public class CacheManager implements Listener {
             ArrayList<CachedPlayer> cache = (ArrayList<CachedPlayer>) playerCacheConfig.get().getList("cache");
             cache.forEach(cps -> {
                 if (cps.getUUID() == null) {
-                    System.out.println("\n\nERROR ON CLEARIFOLD IN CACHEMANAGER: UUID NULL FOR "+cps.getName() + " | "+cps.getLastRefresh());
+                    instance.getLogger().severe("\n\nERROR ON CLEARIFOLD IN CACHEMANAGER: UUID NULL FOR "+cps.getName() + " | "+cps.getLastRefresh());
                     cache.remove(cps);
                 }
             });

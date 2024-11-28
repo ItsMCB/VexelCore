@@ -19,7 +19,7 @@ public class PaginatedMenu extends MenuV2 {
         String arrowLeft = "eyJ0ZXh0dXJlcyI6eyJTS0lOIjp7InVybCI6Imh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvODY5NzFkZDg4MWRiYWY0ZmQ2YmNhYTkzNjE0NDkzYzYxMmY4Njk2NDFlZDU5ZDFjOTM2M2EzNjY2YTVmYTYifX19";
 
         addStaticItem(new MenuButton(arrowLeft)
-                .name("&r&d&lLast Page")
+                .name("&r&d&lPrevious Page")
                 .slot(size-7)
                 .leftClickAction(event -> {
                     int newIndex = firstItemIndexIfPageAdded(-1);

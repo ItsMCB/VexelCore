@@ -18,10 +18,10 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 public class CustomCommand extends Command {
-    ArrayList<CustomCommand> subCommands = new ArrayList<>();
+    private ArrayList<CustomCommand> subCommands = new ArrayList<>();
 
-    ArrayList<CustomCommand> stipulatedSubCommands = new ArrayList<>();
-    HashMap<String, String> parameters = new HashMap<>();
+    private ArrayList<CustomCommand> stipulatedSubCommands = new ArrayList<>();
+    private HashMap<String, String> parameters = new HashMap<>();
 
     public CustomCommand(@NotNull String name, @NotNull String description, @NotNull String permission) {
         super(name);
@@ -78,11 +78,7 @@ public class CustomCommand extends Command {
             return true;
         }
         // Main command which might have args that are not sub commands
-        if (sender instanceof Player player) {
-            executeAsPlayer(player, newArgs);
-        } else {
-            executeAsConsole(sender, newArgs);
-        }
+        executeAsAnyCommandSender(sender, newArgs);
         return true;
     }
 
@@ -102,8 +98,10 @@ public class CustomCommand extends Command {
         help(player);
     }
 
-    public void executeAsConsole(CommandSender console, String[] args) {
-        help(console);
+    public void executeAsAnyCommandSender(CommandSender sender, String[] args) {
+        if (sender instanceof Player player) {
+            executeAsPlayer(player, args);
+        }
     }
 
     public void registerSubCommand(CustomCommand subCommand) {
