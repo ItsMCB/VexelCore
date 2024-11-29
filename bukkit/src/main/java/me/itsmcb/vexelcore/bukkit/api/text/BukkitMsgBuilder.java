@@ -8,12 +8,15 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.configuration.serialization.ConfigurationSerializable;
 import org.bukkit.configuration.serialization.SerializableAs;
 import org.bukkit.entity.Player;
+import org.bukkit.plugin.java.JavaPlugin;
+import org.bukkit.scheduler.BukkitRunnable;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.function.Predicate;
 
 @SerializableAs("MsgBuilder")
 public class BukkitMsgBuilder extends CommonMsgBuilder implements ConfigurationSerializable {
@@ -71,6 +74,20 @@ public class BukkitMsgBuilder extends CommonMsgBuilder implements ConfigurationS
 
     public void sendOnly(@NotNull Player included) {
         sendOnly(List.of(included));
+    }
+
+    public void sendActionBar(int repeatSeconds, JavaPlugin instance, Predicate<Player> shouldContinue, Player player) {
+        new BukkitRunnable() {
+            int count = 0;
+            @Override
+            public void run() {
+                if (count == repeatSeconds || !shouldContinue.test(player)) {
+                    this.cancel();
+                }
+                player.sendActionBar(get());
+                count++;
+            }
+        }.runTaskTimerAsynchronously(instance, 0L, 20L);
     }
 
     @Override
