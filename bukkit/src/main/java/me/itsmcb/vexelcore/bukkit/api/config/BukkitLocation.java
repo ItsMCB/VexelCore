@@ -33,8 +33,9 @@ public class BukkitLocation extends BukkitCoordinates {
         return name;
     }
 
-    public void setName(String name) {
+    public BukkitLocation setName(String name) {
         this.name = name;
+        return this;
     }
 
     @Override

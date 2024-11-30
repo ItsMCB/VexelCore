@@ -2,6 +2,7 @@ package me.itsmcb.vexelcore.bukkit.api.config;
 
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
+import org.bukkit.World;
 import org.bukkit.configuration.serialization.ConfigurationSerializable;
 import org.bukkit.configuration.serialization.SerializableAs;
 import org.jetbrains.annotations.NotNull;
@@ -36,6 +37,10 @@ public class BukkitCoordinates implements ConfigurationSerializable {
         this.pitch = pitch;
     }
 
+    public Location getLocation(World world) {
+        return new Location(world,x,y,z,yaw,pitch);
+    }
+
     public Location getLocation(String loadedWorldName) {
         return new Location(Bukkit.getWorld(loadedWorldName),x,y,z,yaw,pitch);
     }
@@ -44,40 +49,45 @@ public class BukkitCoordinates implements ConfigurationSerializable {
         return x;
     }
 
-    public void setX(double x) {
+    public BukkitCoordinates setX(double x) {
         this.x = x;
+        return this;
     }
 
     public double getY() {
         return y;
     }
 
-    public void setY(double y) {
+    public BukkitCoordinates setY(double y) {
         this.y = y;
+        return this;
     }
 
     public double getZ() {
         return z;
     }
 
-    public void setZ(double z) {
+    public BukkitCoordinates setZ(double z) {
         this.z = z;
+        return this;
     }
 
     public float getYaw() {
         return yaw;
     }
 
-    public void setYaw(float yaw) {
+    public BukkitCoordinates setYaw(float yaw) {
         this.yaw = yaw;
+        return this;
     }
 
     public float getPitch() {
         return pitch;
     }
 
-    public void setPitch(float pitch) {
+    public BukkitCoordinates setPitch(float pitch) {
         this.pitch = pitch;
+        return this;
     }
 
     @Override
