@@ -2,7 +2,6 @@ package me.itsmcb.vexelcore.bukkit.api.config;
 
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
-import org.bukkit.configuration.serialization.ConfigurationSerializable;
 import org.bukkit.configuration.serialization.SerializableAs;
 import org.jetbrains.annotations.NotNull;
 
@@ -10,72 +9,42 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 
 @SerializableAs("BukkitLocation")
-public class BukkitLocation implements ConfigurationSerializable {
+public class BukkitLocation extends BukkitCoordinates {
 
     private String name;
-    private double x;
-    private double y;
-    private double z;
-    private float yaw;
-    private float pitch;
 
     public BukkitLocation() {}
 
     public BukkitLocation(Location location) {
+        super(location.getX(), location.getY(), location.getZ(), location.getYaw(), location.getPitch());
         this.name = location.getWorld().getName();
-        this.x = location.getX();
-        this.y = location.getY();
-        this.z = location.getZ();
-        this.yaw = location.getYaw();
-        this.pitch = location.getPitch();
     }
 
     public BukkitLocation(String name, double x, double y, double z, float yaw, float pitch) {
+        super(x,y,z,yaw,pitch);
         this.name = name;
-        this.x = x;
-        this.y = y;
-        this.z = z;
-        this.yaw = yaw;
-        this.pitch = pitch;
     }
 
     public Location getLocation() {
-        return new Location(Bukkit.getWorld(name),x,y,z,yaw,pitch);
+        return new Location(Bukkit.getWorld(name),getX(),getY(),getZ(),getYaw(),getPitch());
+    }
+
+    public String getName() {
+        return name;
     }
 
     public void setName(String name) {
         this.name = name;
     }
 
-    public void setX(double x) {
-        this.x = x;
-    }
-
-    public void setY(double y) {
-        this.y = y;
-    }
-
-    public void setZ(double z) {
-        this.z = z;
-    }
-
-    public void setYaw(float yaw) {
-        this.yaw = yaw;
-    }
-
-    public void setPitch(float pitch) {
-        this.pitch = pitch;
-    }
-
     @Override
     public @NotNull Map<String, Object> serialize() {
         LinkedHashMap<String,Object> map = new LinkedHashMap<>();
-        map.put("name",name);
-        map.put("x",x+"");
-        map.put("y",y+"");
-        map.put("z",z+"");
-        map.put("yaw",yaw+"");
-        map.put("pitch",pitch+"");
+        map.put("x",getX()+"");
+        map.put("y",getY()+"");
+        map.put("z",getZ()+"");
+        map.put("yaw",getYaw()+"");
+        map.put("pitch",getPitch()+"");
         return map;
     }
 
