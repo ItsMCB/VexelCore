@@ -3,6 +3,7 @@ package me.itsmcb.vexelcore.bukkit.api.command;
 import me.itsmcb.vexelcore.bukkit.api.text.BukkitMsgBuilder;
 import me.itsmcb.vexelcore.common.api.command.CMDHelper;
 import me.itsmcb.vexelcore.common.api.utils.ArgUtils;
+import me.itsmcb.vexelcore.common.api.utils.StringUtils;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.TextComponent;
 import org.bukkit.Sound;
@@ -141,6 +142,10 @@ public class CustomCommand extends Command {
         return List.of();
     }
 
+    public List<String> getContextCompletions(CommandSender sender, String[] args) {
+        return List.of();
+    }
+
     public void help(CommandSender sender) {
         new BukkitMsgBuilder("&8--=== &7Command Help&r&8: &a"+getName()+"&r&8 ===--").send(sender);
         ArrayList<CustomCommand> subCommands = getSubCommands();
@@ -193,50 +198,106 @@ public class CustomCommand extends Command {
     }
 
     public TextComponent permissionError() {
-        return new BukkitMsgBuilder("&cNo permission!").get();
+        return new BukkitMsgBuilder("&cYou don't have permission to run this command!").get();
     }
 
     @Override
     public @NotNull List<String> tabComplete(@NotNull CommandSender sender, @NotNull String alias, @NotNull String[] args) throws IllegalArgumentException {
+        // Return if sender doesn't have permission
         if (!hasPermission(sender)) {
-            return List.of();
+            return Collections.emptyList();
         }
-        AtomicReference<List<String>> completions = new AtomicReference<>(List.of());
-        if (args.length == 1) {
-            completions.set(getCompletions(sender).stream().filter(c -> (c != null) && c.toUpperCase().contains(args[0].toUpperCase())).collect(Collectors.toList()));
+        // Handle different argument lengths
+        return switch (args.length) {
+            case 0 -> Collections.emptyList(); // No arguments
+            case 1 -> handleSingleArgument(getCompletions(sender), args[0]); // Single argument
+            default -> handleMultipleArguments(sender, args); // Many arguments
+        };
+    }
+    
+    private List<String> handleSingleArgument(Collection<String> completions, String partialArg) {
+        if (partialArg == null || partialArg.isEmpty()) {
+            return new ArrayList<>(completions);
         }
-        if (args.length > 1) { // 2+
-            ArrayList<CustomCommand> allSubCommands = new ArrayList<>();
-            allSubCommands.add(this);
-            for (int i = 0; i < args.length; i++) {
-                int finalI = i;
-                ArrayList<CustomCommand> fl = new ArrayList<>(allSubCommands);
-                if (i > 0) { // 1+
-                    fl = new ArrayList<>(allSubCommands.stream().filter(sc -> sc.getName().equalsIgnoreCase(args[finalI-1])).toList());
-                }
-                if (i+1 == args.length) { // Stop, get completions
-                    ArrayList<String> almostFinalCompletions = new ArrayList<>();
-                    for (CustomCommand customCommand : fl) {
-                        almostFinalCompletions.addAll(customCommand.getCompletions(sender));
-                    }
-                    completions.set(almostFinalCompletions.stream().filter(c -> c.toUpperCase().contains(args[args.length-1].toUpperCase())).collect(Collectors.toList()));
-                } else {
-                    ArrayList<CustomCommand> subCommandsSave = new ArrayList<>(allSubCommands);
-                    allSubCommands.clear();
-                    allSubCommands.addAll(getSubCommandsFromCommandList(subCommandsSave));
-                }
-            }
-        }
-        return completions.get();
+        return completions.stream()
+                .filter(Objects::nonNull)
+                .filter(completion -> completion.toUpperCase().contains(partialArg.toUpperCase()))
+                .toList();
     }
 
-    private ArrayList<CustomCommand> getSubCommandsFromCommandList(ArrayList<CustomCommand> customCommandsList) {
+    private ArrayList<CustomCommand> getSubCommandsFromCommandList(List<CustomCommand> commandList) {
         AtomicReference<ArrayList<CustomCommand>> subCommands = new AtomicReference<>(new ArrayList<>());
-        customCommandsList.forEach(cmd -> cmd.getSubCommands().forEach(subCmd -> {
+        // Iterate through commands to add all subcommands
+        commandList.forEach(cmd -> cmd.getSubCommands().forEach(subCmd -> {
             ArrayList<CustomCommand> temp = subCommands.get();
             temp.add(subCmd);
             subCommands.set(temp);
         }));
         return subCommands.get();
     }
+
+    private List<String> handleMultipleArguments(CommandSender sender, String[] args) {
+        List<CustomCommand> currentCommands = new ArrayList<>(List.of(this));
+        List<CustomCommand> lastMatchedCommands = new ArrayList<>(List.of(this));
+        // Index of previously identified subcommand
+        int previousSubCommandIndex = 0; // For example, if "/p warp warpName" is typed, it is the index for "warp"
+
+        // Identify subcommands
+        for (int i = 0; i < args.length - 1; i++) {
+            int finalI = i;
+            List<CustomCommand> matchedCommands = currentCommands.stream()
+                    .flatMap(cmd -> getSubCommandsFromCommandList(Collections.singletonList(cmd)).stream())
+                    .filter(subCmd -> subCmd.getName().equalsIgnoreCase(args[finalI]))
+                    .collect(Collectors.toList());
+            previousSubCommandIndex = i;
+            // Backwards matching for context completion
+            if (matchedCommands.isEmpty()) {
+                for (int j = i; j >= 0; j--) {
+                    final int searchIndex = j;
+                    matchedCommands = currentCommands.stream()
+                            .flatMap(cmd -> getSubCommandsFromCommandList(Collections.singletonList(cmd)).stream())
+                            .filter(subCmd -> subCmd.getName().equalsIgnoreCase(args[searchIndex]))
+                            .collect(Collectors.toList());
+                    if (!matchedCommands.isEmpty()) {
+                        break;
+                    }
+                }
+            }
+            // If matches found, update last matched commands and current commands
+            if (!matchedCommands.isEmpty()) {
+                lastMatchedCommands = new ArrayList<>(matchedCommands);
+                currentCommands = matchedCommands;
+            }
+        }
+
+        // Collect completions
+        List<String> completions = new ArrayList<>();
+        // Add completions from subcommands, filtering by what the user has typed
+        List<String> subCommandCompletions = currentCommands.stream()
+                .flatMap(cmd -> cmd.getCompletions(sender).stream())
+                .filter(Objects::nonNull)
+                .filter(completion -> completion.toUpperCase().contains(args[args.length - 1].toUpperCase()))
+                .toList();
+        // Add context completions from last matched commands, filtering by what the user has typed
+        List<String> contextCompletions = lastMatchedCommands.stream()
+                .flatMap(cmd -> {
+                    // Pass the entire original arguments to context completions
+                    String[] contextArgs = Arrays.copyOfRange(args, 0, args.length);
+                    return cmd.getContextCompletions(sender, contextArgs).stream();
+                })
+                .filter(Objects::nonNull)
+                .filter(completion -> completion.toUpperCase().contains(args[args.length - 1].toUpperCase()))
+                .toList();
+        // Logic that ensures subcommands don't appear when they shouldn't
+        int finalTest = previousSubCommandIndex;
+        boolean currentCommandIsTyped = !currentCommands.stream().filter(cc -> cc.getName().equalsIgnoreCase(args[finalTest])).toList().isEmpty();
+        boolean subCommandIsTyped = !subCommandCompletions.stream().filter(cc -> cc.equalsIgnoreCase(args[finalTest])).toList().isEmpty();
+        if (currentCommandIsTyped || (subCommandIsTyped && currentCommands.stream().map(Command::getName).toList().contains(args[args.length-1]))) {
+            completions.addAll(subCommandCompletions);
+        }
+        // Always add completions as their logic is handled in each subcommand override
+        completions.addAll(contextCompletions);
+        return completions;
+    }
+
 }

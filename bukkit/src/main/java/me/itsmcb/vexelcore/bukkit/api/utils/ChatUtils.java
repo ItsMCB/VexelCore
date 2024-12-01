@@ -19,4 +19,17 @@ public class ChatUtils {
         return playerAudienceList;
     }
 
+    public static String hexToColorCode(String hexValue) {
+        StringBuilder formattedString = new StringBuilder("&x");
+        // Remove the leading '#' if present
+        if (hexValue.startsWith("#")) {
+            hexValue = hexValue.substring(1);
+        }
+        // Iterate through each character in the hex value
+        for (char c : hexValue.toCharArray()) {
+            formattedString.append('&').append(c);
+        }
+        return formattedString.toString();
+    }
+
 }
