@@ -16,63 +16,155 @@ import org.jetbrains.annotations.NotNull;
 import java.io.File;
 import java.io.InputStream;
 import java.text.MessageFormat;
-import java.util.List;
-import java.util.Locale;
+import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.logging.Level;
 
+/**
+ * This class is a feature-complete localization manager leveraging Adventure's component translation system, featuring variable support.
+ * It copies enabled locale .yml files from the implemented plugin's /resources/lang folder to its data folder for server owner customization.
+ */
 public class LocalizationManager {
+    private static final String LANG_DIRECTORY = "lang";
+    private static final String FILE_VERSION_KEY = "file-version";
 
-    public LocalizationManager(@NotNull JavaPlugin plugin, @NotNull String translationRegisteryKeyNamespace, @NotNull List<Locale> enabledLocales) {
+    private final JavaPlugin plugin;
+    private final List<Locale> enabledLocales;
+    private final String registryNamespace;
+    private TranslationRegistry registry;
+    private Map<Locale, BoostedConfig> configCache;
+
+    /**
+     * Creates a new LocalizationManager instance.
+     *
+     * @param plugin The JavaPlugin instance
+     * @param translationRegistryNamespace The namespace for the translation registry
+     * @param enabledLocales List of enabled locales (must not be empty)
+     * @throws IllegalArgumentException if enabledLocales is empty
+     */
+    public LocalizationManager(@NotNull JavaPlugin plugin, @NotNull String translationRegistryNamespace, @NotNull List<Locale> enabledLocales) {
         if (enabledLocales.isEmpty()) {
-            plugin.getLogger().severe("LocalizationManager must have at least one language enabled to function!");
-            return;
+            throw new IllegalArgumentException("LocalizationManager must have at least one language enabled");
         }
+        this.plugin = plugin;
+        this.enabledLocales = List.copyOf(enabledLocales); // Immutable copy
+        this.configCache = new ConcurrentHashMap<>();
+        this.registryNamespace = translationRegistryNamespace;
+        initializeLocalization();
+    }
 
-        TranslationRegistry registry = TranslationRegistry.create(Key.key(translationRegisteryKeyNamespace, "translations"));
-        registry.defaultLocale(enabledLocales.get(0)); // The first supported locale will be the fallback
+    private void createRegistry() {
+        this.registry = TranslationRegistry.create(Key.key(registryNamespace, "translations"));
+        this.registry.defaultLocale(enabledLocales.get(0));
+    }
 
-        // Transfer data from config files to global translation system
+    /**
+     * Initializes the localization system by loading configurations and registering translations.
+     */
+    private void initializeLocalization() {
+        createRegistry();
+        loadConfigurations();
+        registerTranslations();
+        GlobalTranslator.translator().addSource(registry);
+    }
+
+    /**
+     * Loads configuration files for all enabled locales.
+     */
+    private void loadConfigurations() {
         enabledLocales.forEach(locale -> {
-            InputStream inputStreamFile = plugin.getResource("lang/"+locale+".yml");
-            if (inputStreamFile == null) {
-                plugin.getLogger().severe("The "+locale+" locale is enabled but cannot be found in the jar resources.");
-                return;
+            String resourcePath = LANG_DIRECTORY + "/" + locale + ".yml";
+            try (InputStream inputStream = plugin.getResource(resourcePath)) {
+                if (inputStream == null) {
+                    plugin.getLogger().severe("Missing locale file: " + resourcePath);
+                    return;
+                }
+                BoostedConfig config = new BoostedConfig(
+                        plugin.getDataFolder(),
+                        LANG_DIRECTORY + File.separator + locale,
+                        inputStream,
+                        SpigotSerializer.getInstance()
+                );
+                configCache.put(locale, config);
+                plugin.getLogger().info("Loaded localization for: " + locale);
+            } catch (Exception e) {
+                plugin.getLogger().log(Level.SEVERE, "Failed to load locale: " + locale, e);
             }
-            BoostedConfig file = new BoostedConfig(plugin.getDataFolder(),"lang"+ File.separator+locale, inputStreamFile, SpigotSerializer.getInstance());
-            file.get().getStringRouteMappedValues(true).entrySet().stream()
-                    .filter(entry -> {
-                        // Skip file-version
-                        if (entry.getKey().equals("file-version")) {
-                            return false;
-                        }
-                        // Skip Section objects
-                        if (entry.getValue() instanceof Section || String.valueOf(entry.getValue()).contains("libs.dev.dejvokep.boostedyaml.block.implementation.Section")) {
-                            return false;
-                        }
-                        return true;
-                    })
-                    .forEach(entry -> {
-                        plugin.getLogger().warning("Logging "+entry.getKey()+ " | "+entry.getValue());
-                        registry.register(
-                                entry.getKey(),
-                                locale,
-                                new MessageFormat(String.valueOf(entry.getValue()))
-                        );
-                    });
-            GlobalTranslator.translator().addSource(registry);
-            plugin.getLogger().info("Successfully saved and loaded localization \""+locale+"\"");
         });
     }
 
-    public Component getComponent(Player player, String path) {
-        // Serialize to turn component into a string, then deserialize to turn it back into a component, now including & and hex
-        return ChatUtils.getColorizer().deserialize(ChatUtils.getColorizer().serialize(GlobalTranslator.render(Component.translatable(path),player.locale())));
+    /**
+     * Registers translations from loaded configurations to the registry.
+     */
+    private void registerTranslations() {
+        configCache.forEach((locale, config) -> {
+            config.get().getStringRouteMappedValues(true).entrySet().stream()
+                    .filter(this::isValidTranslationEntry)
+                    .forEach(entry -> registerTranslationEntry(locale, entry.getKey(), entry.getValue()));
+        });
     }
 
-    public Component getComponent(Player player, String path, ComponentLike... arguments) {
-        return ChatUtils.getColorizer().deserialize(ChatUtils.getColorizer().serialize(GlobalTranslator.render(Component.translatable(path).arguments(arguments),player.locale())));
+    private boolean isValidTranslationEntry(Map.Entry<String, Object> entry) {
+        return !FILE_VERSION_KEY.equals(entry.getKey()) &&
+                !(entry.getValue() instanceof Section) &&
+                !String.valueOf(entry.getValue()).contains("libs.dev.dejvokep.boostedyaml.block.implementation.Section");
     }
 
-    public String getString(Player player, String path) {
-        return ChatUtils.getColorizer().serialize(getComponent(player,path));
+    private void registerTranslationEntry(Locale locale, String key, Object value) {
+        try {
+            registry.register(
+                    key,
+                    locale,
+                    new MessageFormat(String.valueOf(value))
+            );
+        } catch (Exception e) {
+            plugin.getLogger().log(Level.WARNING, "Failed to register translation: " + key, e);
+        }
+    }
+
+    /**
+     * Reloads all localizations.
+     */
+    public void reload() {
+        GlobalTranslator.translator().removeSource(registry);
+        configCache.clear();
+        initializeLocalization();
+    }
+
+    /**
+     * Gets a localized and colorized component for a player.
+     *
+     * @param player The player to get the localization for
+     * @param path The translation path
+     * @return The localized component
+     */
+    public Component getComponent(@NotNull Player player, @NotNull String path) {
+        return ChatUtils.colorizeComponentText(GlobalTranslator.render(Component.translatable(path), player.locale()));
+    }
+
+    /**
+     * Gets a localized and colorized component with arguments for a player.
+     *
+     * @param player The player to get the localization for
+     * @param path The translation path
+     * @param arguments The arguments to insert into the translation
+     * @return The localized component with arguments
+     */
+    public Component getComponent(@NotNull Player player, @NotNull String path, @NotNull ComponentLike... arguments) {
+        return ChatUtils.colorizeComponentText(GlobalTranslator.render(
+                Component.translatable(path).arguments(arguments),
+                player.locale()
+        ));
+    }
+
+    /**
+     * Gets a localized and colorized string for a player.
+     *
+     * @param player The player to get the localization for
+     * @param path The translation path
+     * @return The localized string
+     */
+    public String getString(@NotNull Player player, @NotNull String path) {
+        return ChatUtils.getColorizer().serialize(getComponent(player, path));
     }
 }

@@ -1,6 +1,7 @@
 package me.itsmcb.vexelcore.bukkit.api.utils;
 
 import net.kyori.adventure.audience.Audience;
+import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
@@ -16,6 +17,17 @@ public class ChatUtils {
                 .character('&')
                 .hexColors()
                 .build();
+    }
+
+    /**
+     * Apply the & and hex color codes from the component text content to the component
+     * @param component Component to transform
+     * @return Component with in-text color codes applied
+     */
+    public static Component colorizeComponentText(Component component) {
+        return getColorizer().deserialize(
+                getColorizer().serialize(component)
+        );
     }
 
     public static List<Audience> removePlayerAudience(@NotNull Set<Audience> viewers) {
