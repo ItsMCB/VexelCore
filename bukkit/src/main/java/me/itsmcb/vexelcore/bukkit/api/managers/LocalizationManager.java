@@ -1,62 +1,78 @@
 package me.itsmcb.vexelcore.bukkit.api.managers;
 
-import me.itsmcb.vexelcore.bukkit.api.config.BukkitYAMLConfig;
+import dev.dejvokep.boostedyaml.block.implementation.Section;
+import dev.dejvokep.boostedyaml.spigot.SpigotSerializer;
+import me.itsmcb.vexelcore.bukkit.api.utils.ChatUtils;
+import me.itsmcb.vexelcore.common.api.config.BoostedConfig;
+import net.kyori.adventure.key.Key;
+import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.ComponentLike;
+import net.kyori.adventure.translation.GlobalTranslator;
+import net.kyori.adventure.translation.TranslationRegistry;
+import org.bukkit.entity.Player;
 import org.bukkit.plugin.java.JavaPlugin;
+import org.jetbrains.annotations.NotNull;
 
 import java.io.File;
 import java.io.InputStream;
-import java.util.HashMap;
+import java.text.MessageFormat;
+import java.util.List;
+import java.util.Locale;
 
 public class LocalizationManager {
 
-    private JavaPlugin plugin;
-    // TODO should probably be an enum
-    private String defaultLocalizationCode;
-    private HashMap<String,BukkitYAMLConfig> files = new HashMap<>();
-    private String prefix;
-
-    public LocalizationManager(JavaPlugin plugin, String defaultLocalizationCode) {
-        this.plugin = plugin;
-        this.defaultLocalizationCode = defaultLocalizationCode;
-    }
-
-    public boolean register(String localizationCode) {
-        String fileName = "i10n"+ File.separator +localizationCode+".yml";
-        InputStream inputStream = plugin.getResource(fileName);
-        BukkitYAMLConfig config = new BukkitYAMLConfig(plugin.getDataFolder(),fileName, inputStream);
-        if (config.exists()) {
-            files.put(localizationCode, config);
+    public LocalizationManager(@NotNull JavaPlugin plugin, @NotNull String translationRegisteryKeyNamespace, @NotNull List<Locale> enabledLocales) {
+        if (enabledLocales.isEmpty()) {
+            plugin.getLogger().severe("LocalizationManager must have at least one language enabled to function!");
+            return;
         }
-        return config.exists();
+
+        TranslationRegistry registry = TranslationRegistry.create(Key.key(translationRegisteryKeyNamespace, "translations"));
+        registry.defaultLocale(enabledLocales.get(0)); // The first supported locale will be the fallback
+
+        // Transfer data from config files to global translation system
+        enabledLocales.forEach(locale -> {
+            InputStream inputStreamFile = plugin.getResource("lang/"+locale+".yml");
+            if (inputStreamFile == null) {
+                plugin.getLogger().severe("The "+locale+" locale is enabled but cannot be found in the jar resources.");
+                return;
+            }
+            BoostedConfig file = new BoostedConfig(plugin.getDataFolder(),"lang"+ File.separator+locale, inputStreamFile, SpigotSerializer.getInstance());
+            file.get().getStringRouteMappedValues(true).entrySet().stream()
+                    .filter(entry -> {
+                        // Skip file-version
+                        if (entry.getKey().equals("file-version")) {
+                            return false;
+                        }
+                        // Skip Section objects
+                        if (entry.getValue() instanceof Section || String.valueOf(entry.getValue()).contains("libs.dev.dejvokep.boostedyaml.block.implementation.Section")) {
+                            return false;
+                        }
+                        return true;
+                    })
+                    .forEach(entry -> {
+                        plugin.getLogger().warning("Logging "+entry.getKey()+ " | "+entry.getValue());
+                        registry.register(
+                                entry.getKey(),
+                                locale,
+                                new MessageFormat(String.valueOf(entry.getValue()))
+                        );
+                    });
+            GlobalTranslator.translator().addSource(registry);
+            plugin.getLogger().info("Successfully saved and loaded localization \""+locale+"\"");
+        });
     }
 
-    public String get(String path, String... placeholderReplacements) {
-        String string = get(path);
-        for (int i = 0; i < placeholderReplacements.length; i++) {
-            string = string.replace("%"+(i+1), placeholderReplacements[i]);
-        }
-        return string;
+    public Component getComponent(Player player, String path) {
+        // Serialize to turn component into a string, then deserialize to turn it back into a component, now including & and hex
+        return ChatUtils.getColorizer().deserialize(ChatUtils.getColorizer().serialize(GlobalTranslator.render(Component.translatable(path),player.locale())));
     }
 
-    public String get(String path) {
-        // TODO maybe track preferred language of player to send as best language
-        String string = files.get(defaultLocalizationCode).getConfig().getString(path);
-        if (string == null) {
-            string = "&cUnable to find language path.";
-        }
-        return string;
+    public Component getComponent(Player player, String path, ComponentLike... arguments) {
+        return ChatUtils.getColorizer().deserialize(ChatUtils.getColorizer().serialize(GlobalTranslator.render(Component.translatable(path).arguments(arguments),player.locale())));
     }
 
-    public String getWithPrefix(String path) {
-        return get("prefix")+get(path);
+    public String getString(Player player, String path) {
+        return ChatUtils.getColorizer().serialize(getComponent(player,path));
     }
-
-    public String getWithPrefix(String path, String... placeholderReplacements) {
-        return get("prefix")+get(path, placeholderReplacements);
-    }
-
-    public void reload() {
-        files.forEach((code, config) -> config.reloadConfig());
-    }
-
 }

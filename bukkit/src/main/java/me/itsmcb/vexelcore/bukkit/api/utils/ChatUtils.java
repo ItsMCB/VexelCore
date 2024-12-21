@@ -1,6 +1,7 @@
 package me.itsmcb.vexelcore.bukkit.api.utils;
 
 import net.kyori.adventure.audience.Audience;
+import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 
@@ -9,6 +10,13 @@ import java.util.List;
 import java.util.Set;
 
 public class ChatUtils {
+
+    public static LegacyComponentSerializer getColorizer() {
+        return LegacyComponentSerializer.builder()
+                .character('&')
+                .hexColors()
+                .build();
+    }
 
     public static List<Audience> removePlayerAudience(@NotNull Set<Audience> viewers) {
         List<Audience> playerAudienceList = new ArrayList<>();
