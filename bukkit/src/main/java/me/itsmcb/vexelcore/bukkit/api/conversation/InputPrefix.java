@@ -8,6 +8,6 @@ import org.jetbrains.annotations.NotNull;
 public class InputPrefix implements ConversationPrefix {
     @Override
     public @NotNull String getPrefix(@NotNull ConversationContext context) {
-        return ChatColor.LIGHT_PURPLE+"Input Prompt"+ChatColor.WHITE+": "+ChatColor.GRAY;
+        return ChatColor.LIGHT_PURPLE+"Type your input response in chat"+ChatColor.WHITE+": "+ChatColor.GRAY;
     }
 }

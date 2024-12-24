@@ -132,6 +132,27 @@ public class LocalizationManager {
     }
 
     /**
+     * Sends a localized and colorized message to a player.
+     *
+     * @param player The player to send the message to
+     * @param path The translation path
+     */
+    public void sendMsg(@NotNull Player player, @NotNull String path) {
+        player.sendMessage(getComponent(player, path));
+    }
+
+    /**
+     * Sends a localized and colorized message with arguments to a player.
+     *
+     * @param player The player to send the message to
+     * @param path The translation path
+     * @param arguments The arguments to insert into the translation
+     */
+    public void sendMsg(@NotNull Player player, @NotNull String path, @NotNull ComponentLike... arguments) {
+        player.sendMessage(getComponent(player, path, arguments));
+    }
+
+    /**
      * Gets a localized and colorized component for a player.
      *
      * @param player The player to get the localization for
@@ -166,5 +187,17 @@ public class LocalizationManager {
      */
     public String getString(@NotNull Player player, @NotNull String path) {
         return ChatUtils.getColorizer().serialize(getComponent(player, path));
+    }
+
+    /**
+     * Gets a localized and colorized string for a player.
+     *
+     * @param player The player to get the localization for
+     * @param path The translation path
+     * @param arguments The arguments
+     * @return The localized string
+     */
+    public String getString(@NotNull Player player, @NotNull String path, @NotNull ComponentLike... arguments) {
+        return ChatUtils.getColorizer().serialize(getComponent(player,path,arguments));
     }
 }

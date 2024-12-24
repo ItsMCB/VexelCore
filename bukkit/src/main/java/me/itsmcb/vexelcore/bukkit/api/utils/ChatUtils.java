@@ -12,6 +12,13 @@ import java.util.Set;
 
 public class ChatUtils {
 
+    /**
+     * Creates a LegacyComponentSerializer that supports both
+     * Minecraft-style color codes (e.g., "&a") and hexadecimal color codes
+     * (e.g., "&#803ceb").
+     *
+     * @return A new LegacyComponentSerializer instance.
+     */
     public static LegacyComponentSerializer getColorizer() {
         return LegacyComponentSerializer.builder()
                 .character('&')

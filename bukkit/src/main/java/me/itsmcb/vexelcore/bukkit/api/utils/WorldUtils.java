@@ -107,4 +107,38 @@ public class WorldUtils {
         }
     }
 
+    public static String getTimeAsName(World w) {
+        long time = w.getFullTime() % 24000;
+        if (time >= 0 && time < 1000) {
+            return "Dawn";
+        } else if (time >= 1000 && time < 6000) {
+            return "Day";
+        } else if (time >= 6000 && time < 12000) {
+            return "Noon";
+        } else if (time >= 12000 && time < 13000) {
+            return "Dusk ("+getMoonPhase(w)+")";
+        } else if (time >= 13000 && time < 18000) {
+            return "Night ("+getMoonPhase(w)+")";
+        } else if (time >= 18000 && time < 23000) {
+            return "Midnight ("+getMoonPhase(w)+")";
+        }
+        return "Dawn";
+    }
+
+    public static String getMoonPhase(World w) {
+        long totalDays = w.getFullTime() / 24000;
+        int moonPhase = (int)(totalDays % 8);
+        return switch (moonPhase) {
+            case 0 -> "Full Moon";
+            case 1 -> "Waning Gibbous";
+            case 2 -> "Last Quarter";
+            case 3 -> "Waning Crescent";
+            case 4 -> "New Moon";
+            case 5 -> "Waxing Crescent";
+            case 6 -> "First Quarter";
+            case 7 -> "Waxing Gibbous";
+            default -> "Unknown Moon Phase";
+        };
+    }
+
 }
