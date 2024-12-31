@@ -37,11 +37,15 @@ public class CacheManager implements Listener {
     }
 
     private Optional<CachedPlayer> getAllFromFile(String name) {
-        return getAllFromFile().stream().filter(p -> p.getName().equalsIgnoreCase(name)).findFirst();
+        return getAllFromFile().stream()
+                .filter(p -> Objects.equals(p.getName(), name)) // Handles null in p.getName()
+                .findFirst();
     }
 
     private Optional<CachedPlayer> getAllFromFile(UUID uuid) {
-        return getAllFromFile().stream().filter(p -> p.getUUID().equals(uuid)).findFirst();
+        return getAllFromFile().stream()
+                .filter(p -> Objects.equals(p.getUUID(), uuid)) // Handles null in p.getName()
+                .findFirst();
     }
 
     public CachedPlayer get(String name) {
@@ -118,5 +122,15 @@ public class CacheManager implements Listener {
             playerCacheConfig.get().set("cache",cache);
             playerCacheConfig.save();
         }
+    }
+
+    public void cleanInvalid() {
+        ArrayList<CachedPlayer> cache = (ArrayList<CachedPlayer>) playerCacheConfig.get().getList("cache");
+        boolean foundNull = cache.removeAll(Collections.singleton(null));
+        if (foundNull) {
+            instance.getLogger().warning("VexelCore found a null PlayerCache entry! It has been safely removed.");
+        }
+        playerCacheConfig.get().set("cache",cache);
+        playerCacheConfig.save();
     }
 }

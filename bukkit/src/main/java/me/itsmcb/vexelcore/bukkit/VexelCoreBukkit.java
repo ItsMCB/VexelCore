@@ -1,14 +1,11 @@
 package me.itsmcb.vexelcore.bukkit;
 
-import dev.dejvokep.boostedyaml.spigot.SpigotSerializer;
 import me.itsmcb.vexelcore.bukkit.api.managers.CacheManager;
 import me.itsmcb.vexelcore.bukkit.api.text.BukkitMsgBuilder;
 import me.itsmcb.vexelcore.bukkit.api.utils.PluginUtils;
-import me.itsmcb.vexelcore.bukkit.api.utils.WorldEditUtils;
 import me.itsmcb.vexelcore.bukkit.plugin.PAPI;
 import me.itsmcb.vexelcore.bukkit.plugin.PCMListener;
 import me.itsmcb.vexelcore.bukkit.plugin.ProxyManager;
-import me.itsmcb.vexelcore.common.api.config.BoostedConfig;
 import org.bukkit.Bukkit;
 import org.bukkit.configuration.serialization.ConfigurationSerialization;
 import org.bukkit.event.EventHandler;
@@ -70,6 +67,9 @@ public class VexelCoreBukkit extends JavaPlugin implements Listener {
         if (PluginUtils.pluginIsLoaded("PlaceholderAPI")) {
             new PAPI(this).register();
         }
+        // Clean player cache
+        getCacheManager().cleanInvalid();
+        instance.getLogger().info("PlayerCache size is "+getCacheManager().getAllFromFile().size());
     }
 
     public static VexelCoreBukkit getInstance() {

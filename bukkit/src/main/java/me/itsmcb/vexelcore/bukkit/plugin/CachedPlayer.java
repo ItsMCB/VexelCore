@@ -30,6 +30,7 @@ public class CachedPlayer {
     }
     public CachedPlayer(String name) {
         this(Bukkit.getOfflinePlayer(name).getPlayerProfile());
+        this.name = name;
     }
 
     // Steve
