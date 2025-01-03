@@ -2,6 +2,7 @@ package me.itsmcb.vexelcore.bukkit.api.utils;
 
 import net.kyori.adventure.audience.Audience;
 import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.TextComponent;
 import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
@@ -31,10 +32,31 @@ public class ChatUtils {
      * @param component Component to transform
      * @return Component with in-text color codes applied
      */
-    public static Component colorizeComponentText(Component component) {
+    public static Component colorizeComponentText(@NotNull Component component) {
         return getColorizer().deserialize(
                 getColorizer().serialize(component)
         );
+    }
+
+    /**
+     * Recursively flattens a component and its children into a single string.
+     * Only {@link TextComponent} are processed; other component types are ignored.
+     *
+     * @param component The component to flatten. Must not be null.
+     * @return A string representation of the component's text content and the text content of its children,
+     * or an empty string if the component is not a {@link TextComponent}.
+     */
+    public static String flattenComponent(@NotNull Component component) {
+        if (component instanceof TextComponent textComponent) {
+            StringBuilder builder = new StringBuilder(textComponent.content());
+            List<Component> children = textComponent.children();
+            for (Component child : children) {
+                builder.append(flattenComponent(child));
+            }
+            return builder.toString();
+        } else {
+            return "";
+        }
     }
 
     public static List<Audience> removePlayerAudience(@NotNull Set<Audience> viewers) {
