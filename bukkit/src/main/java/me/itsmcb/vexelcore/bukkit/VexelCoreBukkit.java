@@ -1,11 +1,16 @@
 package me.itsmcb.vexelcore.bukkit;
 
+import dev.dejvokep.boostedyaml.spigot.SpigotSerializer;
+import me.itsmcb.vexelcore.bukkit.api.cache.CacheManagerV2;
+import me.itsmcb.vexelcore.bukkit.api.cache.exceptions.DataRequestFailure;
+import me.itsmcb.vexelcore.bukkit.api.cache.exceptions.DataSaveFailure;
 import me.itsmcb.vexelcore.bukkit.api.managers.CacheManager;
 import me.itsmcb.vexelcore.bukkit.api.text.BukkitMsgBuilder;
 import me.itsmcb.vexelcore.bukkit.api.utils.PluginUtils;
 import me.itsmcb.vexelcore.bukkit.plugin.PAPI;
 import me.itsmcb.vexelcore.bukkit.plugin.PCMListener;
 import me.itsmcb.vexelcore.bukkit.plugin.ProxyManager;
+import me.itsmcb.vexelcore.common.api.config.BoostedConfig;
 import org.bukkit.Bukkit;
 import org.bukkit.configuration.serialization.ConfigurationSerialization;
 import org.bukkit.event.EventHandler;
@@ -28,9 +33,22 @@ public class VexelCoreBukkit extends JavaPlugin implements Listener {
         return cacheManager;
     }
 
+    private CacheManagerV2 cacheManagerV2;
+
+    public CacheManagerV2 getCacheManagerV2() {
+        return cacheManagerV2;
+    }
+
+    private BoostedConfig mainConfig;
+    public BoostedConfig getMainConfig() {
+        return mainConfig;
+    }
+
     @Override
     public void onEnable() {
         instance = this;
+        // Config
+        mainConfig = new BoostedConfig(getDataFolder(),"config", getResource("config.yml"), SpigotSerializer.getInstance());
 
         // Register plugin channel messages
         getServer().getMessenger().registerIncomingPluginChannel(this, "minecraft:brand", new PCMListener(instance));
@@ -42,13 +60,23 @@ public class VexelCoreBukkit extends JavaPlugin implements Listener {
         ConfigurationSerialization.registerClass(BukkitMsgBuilder.class, "MsgBuilder");
 
         cacheManager = new CacheManager(this);
+        cacheManagerV2 = new CacheManagerV2(
+                this,
+                mainConfig.get().getString("player-cache.host"),
+                mainConfig.get().getInt("player-cache.port"),
+                mainConfig.get().getString("player-cache.database"),
+                mainConfig.get().getString("player-cache.user"),
+                mainConfig.get().getString("player-cache.password"),
+                mainConfig.get().getString("player-cache.api-keys.mcprofile"),
+                mainConfig.get().getString("player-cache.api-keys.mineskin")
+        );
         Bukkit.getPluginManager().registerEvents(this,this);
 
         // Load final things after that server has started
         getServer().getScheduler().scheduleSyncDelayedTask(this,this::loadFinalThings);
 
+        getLogger().info("VexelCore API ${version} successfully loaded");
 
-        System.out.println("VexelCore API ${version} for Bukkit has loaded.");
         // New WIP VexelCore Plugin system
         // Create data folder
         /*
@@ -69,7 +97,7 @@ public class VexelCoreBukkit extends JavaPlugin implements Listener {
         }
         // Clean player cache
         getCacheManager().cleanInvalid();
-        instance.getLogger().info("PlayerCache size is "+getCacheManager().getAllFromFile().size());
+        instance.getLogger().info("PlayerCache (V1) size is "+getCacheManager().getAllFromFile().size());
     }
 
     public static VexelCoreBukkit getInstance() {
@@ -82,7 +110,12 @@ public class VexelCoreBukkit extends JavaPlugin implements Listener {
         new BukkitRunnable() {
             @Override
             public void run() {
-                getCacheManager().update(e.getPlayer());
+                getCacheManager().update(e.getPlayer()); // CacheManager V1
+                try {
+                    getCacheManagerV2().update(e.getPlayer()); // CacheManager V2
+                } catch (DataSaveFailure | DataRequestFailure ex) {
+                    throw new RuntimeException(ex);
+                }
                 this.cancel();
             }
         }.runTaskAsynchronously(instance);

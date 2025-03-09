@@ -14,6 +14,10 @@ import org.bukkit.scheduler.BukkitRunnable;
 
 public class PlayerUtils {
 
+    /**
+     * @deprecated Use {@link me.itsmcb.vexelcore.bukkit.api.cache.CacheManagerV2#isValidUsername(String)} instead.
+     */
+    @Deprecated
     public static boolean isValid(String name, CacheManager cacheManager) {
         OfflinePlayer offlinePlayer = Bukkit.getOfflinePlayerIfCached(name);
         if (offlinePlayer != null && (offlinePlayer.isOnline() || offlinePlayer.hasPlayedBefore())) {

@@ -14,16 +14,31 @@ public class StringUtils {
         return String.join(", ", strings);
     }
 
+    public static Pattern uuid = Pattern.compile("[0-9a-f]{8}(-[0-9a-f]{4}){4}[0-9a-f]{8}");
+    public static Pattern uuidWithoutHyphens = Pattern.compile("^[0-9a-fA-F]{32}$");
+    public static Pattern uuidFloodgate = Pattern.compile("00000000-0000-0000-0009-[0-9a-fA-F]{12}");
+
     public static boolean isUUID(@NotNull String string) {
-        String uuidPattern = "[0-9a-f]{8}(-[0-9a-f]{4}){4}[0-9a-f]{8}";
-        return Pattern.compile(uuidPattern).matcher(string.toLowerCase()).matches();
+        return uuid.matcher(string.toLowerCase()).matches() || uuidWithoutHyphens.matcher(string.toLowerCase()).matches();
     }
 
-    public static UUID uuidFromStringWithoutHyphens(@NotNull String uuidString) {
-        if (uuidString.length() != 32) {
-            throw new IllegalArgumentException("Invalid UUID string");
+    /**
+     * Derives a UUID from a string representation.
+     * <p>
+     * Supports UUID strings with or without hyphens.
+     *
+     * @param uuidAsString The string representation of a UUID.
+     * @return The UUID object.
+     * @throws IllegalArgumentException if the input string is not a valid UUID string.
+     */
+    public static UUID deriveUUID(@NotNull String uuidAsString) throws IllegalArgumentException {
+        try {
+            // Works if the string has hyphens
+            return UUID.fromString(uuidAsString);
+        } catch (IllegalArgumentException e) {
+            // Attempts to add hyphens
+            return UUID.fromString(uuidAsString.replaceAll("-","").replaceAll("(.{8})(.{4})(.{4})(.{4})(.{12})", "$1-$2-$3-$4-$5"));
         }
-        return UUID.fromString(uuidString.replaceAll("(.{8})(.{4})(.{4})(.{4})(.+)","$1-$2-$3-$4-$5"));
     }
 
     public static List<String> slitNth(String text, int n) {

@@ -1,5 +1,7 @@
 package me.itsmcb.vexelcore.bukkit;
 
+import me.itsmcb.vexelcore.bukkit.api.cache.CacheManagerV2;
+
 import java.util.List;
 import java.util.UUID;
 
@@ -20,6 +22,15 @@ public class VexelCoreBukkitAPI {
 
     public static void refreshProxyServerNameCache() {
         VexelCoreBukkit.getInstance().getProxyManager().refreshServerNames();
+    }
+
+    /**
+     * Gets the VexelCore Cache Manager
+     *
+     * @return A valid VexelCore CacheManager instance or null
+     */
+    public static CacheManagerV2 getCacheManager() {
+        return VexelCoreBukkit.getInstance().getCacheManagerV2();
     }
 
 }

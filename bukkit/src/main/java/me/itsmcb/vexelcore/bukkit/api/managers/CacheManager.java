@@ -23,6 +23,7 @@ public class CacheManager implements Listener {
         refresh();
     }
 
+    @Deprecated
     public CacheManager(JavaPlugin plugin) {
         this.instance = plugin;
         // Save player cache

@@ -1,0 +1,17 @@
+#
+# VexelCore Config v${version}
+#
+
+# Do not edit this!
+file-version: 1
+
+# Player cache details
+player-cache:
+  host: ""
+  port: 3306
+  database: "playercache"
+  user: "playercache"
+  password: ""
+  api-keys:
+    mcprofile: ""
+    mineskin: ""

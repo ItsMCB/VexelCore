@@ -68,7 +68,7 @@ public class CachedPlayer {
     public static String bedrockUUIDPart = "00000000-0000-0000";
 
     public boolean isFloodgateInstalled() {
-        if (!Bukkit.getPluginManager().isPluginEnabled("Floodgate")) {
+        if (!Bukkit.getPluginManager().isPluginEnabled("floodgate")) {
             if (Bukkit.getPluginManager().isPluginEnabled("Geyser-Spigot")) {
                 System.err.println("Hey! VexelCore-based plugins can't save Bedrock player data correctly because Floodgate isn't installed.");
             }
