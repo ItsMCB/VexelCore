@@ -1,172 +1,242 @@
 package me.itsmcb.vexelcore.bukkit.api.menu;
 
-import org.bukkit.Bukkit;
+import me.itsmcb.vexelcore.bukkit.VexelCoreBukkitAPI;
 import org.bukkit.NamespacedKey;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.inventory.InventoryClickEvent;
+import org.bukkit.event.inventory.InventoryCloseEvent;
 import org.bukkit.inventory.ItemStack;
-import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.persistence.PersistentDataContainer;
 import org.bukkit.persistence.PersistentDataType;
 import org.bukkit.plugin.java.JavaPlugin;
+import org.bukkit.scheduler.BukkitRunnable;
+import org.jetbrains.annotations.NotNull;
 
-import java.util.HashMap;
-import java.util.concurrent.atomic.AtomicReference;
+import java.util.*;
 
+/**
+ * Handles {@link Menu} events.
+ * <p>
+ * Please access with {@link VexelCoreBukkitAPI#getMenuManager()}
+ */
 public class MenuManager implements Listener {
 
-    private HashMap<String,Menu> menus = new HashMap<>();
+    /**
+     * The {@link NamespacedKey} applied to the persistent data container of {@link MenuButton}s for event handling.
+     */
+    public static NamespacedKey menuSystemIdKey = new NamespacedKey("vc-menu-system","vc-menu-item-id");
+    private ArrayList<Menu> registeredMenus = new ArrayList<>();
+    private HashMap<Menu,Menu> previousMenusSet = new HashMap<>();
     private JavaPlugin instance;
-    private NamespacedKey menuItemKey;
-    private NamespacedKey removeableKey;
-    private NamespacedKey menuItemActionRightKey;
-    private NamespacedKey menuItemActionLeftKey;
 
-    public MenuManager(JavaPlugin instance) {
+    public MenuManager(@NotNull JavaPlugin instance) {
         this.instance = instance;
-        this.menuItemKey =  new NamespacedKey(instance, "vc-menu-item-id");
-        this.removeableKey =  new NamespacedKey(instance, "vc-menu-item-removable");
-        this.menuItemActionRightKey =  new NamespacedKey(instance, "vc-menu-button-right");
-        this.menuItemActionLeftKey =  new NamespacedKey(instance, "vc-menu-button-left");
-        Bukkit.getPluginManager().registerEvents(this, instance);
     }
 
-    public NamespacedKey getMenuItemKey() {
-        return menuItemKey;
+    /**
+     * Registers a menu to enable handling.
+     *
+     * @param menu The menu to register.
+     * @return The registered {@link Menu} object.
+     */
+    public Menu register(@NotNull Menu menu) {
+        registeredMenus.add(menu);
+        return menu;
     }
 
-    public NamespacedKey getMenuItemActionLeftKey() {
-        return menuItemActionLeftKey;
+    /**
+     * Opens the menu for the player. Will register the menu first if not already registered.
+     *
+     * @param menu The menu to open (and possibly register).
+     * @param player The player to open the menu for.
+     * @return The {@link Menu} object (builder pattern).
+     */
+    public Menu open(@NotNull Menu menu, @NotNull Player player) {
+        if (!registeredMenus.contains(menu)) {
+            register(menu);
+        }
+        menu.open(player);
+        return menu;
     }
 
-    public NamespacedKey getMenuItemActionRightKey() {
-        return menuItemActionRightKey;
-    }
-
-    public JavaPlugin getInstance() {
-        return instance;
-    }
-
-    public void setMenu(String menuId, Menu menu) {
-        this.menus.put(menuId, menu);
-    }
-
-    public Menu getMenu(String menuId) {
-        if (!menus.containsKey(menuId)) {
+    /**
+     * Retrieves the unique identifier of a {@link ItemStack}.
+     * The UUID is stored in the item's persistent data container using the {@link #menuSystemIdKey}.
+     *
+     * @param itemStack The {@link ItemStack} to retrieve the menu item UUID from.
+     * @return The {@link UUID} of the menu item, or {@code null} if the item is not a menu item or does not have a UUID.
+     */
+    private UUID getMenuItemUUID(@NotNull ItemStack itemStack) {
+        if (!itemStack.hasItemMeta()) {
             return null;
         }
-        return this.menus.get(menuId);
+        PersistentDataContainer container = itemStack.getItemMeta().getPersistentDataContainer();
+        if (!container.has(menuSystemIdKey)) {
+            return null;
+        }
+        String foundUUID = container.get(menuSystemIdKey, PersistentDataType.STRING);
+        if (foundUUID == null) {
+            return null;
+        }
+        return UUID.fromString(foundUUID);
     }
 
-    public void open(Player player, String menuId) {
-        open(player, menuId, 1);
-    }
-
-    public void open(Player player, String menuId, int pageNumber) {
-        // todo check if menu exists and if page exists
-        Menu menu = getMenu(menuId);
-        menu.openPage(player, pageNumber);
-    }
-
-    @EventHandler
-    public void InventoryClick(InventoryClickEvent event) {
-        ItemStack clickedItem = event.getCurrentItem();
-        if (!isMenuItem(clickedItem)) {
-            return;
-        }
-        PersistentDataContainer clickedItemContainer = clickedItem.getItemMeta().getPersistentDataContainer();
-        // By default, a valid menu item can't be taken and will close the inventory once clicked.
-        event.setCancelled(true);
-        Player player = (Player) event.getWhoClicked();
-        player.updateInventory();
-        player.closeInventory();
-        String clickedItemMenuId = clickedItemContainer.get(menuItemKey, PersistentDataType.STRING);
-        MenuItem foundItem = findItemWithId(clickedItemMenuId);
-        if (foundItem == null) {
-            return;
-        }
-        // Right click
-        if (hasKey(clickedItem, menuItemActionRightKey) && hasKey(foundItem.getItemStack(), menuItemActionRightKey)) {
-            if (event.getClick().isRightClick()) {
-                foundItem.getRightClickAction().accept(event);
-            }
-        }
-        // Left click
-        if (hasKey(clickedItem, menuItemActionLeftKey) && hasKey(foundItem.getItemStack(), menuItemActionLeftKey)) {
-            if (event.getClick().isLeftClick()) {
-                foundItem.getLeftClickAction().accept(event);
-            }
-        }
-        // Let item be moved
-        if (clickedItemContainer.has(removeableKey)) {
-            event.setCancelled(false);
-        }
-    }
-
-    /* Leaving uncommented as it doesn't seem useful as expected event fires in event above
-    @EventHandler
-    public void InventoryClick(InventoryMoveItemEvent event) {
-        ItemStack clickedItem = event.getItem();
-        if (!isMenuItem(clickedItem)) {
-            return;
-        }
-        event.setCancelled(true);
-        PersistentDataContainer container = clickedItem.getItemMeta().getPersistentDataContainer();
-        if (container.has(removeableKey)) {
-            event.setCancelled(false);
-        }
-        System.out.println("EVENT: " + event.getEventName() + " | Cancelled?: " + event.isCancelled());
-    }
-
+    /**
+     * Retrieves a list of all template buttons from all registered menus.
+     * Template buttons are typically static elements like navigation buttons.
+     *
+     * @return A {@link List} of {@link MenuButton}s from all registered menus.
      */
-
-    private boolean isMenuItem(ItemStack itemStack) {
-        // Validate item before checking data
-        if (!itemHasMeta(itemStack)) {
-            return false;
-        }
-        return hasKey(itemStack, menuItemKey);
+    private List<MenuButton> getAllTemplateButtons() {
+        ArrayList<MenuButton> buttons = new ArrayList<>();
+        registeredMenus.forEach(menu -> buttons.addAll(menu.getTemplatePositionedButtons().values()));
+        return buttons;
     }
 
-    private boolean hasKey(ItemStack itemStack, NamespacedKey key) {
-        if (!itemHasMeta(itemStack)) {
-            return false;
-        }
-        PersistentDataContainer container = itemStack.getItemMeta().getPersistentDataContainer();
-        if (container.isEmpty()) {
-            return false;
-        }
-        return container.has(key);
+    /**
+     * Retrieves a list of all menu buttons (template, positioned, and unpositioned) from all registered menus.
+     *
+     * @return A {@link List} of all {@link MenuButton}s across all registered menus.
+     */
+    private List<MenuButton> getAllMenuButtons() {
+        ArrayList<MenuButton> buttons = new ArrayList<>();
+        registeredMenus.forEach(menu -> {
+            buttons.addAll(menu.getTemplatePositionedButtons().values());
+            buttons.addAll(menu.getPositionedButtons().values());
+            buttons.addAll(menu.getUnpositionedButtons());
+        });
+        return buttons;
     }
 
-    private boolean itemHasMeta(ItemStack itemStack) {
-        if (itemStack == null) {
-            return false;
+    /**
+     * Handles the click interactions of registered {@link Menu}s.
+     *
+     * @param event The {@link InventoryClickEvent} to handle.
+     */
+    @EventHandler
+    public void InventoryClick(@NotNull InventoryClickEvent event) {
+        // Handle non-menu click
+        if (event.getClickedInventory() == null) {
+            return;
         }
-        ItemMeta clickedItemMeta = itemStack.getItemMeta();
-        return (clickedItemMeta != null);
+        if (!(event.getClickedInventory().getHolder() instanceof Menu menu)) {
+            return;
+        }
+        ItemStack cursorItem = event.getCurrentItem();
+        if (cursorItem == null) {
+            return;
+        }
+        // Determine if it's a menu item
+        UUID itemUUID = getMenuItemUUID(cursorItem);
+        Optional<MenuButton> optional = getAllMenuButtons().stream().filter(m -> m.getUUID().equals(itemUUID)).findFirst();
+        if (optional.isEmpty()) {
+            return;
+        }
+        MenuButton button = optional.get();
+        // Handle movement
+        if (!button.isMoveable()) {
+            event.setCancelled(true);
+        }
+        // Close menu if necessary before handling click (which may include opening a new menu which should not be interfered with)
+        Player player = (Player) event.getWhoClicked();
+        boolean isTemplateButton = getAllTemplateButtons().contains(optional.get());
+        // Don't close if user clicked on a template element (ex. forward/back button)
+        if (menu.isClickToClose() && !(isTemplateButton)) {
+            player.closeInventory();
+        }
+        // Update player inventory to prevent client-side glitches
+        player.updateInventory();
+        // Handle clicks
+        if (event.getClick().isRightClick() && button.getRightClick() != null) {
+            button.getRightClick().accept(event);
+        }
+        if (event.getClick().isLeftClick() && button.getLeftClick() != null) {
+            button.getLeftClick().accept(event);
+        }
+        // Moved via number key press (to hot bar)
+        if (event.getClick().isKeyboardClick() && button.getRightClick() != null) {
+            button.getRightClick().accept(event);
+        }
     }
 
-    public MenuItem findItemWithId(String id) {
-        AtomicReference<MenuItem> menuItem = new AtomicReference<>(null);
-        menus.forEach((key, value) -> value.getPages().forEach((integer, page) -> page.getItems().forEach((slot, item) -> {
-            if (item.getId().toString().equalsIgnoreCase(id)) {
-                menuItem.set(item);
+    public void setPreviousMenu(@NotNull Menu menu, @NotNull Menu previous) {
+        previousMenusSet.put(menu,previous);
+    }
+
+    public Menu removePreviousMenuFromSelf(@NotNull Menu menu) {
+        return previousMenusSet.remove(menu); // Returns previous menu
+    }
+
+    public Menu getPreviousMenuOrNull(@NotNull Menu menu) {
+        return previousMenusSet.get(menu);
+    }
+
+    public boolean hasPreviousMenu(@NotNull Menu menu) {
+        return previousMenusSet.containsKey(menu);
+    }
+
+    public boolean isPreviousMenuForAnyMenu(@NotNull Menu menu) {
+        return previousMenusSet.containsValue(menu);
+    }
+
+    public boolean openPrevious(@NotNull Menu menu, @NotNull Player player) {
+        Menu prev = getPreviousMenuOrNull(menu);
+        if (prev == null) {
+            return false;
+        }
+        prev.open(player);
+        return true;
+    }
+
+    /**
+     * Handles the lifecycle of {@link Menu}s.
+     * <p>
+     * If the menu is not persistent, it will be unregistered and its runnable refresher will be cancelled.
+     *
+     * @param event The {@link InventoryClickEvent} to handle.
+     */
+    @EventHandler
+    public void InventoryClose(@NotNull InventoryCloseEvent event) {
+        if (!(event.getInventory().getHolder() instanceof Menu menu)) {
+            return;
+        }
+        new BukkitRunnable() {
+            @Override
+            public void run() {
+                // If the closed menu is assigned as a previous menu to any other menu, don't destroy
+                if (isPreviousMenuForAnyMenu(menu)) {
+                    // This menu will be destroyed later when the menu that has it set as previous is destroyed
+                    return;
+                }
+                // Not a previous menu
+                // Keep if persistent, or remove
+                if (menu.isPersistent()) {
+                    return;
+                }
+                menu.unload();
+                registeredMenus.remove(menu);
+                // Clean up previous menus
+                Menu prev = removePreviousMenuFromSelf(menu);
+                if (prev == null) {
+                    return;
+                }
+                if (prev.isPersistent()) {
+                    return;
+                }
+                // Check if set as previous menu for any other
+                if (isPreviousMenuForAnyMenu(prev)) {
+                    return;
+                }
+                // Check if previous menu is now the open menu
+                if (!prev.getInventory().getViewers().isEmpty()) {
+                    return;
+                }
+                // Previous menu is now the open menu
+                prev.unload();
+                registeredMenus.remove(prev);
             }
-        })));
-        return menuItem.get();
-    }
-
-    public boolean itemStackHasKey(ItemStack itemStack, String key) {
-        if (itemStack == null) {
-            return false;
-        }
-        if (!itemStack.hasItemMeta()) {
-            return false;
-        }
-        PersistentDataContainer container = itemStack.getItemMeta().getPersistentDataContainer();
-        return container.has(NamespacedKey.fromString(key,instance));
+        }.runTaskLater(instance,100); // Wait 5 seconds before unloading to give time for the menu to be assigned as a previous menu between transitions
     }
 }

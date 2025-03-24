@@ -1,6 +1,7 @@
 package me.itsmcb.vexelcore.bukkit;
 
 import me.itsmcb.vexelcore.bukkit.api.cache.CacheManagerV2;
+import me.itsmcb.vexelcore.bukkit.api.menu.MenuManager;
 
 import java.util.List;
 import java.util.UUID;
@@ -32,5 +33,7 @@ public class VexelCoreBukkitAPI {
     public static CacheManagerV2 getCacheManager() {
         return VexelCoreBukkit.getInstance().getCacheManagerV2();
     }
+
+    public static MenuManager getMenuManager() { return VexelCoreBukkit.getInstance().getMenuManager(); }
 
 }

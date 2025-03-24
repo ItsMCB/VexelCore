@@ -105,7 +105,7 @@ public class MenuV2Manager implements Listener {
         }
         // If still viewing menu because a new one didn't open, check closing click
         if (menu.shouldClickCloseMenu() && !event.getInventory().getViewers().isEmpty()) {
-            if (menu instanceof PaginatedMenu && item instanceof MenuButton) {
+            if (menu instanceof PaginatedMenu && item instanceof LegacyPaginatedMenuButton) {
                 return;
             }
             player.closeInventory();

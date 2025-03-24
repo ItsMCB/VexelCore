@@ -1,5 +1,7 @@
 package me.itsmcb.vexelcore.bukkit.api.cache;
 
+import org.bukkit.entity.Player;
+
 /**
  * Represents Minecraft player skin data
  */
@@ -9,19 +11,41 @@ public class PlayerSkinData {
     private String signature;
 
     /**
+     * Creates new player skin data from online player
+     *
+     * @param player Player to copy skin data from
+     */
+    public PlayerSkinData(Player player) {
+        player.getPlayerProfile().getProperties().forEach(profileProperty -> {
+            if (profileProperty.getName().equals("textures")) {
+                texture = profileProperty.getValue();
+                signature = profileProperty.getSignature();
+            }
+        });
+        setDefaultIfNull();
+    }
+
+    /**
+     * Set default skin value if no valid texture plus signature combinations are set
+     */
+    private void setDefaultIfNull() {
+        if (texture != null && signature != null) {
+            return;
+        }
+        this.texture = CacheManagerV2.DEFAULT_STEVE_TEXTURE;
+        this.signature = CacheManagerV2.DEFAULT_STEVE_SIGNATURE;
+    }
+
+    /**
      * Creates new player skin data with the provided texture and signature
      *
      * @param texture Skin texture data
      * @param signature Skin signature data
      */
     public PlayerSkinData(String texture, String signature) {
-        if (texture != null || signature != null) {
-            this.texture = texture;
-            this.signature = signature;
-        } else {
-            this.texture = CacheManagerV2.DEFAULT_STEVE_TEXTURE;
-            this.signature = CacheManagerV2.DEFAULT_STEVE_SIGNATURE;
-        }
+        this.texture = texture;
+        this.signature = signature;
+        setDefaultIfNull();
     }
 
     /**

@@ -5,6 +5,7 @@ import me.itsmcb.vexelcore.bukkit.api.cache.CacheManagerV2;
 import me.itsmcb.vexelcore.bukkit.api.cache.exceptions.DataRequestFailure;
 import me.itsmcb.vexelcore.bukkit.api.cache.exceptions.DataSaveFailure;
 import me.itsmcb.vexelcore.bukkit.api.managers.CacheManager;
+import me.itsmcb.vexelcore.bukkit.api.menu.MenuManager;
 import me.itsmcb.vexelcore.bukkit.api.text.BukkitMsgBuilder;
 import me.itsmcb.vexelcore.bukkit.api.utils.PluginUtils;
 import me.itsmcb.vexelcore.bukkit.plugin.PAPI;
@@ -22,21 +23,25 @@ import org.bukkit.scheduler.BukkitRunnable;
 public class VexelCoreBukkit extends JavaPlugin implements Listener {
 
     private static VexelCoreBukkit instance;
-    private ProxyManager proxyManager;
 
+    private ProxyManager proxyManager;
     public ProxyManager getProxyManager() {
         return proxyManager;
     }
-    private CacheManager cacheManager;
 
+    private CacheManager cacheManager;
     public CacheManager getCacheManager() {
         return cacheManager;
     }
 
     private CacheManagerV2 cacheManagerV2;
-
     public CacheManagerV2 getCacheManagerV2() {
         return cacheManagerV2;
+    }
+
+    private MenuManager menuManager;
+    public MenuManager getMenuManager() {
+        return menuManager;
     }
 
     private BoostedConfig mainConfig;
@@ -58,6 +63,10 @@ public class VexelCoreBukkit extends JavaPlugin implements Listener {
         proxyManager = new ProxyManager(instance);
         Bukkit.getPluginManager().registerEvents(proxyManager,this);
         ConfigurationSerialization.registerClass(BukkitMsgBuilder.class, "MsgBuilder");
+
+        // Register menu system and respective listeners
+        menuManager = new MenuManager(this);
+        Bukkit.getPluginManager().registerEvents(menuManager, this);
 
         cacheManager = new CacheManager(this);
         cacheManagerV2 = new CacheManagerV2(
