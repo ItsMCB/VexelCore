@@ -1,10 +1,8 @@
 package me.itsmcb.vexelcore.bukkit.api.menu;
 
 import me.itsmcb.vexelcore.bukkit.VexelCoreBukkitAPI;
-import me.itsmcb.vexelcore.bukkit.api.text.BukkitMsgBuilder;
 import me.itsmcb.vexelcore.common.api.HeadTexture;
 import org.bukkit.Material;
-import org.bukkit.Sound;
 import org.bukkit.entity.Player;
 
 import java.util.Arrays;
@@ -32,31 +30,13 @@ public class PaginatedMenu extends Menu {
         setTemplateButton(getSize().getSize()-9,new MenuButton(Material.BLACK_STAINED_GLASS_PANE).name("&7"));
         setTemplateButton(getSize().getSize()-8,new MenuButton(Material.BLACK_STAINED_GLASS_PANE).name("&7"));
         // Previous Arrow
-        setTemplateButton(getSize().getSize()-7,new NavigationButton(HeadTexture.GRAY_ARROW_LEFT.getTexture(), this)
-                .name("&r&d&lPrevious Page")
-                .click(e -> {
-                    Player player = (Player) e.getWhoClicked();
-                    if (!pageGoBack()) {
-                        new BukkitMsgBuilder("&7You've reached the beginning!").send(player);
-                        player.playSound(player.getLocation(), Sound.BLOCK_NOTE_BLOCK_BASS, (float) 1, 0);
-                    }
-                })
-        );
+        setTemplateButton(getSize().getSize()-7, new BackNavigationButton(HeadTexture.GRAY_ARROW_LEFT.getTexture(), this));
         // Middle
         setTemplateButton(getSize().getSize()-6,new MenuButton(Material.BLACK_STAINED_GLASS_PANE).name("&7"));
         setTemplateButton(getSize().getSize()-5,new MenuButton(Material.BLACK_STAINED_GLASS_PANE).name("&7"));
         setTemplateButton(getSize().getSize()-4,new MenuButton(Material.BLACK_STAINED_GLASS_PANE).name("&7"));
         // Forward Arrow
-        setTemplateButton(getSize().getSize()-3, new NavigationButton(HeadTexture.GRAY_ARROW_RIGHHT.getTexture(), this)
-                .name("&r&d&lNext Page")
-                .click(e -> {
-                    Player player = (Player) e.getWhoClicked();
-                    if (!pageGoForward()) {
-                        new BukkitMsgBuilder("&7You've reached the end!").send(player);
-                        player.playSound(player.getLocation(), Sound.BLOCK_NOTE_BLOCK_BASS, (float) 1, 0);
-                    }
-                })
-        );
+        setTemplateButton(getSize().getSize()-3, new ForwardNavigationButton(HeadTexture.GRAY_ARROW_RIGHHT.getTexture(),this));
         // Right
         setTemplateButton(getSize().getSize()-2,new MenuButton(Material.BLACK_STAINED_GLASS_PANE).name("&7"));
         setTemplateButton(getSize().getSize()-1,new MenuButton(Material.BLACK_STAINED_GLASS_PANE).name("&7"));
@@ -66,16 +46,22 @@ public class PaginatedMenu extends Menu {
         return page;
     }
 
-    public boolean pageGoBack() {
+    public boolean pageCanGoBack() {
         // Check if the current page is already at the first page
         if (page <= 1) {
             page = 1;
             return false;
         }
+        return true;
+    }
+
+    public void pageGoBack() {
+        if (!pageCanGoBack()) {
+            return;
+        }
         // Go to the previous page
         page--;
         refresh();
-        return true;
     }
 
     private int calculateMenuContentSize() {
@@ -92,21 +78,16 @@ public class PaginatedMenu extends Menu {
         return (int) Math.ceil((double) menuContentSize / availableInventorySpace);
     }
 
-    private boolean isLastPage() {
+    public boolean isLastPage() {
         return page >= getTotalPages();
     }
 
-    public void goToNextPage() {
+    public void pageGoForward() {
+        if (isLastPage()) {
+            return;
+        }
         page++;
         refresh();
-    }
-
-    public boolean pageGoForward() {
-        if (isLastPage()) {
-            return false;
-        }
-        goToNextPage();
-        return true;
     }
 
     @Override

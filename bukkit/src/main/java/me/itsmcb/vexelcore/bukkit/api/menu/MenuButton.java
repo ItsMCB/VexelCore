@@ -87,6 +87,16 @@ public class MenuButton {
         return this;
     }
 
+    public MenuButton resetLore() {
+        this.lore = new ArrayList<>();
+        return this;
+    }
+
+    public MenuButton setItemStack(ItemStack itemStack) {
+        this.itemStack = itemStack;
+        return this;
+    }
+
     public ArrayList<ItemData> getPersistantItemData() {
         return persistantItemData;
     }

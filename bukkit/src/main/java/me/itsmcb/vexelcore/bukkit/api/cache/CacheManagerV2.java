@@ -105,7 +105,7 @@ public class CacheManagerV2 {
      * @param input The string to validate as a username.
      * @return {@code true} if the input is a valid username, {@code false} otherwise.
      */
-    public boolean isValidUsername(String input) {
+    public static boolean isValidUsername(String input) {
         // Note that 16 characters is the limit for Minecraft: Java Edition and Xbox Live usernames.
         int maxUsernameLength = 16;
         int geyserPrefixLength = FloodgateApi.getInstance().getPlayerPrefix().length();
