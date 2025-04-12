@@ -70,7 +70,7 @@ public class ParticleUtils {
                             if (x == minX + 1 || x == maxX - 1 || y == minY + 1 || y == maxY - 1 || z == minZ + 1 || z == maxZ - 1) {
                                 Location loc = new Location(world, x + 0.5, y + 0.5, z + 0.5);
                                 //System.out.println("Spawned at: " + loc.getBlockX() + " | " + loc.getBlockZ());
-                                world.spawnParticle(Particle.VILLAGER_HAPPY, loc, amount);
+                                world.spawnParticle(Particle.HAPPY_VILLAGER, loc, amount);
                             }
                         }
                     }

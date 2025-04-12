@@ -1,11 +1,11 @@
 plugins {
     id 'java'
-    id 'com.github.johnrengelman.shadow' version '8.1.1'
+    id "com.gradleup.shadow" version "9.0.0-beta11"
 }
 
 repositories {
     mavenCentral()
-    maven { url 'https://papermc.io/repo/repository/maven-public/' }
+    maven { url 'https://repo.papermc.io/repository/maven-public/' }
     maven { url 'https://oss.sonatype.org/content/groups/public/' }
     maven { url 'https://repo.helpch.at/releases/' } // PAPI
     maven { url "https://maven.playpro.com/" } // CoreProtect
@@ -15,14 +15,14 @@ repositories {
 
 dependencies {
     implementation project(':common')
-    compileOnly 'io.papermc.paper:paper-api:1.20.4-R0.1-SNAPSHOT'
+    compileOnly 'io.papermc.paper:paper-api:1.21.4-R0.1-SNAPSHOT'
     compileOnly 'com.sk89q.worldguard:worldguard-bukkit:7.0.7'
-    implementation platform("com.intellectualsites.bom:bom-1.18.x:1.20")
-    compileOnly 'com.fastasyncworldedit:FastAsyncWorldEdit-Core'
-    compileOnly 'com.fastasyncworldedit:FastAsyncWorldEdit-Bukkit'
+    implementation(platform("com.intellectualsites.bom:bom-newest:1.52")) // See: https://intellectualsites.gitbook.io/fastasyncworldedit/api/api-usage
+    compileOnly("com.fastasyncworldedit:FastAsyncWorldEdit-Core")
+    compileOnly("com.fastasyncworldedit:FastAsyncWorldEdit-Bukkit")
     compileOnly 'me.clip:placeholderapi:2.11.6'
     compileOnly "net.coreprotect:coreprotect:22.4"
-    compileOnly 'org.mariadb.jdbc:mariadb-java-client:3.5.2' // https://mvnrepository.com/artifact/org.mariadb.jdbc/mariadb-java-client
+    compileOnly 'org.mariadb.jdbc:mariadb-java-client:3.5.3' // https://mvnrepository.com/artifact/org.mariadb.jdbc/mariadb-java-client
     implementation "dev.dejvokep:boosted-yaml-spigot:1.5"
     implementation "dev.dejvokep:boosted-yaml:1.3.7"
     compileOnly 'org.geysermc.floodgate:api:2.2.3-SNAPSHOT'
@@ -30,12 +30,12 @@ dependencies {
 
 java {
     toolchain {
-        languageVersion = JavaLanguageVersion.of(17)
+        languageVersion = JavaLanguageVersion.of(21)
     }
 }
 
 tasks.withType(JavaCompile).configureEach {
-    options.release = 17
+    options.release = 21
 }
 
 processResources {
@@ -56,16 +56,12 @@ tasks.named('compileJava') {
 
 shadowJar {
     archiveFileName = "VexelCore-Bukkit-${project.version}.jar"
-    relocate 'me.itsmcb.vexelcore.common.api', 'me.itsmcb.vexelcore.common.api'
-    // TODO Experiment with minimization at some point
-    //minimize()
+    duplicatesStrategy = DuplicatesStrategy.FAIL
+    // Relocate lib code
+    relocate("dev.dejvokep.boostedyaml", "libs.dev.dejvokep.boostedyaml")
+    relocate("dev.dejvokep.boosted-yaml-spigot", "libs.dev.dejvokep.boosted-yaml-spigot")
+    exclude '**/LICENSE' // Temp -- Handle better before proper release
 }
-
-tasks.named('shadowJar') {
-    enableRelocation true
-    relocationPrefix "libs"
-}
-
 artifacts {
     archives shadowJar
 }

@@ -15,6 +15,7 @@ import org.bukkit.persistence.PersistentDataType;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.UUID;
 import java.util.function.Consumer;
@@ -27,6 +28,7 @@ public class MenuButton {
     // Item properties
     private Component name;
     private ArrayList<TextComponent> lore = new ArrayList<>();
+    private ArrayList<ItemData> persistantItemData = new ArrayList<>();
 
     // Item click events
     private boolean moveable = false;
@@ -38,6 +40,10 @@ public class MenuButton {
 
     public MenuButton(@NotNull Material material) {
         this.itemStack = new ItemStack(material);
+    }
+
+    public MenuButton(@NotNull ItemStack itemStack) {
+        this.itemStack = itemStack;
     }
 
     public MenuButton(@NotNull CachedPlayerV2 cachedPlayer) {
@@ -73,6 +79,25 @@ public class MenuButton {
 
     public MenuButton setLore(ArrayList<TextComponent> lore) {
         this.lore = lore;
+        return this;
+    }
+
+    public MenuButton setLore(TextComponent... textComponents) {
+        this.setLore(new ArrayList<>(Arrays.asList(textComponents)));
+        return this;
+    }
+
+    public ArrayList<ItemData> getPersistantItemData() {
+        return persistantItemData;
+    }
+
+    public MenuButton addPersistantItemData(ItemData itemData) {
+        this.getPersistantItemData().add(itemData);
+        return this;
+    }
+
+    public MenuButton setPersistantItemData(ArrayList<ItemData> persistantItemData) {
+        this.persistantItemData = persistantItemData;
         return this;
     }
 
@@ -119,6 +144,12 @@ public class MenuButton {
         meta.lore(lore.stream().map(l -> l.decoration(TextDecoration.ITALIC, false)).toList());
         // Tracking ID
         meta.getPersistentDataContainer().set(MenuManager.menuSystemIdKey, PersistentDataType.STRING, uuid+"");
+        // Item data
+        if (!getPersistantItemData().isEmpty()) {
+            getPersistantItemData().forEach(itemData -> {
+                meta.getPersistentDataContainer().set(itemData.getNamespacedKey(),itemData.getPersistentDataType(),itemData.getData());
+            });
+        }
         // Apply
         itemStack.setItemMeta(meta);
         return this;

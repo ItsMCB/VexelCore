@@ -32,7 +32,7 @@ public class PaginatedMenu extends Menu {
         setTemplateButton(getSize().getSize()-9,new MenuButton(Material.BLACK_STAINED_GLASS_PANE).name("&7"));
         setTemplateButton(getSize().getSize()-8,new MenuButton(Material.BLACK_STAINED_GLASS_PANE).name("&7"));
         // Previous Arrow
-        setTemplateButton(getSize().getSize()-7,new MenuButton(HeadTexture.GRAY_ARROW_LEFT.getTexture())
+        setTemplateButton(getSize().getSize()-7,new NavigationButton(HeadTexture.GRAY_ARROW_LEFT.getTexture(), this)
                 .name("&r&d&lPrevious Page")
                 .click(e -> {
                     Player player = (Player) e.getWhoClicked();
@@ -47,7 +47,7 @@ public class PaginatedMenu extends Menu {
         setTemplateButton(getSize().getSize()-5,new MenuButton(Material.BLACK_STAINED_GLASS_PANE).name("&7"));
         setTemplateButton(getSize().getSize()-4,new MenuButton(Material.BLACK_STAINED_GLASS_PANE).name("&7"));
         // Forward Arrow
-        setTemplateButton(getSize().getSize()-3, new MenuButton(HeadTexture.GRAY_ARROW_RIGHHT.getTexture())
+        setTemplateButton(getSize().getSize()-3, new NavigationButton(HeadTexture.GRAY_ARROW_RIGHHT.getTexture(), this)
                 .name("&r&d&lNext Page")
                 .click(e -> {
                     Player player = (Player) e.getWhoClicked();
@@ -78,17 +78,34 @@ public class PaginatedMenu extends Menu {
         return true;
     }
 
-    public boolean pageGoForward() {
-        int menuContentSize = getPositionedButtons().size() + getUnpositionedButtons().size();
-        int availableInventorySpace = getSize().getSize() - getTemplatePositionedButtons().size();
-        int totalPages = (int) Math.ceil((double) menuContentSize / availableInventorySpace);
-        // Check if the current page is already the last page
-        if (page >= totalPages) {
-            return false;
-        }
-        // Go to the next page
+    private int calculateMenuContentSize() {
+        return getPositionedButtons().size() + getUnpositionedButtons().size();
+    }
+
+    private int calculateAvailableInventorySpace() {
+        return getSize().getSize() - getTemplatePositionedButtons().size();
+    }
+
+    public int getTotalPages() {
+        int menuContentSize = calculateMenuContentSize();
+        int availableInventorySpace = calculateAvailableInventorySpace();
+        return (int) Math.ceil((double) menuContentSize / availableInventorySpace);
+    }
+
+    private boolean isLastPage() {
+        return page >= getTotalPages();
+    }
+
+    public void goToNextPage() {
         page++;
         refresh();
+    }
+
+    public boolean pageGoForward() {
+        if (isLastPage()) {
+            return false;
+        }
+        goToNextPage();
         return true;
     }
 

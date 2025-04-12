@@ -1,6 +1,6 @@
 plugins {
     id 'java'
-    id 'com.github.johnrengelman.shadow' version '8.1.1'
+    id "com.gradleup.shadow" version "9.0.0-beta11"
 }
 
 repositories {
@@ -20,12 +20,12 @@ dependencies {
 
 java {
     toolchain {
-        languageVersion = JavaLanguageVersion.of(17)
+        languageVersion = JavaLanguageVersion.of(21)
     }
 }
 
 tasks.withType(JavaCompile).configureEach {
-    options.release = 17
+    options.release = 21
 }
 
 processResources {
@@ -46,14 +46,7 @@ tasks.named('compileJava') {
 
 shadowJar {
     archiveFileName = "VexelCore-Velocity-${project.version}.jar"
-    relocate 'me.itsmcb.vexelcore.common.api', 'me.itsmcb.vexelcore.common.api'
-    // TODO Experiment with minimization at some point
-    //minimize()
-}
-
-tasks.named('shadowJar') {
-    enableRelocation true
-    relocationPrefix "libs"
+    relocate("dev.dejvokep.boostedyaml", "libs.dev.dejvokep.boostedyaml")
 }
 
 artifacts {

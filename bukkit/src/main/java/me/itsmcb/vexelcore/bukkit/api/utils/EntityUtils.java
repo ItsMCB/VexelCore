@@ -58,7 +58,7 @@ public class EntityUtils {
             case GHAST -> item = new SkullBuilder(new CachedPlayer("MHF_Ghast"));
             case IRON_GOLEM -> item = new SkullBuilder(new CachedPlayer("MHF_Golem"));
             case MAGMA_CUBE -> item = new SkullBuilder(new CachedPlayer("MHF_LavaSlime"));
-            case MUSHROOM_COW -> item = new SkullBuilder(new CachedPlayer("MHF_MushroomCow"));
+            case MOOSHROOM -> item = new SkullBuilder(new CachedPlayer("MHF_MushroomCow"));
             case PIG -> item = new SkullBuilder(new CachedPlayer("MHF_Pig"));
             case SLIME -> item = new SkullBuilder(new CachedPlayer("MHF_Slime"));
             case SPIDER -> item = new SkullBuilder(new CachedPlayer("MHF_Spider"));

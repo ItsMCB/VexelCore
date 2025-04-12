@@ -1,7 +1,7 @@
 name: VexelCore
 version: '${version}'
 main: me.itsmcb.vexelcore.bukkit.VexelCoreBukkit
-api-version: 1.18
+api-version: 1.21
 load: STARTUP
 authors: [ ItsMCB ]
 description: A useful API to offload complexity.
@@ -10,6 +10,6 @@ softdepend:
   - FastAsyncWorldEdit
   - WorldGuard
 libraries:
-  - org.mariadb.jdbc:mariadb-java-client:3.5.2
+  - org.mariadb.jdbc:mariadb-java-client:3.5.3
   - dev.dejvokep:boosted-yaml-spigot:1.5
   - dev.dejvokep:boosted-yaml:1.3.7
