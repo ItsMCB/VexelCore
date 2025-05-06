@@ -42,12 +42,12 @@ public class ChatUtils {
      * Recursively flattens a component and its children into a single string.
      * Only {@link TextComponent} are processed; other component types are ignored.
      *
-     * @param component The component to flatten. Must not be null.
+     * @param component The component to flatten. Can be null.
      * @return A string representation of the component's text content and the text content of its children,
      * or an empty string if the component is not a {@link TextComponent}.
      */
-    public static String flattenComponent(@NotNull Component component) {
-        if (component instanceof TextComponent textComponent) {
+    public static String flattenComponent(Component component) {
+        if (component instanceof TextComponent textComponent) { // Reminder: Handles null case
             StringBuilder builder = new StringBuilder(textComponent.content());
             List<Component> children = textComponent.children();
             for (Component child : children) {

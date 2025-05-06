@@ -1,8 +1,6 @@
 package me.itsmcb.vexelcore.bukkit.api.utils;
 
-import me.itsmcb.vexelcore.bukkit.api.menuv2.MenuV2Item;
-import me.itsmcb.vexelcore.bukkit.api.menuv2.SkullBuilder;
-import me.itsmcb.vexelcore.bukkit.plugin.CachedPlayer;
+import me.itsmcb.vexelcore.bukkit.api.menu.MenuButton;
 import org.bukkit.Material;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Item;
@@ -31,7 +29,7 @@ public class EntityUtils {
         return entities;
     }
 
-    public static MenuV2Item getMenuRepresentation(Entity entity) {
+    public static MenuButton getMenuRepresentation(Entity entity) {
         Material tempMat = Material.getMaterial(entity.getType().getKey().value().toUpperCase() + "");
         if (tempMat == null) {
             tempMat = Material.getMaterial(entity.getType().getKey().value().toUpperCase() + "_SPAWN_EGG");
@@ -42,13 +40,14 @@ public class EntityUtils {
         if (tempMat == null) {
             tempMat = Material.PAPER;
         }
-        MenuV2Item item = new MenuV2Item(tempMat);
+        MenuButton item = new MenuButton(tempMat);
         switch (entity.getType()) {
             // TODO skulls for every type (likely need to use skull creator
-            case PLAYER -> item = new SkullBuilder((Player) entity);
-            case CREEPER -> item.material(Material.CREEPER_HEAD);
-            case SKELETON -> item.material(Material.SKELETON_SKULL);
-            case ZOMBIE -> item.material(Material.ZOMBIE_HEAD);
+            case PLAYER -> item = new MenuButton(Material.PLAYER_HEAD);
+            case CREEPER -> item = new MenuButton(Material.CREEPER_HEAD);
+            case SKELETON -> item = new MenuButton(Material.SKELETON_SKULL);
+            case ZOMBIE -> item = new MenuButton(Material.ZOMBIE_HEAD);
+            /*
             case SHEEP -> item = new SkullBuilder(new CachedPlayer("MHF_Sheep"));
             case BLAZE -> item = new SkullBuilder(new CachedPlayer("MHF_Blaze"));
             case CAVE_SPIDER -> item = new SkullBuilder(new CachedPlayer("MHF_CaveSpider"));
@@ -65,6 +64,8 @@ public class EntityUtils {
             case SQUID -> item = new SkullBuilder(new CachedPlayer("MHF_Squid"));
             case VILLAGER -> item = new SkullBuilder(new CachedPlayer("MHF_Villager"));
             case WITHER_SKELETON -> item = new SkullBuilder(new CachedPlayer("MHF_WSkeleton"));
+
+             */
         }
         return item;
     }

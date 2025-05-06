@@ -27,7 +27,7 @@ public class MenuManager implements Listener {
      * The {@link NamespacedKey} applied to the persistent data container of {@link MenuButton}s for event handling.
      */
     public static NamespacedKey menuSystemIdKey = new NamespacedKey("vc-menu-system","vc-menu-item-id");
-    private ArrayList<Menu> registeredMenus = new ArrayList<>();
+    private HashSet<Menu> registeredMenus = new HashSet<>();
     private HashMap<Menu,Menu> previousMenusSet = new HashMap<>();
     private JavaPlugin instance;
 
@@ -195,7 +195,7 @@ public class MenuManager implements Listener {
      * <p>
      * If the menu is not persistent, it will be unregistered and its runnable refresher will be cancelled.
      *
-     * @param event The {@link InventoryClickEvent} to handle.
+     * @param event The {@link InventoryCloseEvent} to handle.
      */
     @EventHandler
     public void InventoryClose(@NotNull InventoryCloseEvent event) {
@@ -210,33 +210,42 @@ public class MenuManager implements Listener {
                     // This menu will be destroyed later when the menu that has it set as previous is destroyed
                     return;
                 }
-                // Not a previous menu
-                // Keep if persistent, or remove
-                if (menu.isPersistent()) {
+
+                // Check if this menu should be kept
+                if (menu.isPersistent() || !menu.getInventory().getViewers().isEmpty()) {
                     return;
                 }
+
+                // Safe to unload and remove this menu
                 menu.unload();
                 registeredMenus.remove(menu);
-                // Clean up previous menus
-                Menu prev = removePreviousMenuFromSelf(menu);
-                if (prev == null) {
-                    return;
+
+                // Clean up previous menu chain
+                Menu prevMenu = removePreviousMenuFromSelf(menu);
+                while (prevMenu != null) {
+                    // Skip if this previous menu is persistent
+                    if (prevMenu.isPersistent()) {
+                        break;
+                    }
+
+                    // Skip if this previous menu is assigned as previous to another menu
+                    if (isPreviousMenuForAnyMenu(prevMenu)) {
+                        break;
+                    }
+
+                    // Skip if this previous menu is currently being viewed
+                    if (!prevMenu.getInventory().getViewers().isEmpty()) {
+                        break;
+                    }
+
+                    // Safe to unload and remove this previous menu
+                    prevMenu.unload();
+                    registeredMenus.remove(prevMenu);
+
+                    // Move up the chain
+                    prevMenu = removePreviousMenuFromSelf(prevMenu);
                 }
-                if (prev.isPersistent()) {
-                    return;
-                }
-                // Check if set as previous menu for any other
-                if (isPreviousMenuForAnyMenu(prev)) {
-                    return;
-                }
-                // Check if previous menu is now the open menu
-                if (!prev.getInventory().getViewers().isEmpty()) {
-                    return;
-                }
-                // Previous menu is now the open menu
-                prev.unload();
-                registeredMenus.remove(prev);
             }
-        }.runTaskLater(instance,100); // Wait 5 seconds before unloading to give time for the menu to be assigned as a previous menu between transitions
+        }.runTaskLater(instance, 100); // Wait 5 seconds before unloading to give time for the menu to be assigned as a previous menu between transitions
     }
 }

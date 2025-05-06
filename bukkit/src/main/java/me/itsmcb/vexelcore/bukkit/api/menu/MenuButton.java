@@ -68,6 +68,11 @@ public class MenuButton {
         return this;
     }
 
+    public MenuButton addLore(TextComponent... components) {
+        this.lore.addAll(Arrays.stream(components).toList());
+        return this;
+    }
+
     public MenuButton addLore(String... lore) {
         List<TextComponent> components = new ArrayList<>();
         for (String s : lore) {

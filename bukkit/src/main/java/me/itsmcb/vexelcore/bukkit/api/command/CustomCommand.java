@@ -3,9 +3,9 @@ package me.itsmcb.vexelcore.bukkit.api.command;
 import me.itsmcb.vexelcore.bukkit.api.text.BukkitMsgBuilder;
 import me.itsmcb.vexelcore.common.api.command.CMDHelper;
 import me.itsmcb.vexelcore.common.api.utils.ArgUtils;
-import me.itsmcb.vexelcore.common.api.utils.StringUtils;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.TextComponent;
+import net.kyori.adventure.text.event.ClickEvent;
 import org.bukkit.Sound;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
@@ -16,7 +16,6 @@ import java.util.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 public class CustomCommand extends Command {
     private ArrayList<CustomCommand> subCommands = new ArrayList<>();
@@ -147,22 +146,24 @@ public class CustomCommand extends Command {
     }
 
     public void help(CommandSender sender) {
-        new BukkitMsgBuilder("&8--=== &7Command Help&r&8: &a"+getName()+"&r&8 ===--").send(sender);
-        ArrayList<CustomCommand> subCommands = getSubCommands();
-        sendFormattedCommandUsage(this, sender, true);
-        subCommands.forEach(scmd -> {
-            sendFormattedCommandUsage(scmd, sender, false);
-        });
+        new BukkitMsgBuilder("&8&m                                                    &r").send(sender);
+        new BukkitMsgBuilder("&d📚 &7Command Help &3"+getName()+"&7:").send(sender);
+        sendFormattedCommandUsage(this, sender,null);
+        new BukkitMsgBuilder("&8&m                                                    &r").send(sender);
     }
 
-    private void sendFormattedCommandUsage(CustomCommand command, CommandSender sender, boolean isMain) {
-        String subChar = "&7&l> ";
-        TextComponent cmd = new BukkitMsgBuilder((isMain ? "" : subChar)+"&a"+command.getName())
-                .hover("&7Permission required: &e"+(Objects.equals(getPermission(), "") ? "None" : getPermission()))
+    private void sendFormattedCommandUsage(CustomCommand command, CommandSender sender, String prefix) {
+        String cmd = (prefix == null ? "" : prefix+" ")+command.getName();
+        TextComponent cmdHelp = new BukkitMsgBuilder("&8• &d/"+cmd)
+                .hover("&7Permission required: &e"+(Objects.equals(command.getPermission(), "") ? "None" : command.getPermission()))
+                .clickEvent(ClickEvent.Action.SUGGEST_COMMAND,"/"+cmd)
                 .get();
         TextComponent usage = formatUsage(command.getParameters());
-        TextComponent about = new BukkitMsgBuilder(" &7- &e"+command.getDescription()).get();
-        sender.sendMessage(cmd.append(usage).append(about));
+        TextComponent about = new BukkitMsgBuilder(" &8- &7"+command.getDescription()).get();
+        sender.sendMessage(cmdHelp.append(usage).append(about));
+        command.getSubCommands().forEach(scmd -> {
+            sendFormattedCommandUsage(scmd,sender,cmd);
+        });
     }
 
     private TextComponent formatUsage(HashMap<String, String> input) {
@@ -173,28 +174,6 @@ public class CustomCommand extends Command {
                     .get());
         });
         return component.build();
-    }
-
-    @Deprecated
-    public TextComponent help() {
-        StringBuilder sb = new StringBuilder();
-        sb.append("&8--=== &7Command Help&r&8: &a").append(getName()).append("&r&8 ===--");
-        List<CustomCommand> commands = Stream.concat(subCommands.stream(), stipulatedSubCommands.stream()).toList();
-        // Command
-        sb.append("\n&a" + this.getName());
-        this.getParameters().forEach((parameter, description) -> {
-            sb.append(" " + parameter + " (" + description + ")");
-        });
-        sb.append(" &7- &e" + this.getDescription());
-        // Subcommands
-        commands.forEach(command -> {
-            sb.append("\n&7> &a" + command.getName());
-            command.getParameters().forEach((parameter, description) -> {
-                sb.append(" " + parameter + " (" + description + ")");
-            });
-            sb.append(" &7- &e" + command.getDescription());
-        });
-        return new BukkitMsgBuilder(sb.toString()).get();
     }
 
     public TextComponent permissionError() {

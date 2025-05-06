@@ -12,15 +12,13 @@ import org.jetbrains.annotations.NotNull;
 import org.mariadb.jdbc.MariaDbDataSource;
 
 import java.sql.*;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
-import java.util.UUID;
+import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.logging.Logger;
+import java.util.stream.Collectors;
 
 /**
  * CacheManager responsible for managing the cache of player data.
@@ -110,6 +108,10 @@ public class CacheManagerV2 {
         int maxUsernameLength = 16;
         int geyserPrefixLength = FloodgateApi.getInstance().getPlayerPrefix().length();
         return !input.trim().isEmpty() && input.length() > 2 && (input.length() <= (maxUsernameLength+geyserPrefixLength));
+    }
+
+    public CompletableFuture<CachedPlayerV2> getCachedPlayer(@NotNull Player player) {
+        return getCachedPlayer(player.getUniqueId());
     }
 
     /**
@@ -256,6 +258,20 @@ public class CacheManagerV2 {
                 throw new RuntimeException(e);
             }
         });
+    }
+
+
+    public CompletableFuture<List<CachedPlayerV2>> getCachedPlayers(List<UUID> uuids) {
+        // Create player futures for each uuid
+        List<CompletableFuture<CachedPlayerV2>> playerFutures = uuids.stream()
+                .map(this::getCachedPlayer)
+                .toList();
+        // Wait for each future to complete
+        CompletableFuture<Void> allOf = CompletableFuture.allOf(playerFutures.toArray(new CompletableFuture[0]));
+        // Collect finished results
+        return allOf.thenApply(ignored -> playerFutures.stream()
+                .map(CompletableFuture::join)
+                .collect(Collectors.toList()));
     }
 
     /**
@@ -416,6 +432,7 @@ public class CacheManagerV2 {
 
     /**
      * Gets all players from the database.
+     * All players will be added to the in-memory cache.
      *
      * @return List of CachedPlayers from memory or database
      * @throws DataRequestFailure If a database error occurs
@@ -450,6 +467,9 @@ public class CacheManagerV2 {
                             signature
                     );
                     players.add(player);
+                    // Update in-memory cache
+                    usernameCache.put(player.getUsername(), player);
+                    uuidCache.put(player.getUUID(), player);
                 }
             }
         } catch (SQLException e) {
@@ -465,5 +485,16 @@ public class CacheManagerV2 {
     public void clearCache() {
         usernameCache.clear();
         uuidCache.clear();
+    }
+
+    /**
+     * Utility to format the names of multiple players.
+     * @return Comma separated list of player usernames or "None"
+     */
+    public static String formatPlayerNames(List<CachedPlayerV2> players) {
+        if (players.isEmpty()) {
+            return "None";
+        }
+        return String.join(", ",players.stream().map(CachedPlayerV2::getUsername).toList());
     }
 }
