@@ -37,33 +37,41 @@ public class MenuManager implements Listener {
 
     /**
      * Registers a menu to enable handling.
+     * Null menus are IGNORED.
      *
      * @param menu The menu to register.
-     * @return The registered {@link Menu} object.
+     * @return True if menu is valid, false if menu is not valid
      */
-    public Menu register(@NotNull Menu menu) {
+    public boolean register(Menu menu) {
+        if (menu == null) {
+            return false;
+        }
         registeredMenus.add(menu);
-        return menu;
+        return true;
     }
 
     /**
-     * Opens the menu for the player. Will register the menu first if not already registered.
+     * Opens the menu for the player.
+     * Will register the menu first if not already registered.
+     * Invalid (null) menus will NOT open.
      *
      * @param menu The menu to open (and possibly register).
      * @param player The player to open the menu for.
-     * @return The {@link Menu} object (builder pattern).
+     * @return True if opened, false if not opened due to error occurrence
      */
-    public Menu open(@NotNull Menu menu, @NotNull Player player) {
+    public boolean open(@NotNull Menu menu, @NotNull Player player) {
         if (!registeredMenus.contains(menu)) {
-            register(menu);
+            if (!register(menu)) {
+             return false;
+            }
         }
         menu.open(player);
-        return menu;
+        return true;
     }
 
     /**
      * Retrieves the unique identifier of a {@link ItemStack}.
-     * The UUID is stored in the item's persistent data container using the {@link #menuSystemIdKey}.
+     * The UUID is stored in the item's persistent data container in association with the {@link #menuSystemIdKey}.
      *
      * @param itemStack The {@link ItemStack} to retrieve the menu item UUID from.
      * @return The {@link UUID} of the menu item, or {@code null} if the item is not a menu item or does not have a UUID.
@@ -161,7 +169,10 @@ public class MenuManager implements Listener {
         }
     }
 
-    public void setPreviousMenu(@NotNull Menu menu, @NotNull Menu previous) {
+    public void setPreviousMenu(Menu menu, @NotNull Menu previous) {
+        if (menu == null) {
+            return;
+        }
         previousMenusSet.put(menu,previous);
     }
 
