@@ -15,7 +15,7 @@ import org.bukkit.scheduler.BukkitRunnable;
 public class PlayerUtils {
 
     /**
-     * @deprecated Use {@link me.itsmcb.vexelcore.bukkit.api.cache.CacheManagerV2#isValidUsername(String)} instead.
+     * @deprecated Use {@link me.itsmcb.vexelcore.bukkit.api.cache.CacheManagerV2#isValidUsernameFormat(String)} instead.
      */
     @Deprecated
     public static boolean isValid(String name, CacheManager cacheManager) {

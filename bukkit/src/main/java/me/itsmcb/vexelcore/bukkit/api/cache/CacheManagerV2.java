@@ -12,7 +12,10 @@ import org.jetbrains.annotations.NotNull;
 import org.mariadb.jdbc.MariaDbDataSource;
 
 import java.sql.*;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
+import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArrayList;
@@ -87,29 +90,6 @@ public class CacheManagerV2 {
         log.info("CacheManager has been successfully initialized with a database!");
     }
 
-    /**
-     * Checks if a given input string is a valid Minecraft username.
-     * <p>
-     * A valid username must meet the following criteria:
-     * <ul>
-     * <li>It must be at least 3 characters long</li>
-     * <li>Its length is 16 characters PLUS the length of the Geyser player prefix (if applicable)</li>
-     * </ul>
-     * <p>
-     * Note: The 16-character limit is based on Minecraft: Java Edition and Xbox Live username restrictions.
-     * The length of the Geyser player prefix, obtained through {@link FloodgateApi#getPlayerPrefix()}'s length},
-     * is added to the maximum allowed username length.
-     *
-     * @param input The string to validate as a username.
-     * @return {@code true} if the input is a valid username, {@code false} otherwise.
-     */
-    public static boolean isValidUsername(String input) {
-        // Note that 16 characters is the limit for Minecraft: Java Edition and Xbox Live usernames.
-        int maxUsernameLength = 16;
-        int geyserPrefixLength = FloodgateApi.getInstance().getPlayerPrefix().length();
-        return !input.trim().isEmpty() && input.length() > 2 && (input.length() <= (maxUsernameLength+geyserPrefixLength));
-    }
-
     public CompletableFuture<CachedPlayerV2> getCachedPlayer(@NotNull Player player) {
         return getCachedPlayer(player.getUniqueId());
     }
@@ -126,7 +106,7 @@ public class CacheManagerV2 {
             return getCachedPlayer(StringUtils.deriveUUID(username));
         }
         // Validate input
-        if (!isValidUsername(username)) {
+        if (!isValidUsernameFormat(username)) {
             return CompletableFuture.failedFuture(new PlayerNotFoundException(username));
         }
         // Check in-memory cache first
@@ -475,8 +455,14 @@ public class CacheManagerV2 {
         } catch (SQLException e) {
             throw new DataRequestFailure(e);
         }
-
         return players;
+    }
+
+    /**
+     * Obtain all known usernames from local cache
+     */
+    public List<String> getAllPlayerUsernames() {
+        return new ArrayList<>(usernameCache.keySet());
     }
 
     /**
@@ -488,10 +474,36 @@ public class CacheManagerV2 {
     }
 
     /**
+     * Checks if a given input string is a valid Minecraft username.
+     * <p>
+     * A valid username must meet the following criteria:
+     * <ul>
+     * <li>It must be at least 3 characters long</li>
+     * <li>Its length is 16 characters PLUS the length of the Geyser player prefix (if applicable)</li>
+     * </ul>
+     * <p>
+     * Note: The 16-character limit is based on Minecraft: Java Edition and Xbox Live username restrictions.
+     * The length of the Geyser player prefix, obtained through {@link FloodgateApi#getPlayerPrefix()}'s length,
+     * is added to the maximum allowed username length.
+     *
+     * @param input The string to validate as a username.
+     * @return {@code true} if the input is a valid username, {@code false} otherwise.
+     */
+    public static boolean isValidUsernameFormat(String input) {
+        // Note that 16 characters is the limit for Minecraft: Java Edition and Xbox Live usernames.
+        int maxUsernameLength = 16;
+        int geyserPrefixLength = 0;
+        if (GeyserUtils.isBedrock(input)) {
+            geyserPrefixLength = FloodgateApi.getInstance().getPlayerPrefix().length();
+        }
+        return !input.trim().isEmpty() && input.length() > 2 && (input.length() <= (maxUsernameLength+geyserPrefixLength));
+    }
+
+    /**
      * Utility to format the names of multiple players.
      * @return Comma separated list of player usernames or "None"
      */
-    public static String formatPlayerNames(List<CachedPlayerV2> players) {
+    public static String formatPlayerNames(@NotNull List<CachedPlayerV2> players) {
         if (players.isEmpty()) {
             return "None";
         }

@@ -77,7 +77,11 @@ public class MinecraftAPIUtils {
                 if (responseCode == 429) { // Too many requests
                     Bukkit.getPluginManager().getPlugin("VexelCore").getLogger().warning("Too many requests warning received from "+urlString);
                 }
-                throw new DataRequestFailure("HTTP error: "+responseCode);
+                if (responseCode == 503) {
+                    Bukkit.getPluginManager().getPlugin("VexelCore").getLogger().severe("This API is overloaded / experiencing 503 issues: "+urlString);
+                }
+                // 404 not found, etc.
+                throw new DataRequestFailure("Player lookup API server sent the following HTTP error: "+responseCode);
             }
         } catch (IOException e) {
             throw new DataRequestFailure(e);
