@@ -16,6 +16,8 @@ import java.util.Objects;
 public class PaginatedMenu extends Menu {
 
     private int page = 1;
+    private BackNavigationButton back = new BackNavigationButton(this);
+    private ForwardNavigationButton forward = new ForwardNavigationButton(this);
 
     public PaginatedMenu(MenuRowSize size, String title) {
         super(size, title);
@@ -30,13 +32,13 @@ public class PaginatedMenu extends Menu {
         setTemplateButton(getSize().getSize()-9,new MenuButton(Material.BLACK_STAINED_GLASS_PANE).name("&7"));
         setTemplateButton(getSize().getSize()-8,new MenuButton(Material.BLACK_STAINED_GLASS_PANE).name("&7"));
         // Previous Arrow
-        setTemplateButton(getSize().getSize()-7, new BackNavigationButton(HeadTexture.GRAY_ARROW_LEFT.getTexture(), this));
+        setTemplateButton(getSize().getSize()-7, back);
         // Middle
         setTemplateButton(getSize().getSize()-6,new MenuButton(Material.BLACK_STAINED_GLASS_PANE).name("&7"));
         setTemplateButton(getSize().getSize()-5,new MenuButton(Material.BLACK_STAINED_GLASS_PANE).name("&7"));
         setTemplateButton(getSize().getSize()-4,new MenuButton(Material.BLACK_STAINED_GLASS_PANE).name("&7"));
         // Forward Arrow
-        setTemplateButton(getSize().getSize()-3, new ForwardNavigationButton(HeadTexture.GRAY_ARROW_RIGHHT.getTexture(),this));
+        setTemplateButton(getSize().getSize()-3, forward);
         // Right
         setTemplateButton(getSize().getSize()-2,new MenuButton(Material.BLACK_STAINED_GLASS_PANE).name("&7"));
         setTemplateButton(getSize().getSize()-1,new MenuButton(Material.BLACK_STAINED_GLASS_PANE).name("&7"));
@@ -61,6 +63,7 @@ public class PaginatedMenu extends Menu {
         }
         // Go to the previous page
         page--;
+        setMenuUpdateRequested(true);
         refresh();
     }
 
@@ -87,25 +90,28 @@ public class PaginatedMenu extends Menu {
             return;
         }
         page++;
+        setMenuUpdateRequested(true);
         refresh();
     }
 
     @Override
-    public void refresh() {
+    public void rebuildMenu() {
         inventory.clear();
         final int inventorySize = getSize().getSize();
         final int templateButtonSize = getTemplatePositionedButtons().size();
         final int availableButtonSlots = inventorySize - templateButtonSize;
 
-        applyTemplateButtons();
+        getTemplatePositionedButtons().forEach((i,b) -> b.refresh()); // Ensure ALL template and positioned buttons update if needed (some may not be refreshed via method below)
+        applyTemplateAndPositionedButtons();
         int filledSlots = applyPositionedButtons(availableButtonSlots);
+        getUnpositionedButtons().forEach(MenuButton::refresh); // Ensure ALL unpositioned buttons update if needed (some may not be refreshed via method below)
         applyUnpositionedButtons(inventorySize, filledSlots);
     }
 
     /**
      * Applies template buttons to the inventory.
      */
-    private void applyTemplateButtons() {
+    private void applyTemplateAndPositionedButtons() {
         if (VexelCoreBukkitAPI.getMenuManager().hasPreviousMenu(this)) {
             int middle = getSize().getSize()-5;
             if (!getTemplatePositionedButtons().get(middle).getType().equals(Material.PLAYER_HEAD)) {

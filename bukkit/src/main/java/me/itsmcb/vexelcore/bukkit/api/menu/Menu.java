@@ -10,6 +10,7 @@ import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Optional;
 
 /**
  * Custom chest menu. {@link MenuButton}s are automatically refreshed and arranged.
@@ -21,6 +22,7 @@ public class Menu implements InventoryHolder {
     private String title;
     private boolean clickToClose = true;
     private boolean persistent = false;
+    private boolean menuUpdateRequested = false;
     private BukkitRunnable refreshRunnable = new BukkitRunnable() {
         @Override
         public void run() {
@@ -71,6 +73,16 @@ public class Menu implements InventoryHolder {
      * Update each menu item and set them into the inventory.
      */
     public void refresh() {
+        Optional<MenuButton> templatePosition = templatePositionedButtons.values().stream().filter(MenuButton::isButtonUpdateRequested).findFirst();
+        Optional<MenuButton> positioned = positionedButtons.values().stream().filter(MenuButton::isButtonUpdateRequested).findFirst();
+        Optional<MenuButton> unpositioned = unpositionedButtons.stream().filter(MenuButton::isButtonUpdateRequested).findFirst();
+        if (menuUpdateRequested || templatePosition.isPresent() || positioned.isPresent() || unpositioned.isPresent()) {
+            rebuildMenu();
+            setMenuUpdateRequested(false);
+        }
+    }
+
+    public void rebuildMenu() {
         inventory.clear();
         // Refresh and get
         templatePositionedButtons.forEach((i,b) -> {
@@ -80,6 +92,10 @@ public class Menu implements InventoryHolder {
             inventory.setItem(i,b.refresh().get());
         });
         unpositionedButtons.forEach(b -> inventory.addItem(b.refresh().get()));
+    }
+
+    public void setMenuUpdateRequested(boolean menuUpdateRequested) {
+        this.menuUpdateRequested = menuUpdateRequested;
     }
 
     /**
@@ -103,6 +119,7 @@ public class Menu implements InventoryHolder {
 
     public Menu setTemplateButton(int index, @NotNull MenuButton button) {
         templatePositionedButtons.put(index,button);
+        setMenuUpdateRequested(true);
         return this;
     }
 
@@ -112,6 +129,7 @@ public class Menu implements InventoryHolder {
 
     public Menu addButton(int index, @NotNull MenuButton button) {
         positionedButtons.put(index,button);
+        setMenuUpdateRequested(true);
         return this;
     }
 
@@ -121,6 +139,7 @@ public class Menu implements InventoryHolder {
 
     public Menu addButton(@NotNull MenuButton button) {
         unpositionedButtons.add(button);
+        setMenuUpdateRequested(true);
         return this;
     }
 

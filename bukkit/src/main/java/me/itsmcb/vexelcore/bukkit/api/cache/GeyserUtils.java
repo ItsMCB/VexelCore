@@ -114,17 +114,14 @@ public class GeyserUtils {
         if (xuid < 0) {
             return null; // XUID should not be negative
         }
-
-        // Ensure the hex string is 12 characters long by padding with leading zeros if necessary
-        String xuidHexString = String.format("%012x", xuid); // %012x formats as hex with leading zeros to 12 digits
-
-        // Construct the Geyser Bedrock UUID string by prefixing the standard parts and the XUID hex
+        // Extract only the lower 48 bits (12 hex characters)
+        long lower48Bits = xuid & 0xFFFFFFFFFFFFL;
+        String xuidHexString = String.format("%012x", lower48Bits);
+        // Construct the Geyser Bedrock UUID string
         String geyserUUIDString = "00000000-0000-0000-0009-" + xuidHexString;
-
         try {
             return UUID.fromString(geyserUUIDString);
         } catch (IllegalArgumentException e) {
-            // This might happen if the constructed string is not a valid UUID format
             return null;
         }
     }

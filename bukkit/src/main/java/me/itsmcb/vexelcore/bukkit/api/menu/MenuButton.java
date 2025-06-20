@@ -24,6 +24,7 @@ public class MenuButton {
 
     // Tracking
     private UUID uuid = UUID.randomUUID();
+    private boolean buttonUpdateRequested = false;
 
     // Item properties
     private Component name;
@@ -43,33 +44,44 @@ public class MenuButton {
     }
 
     public MenuButton(@NotNull ItemStack itemStack) {
-        this.itemStack = itemStack;
+        setItemStack(itemStack);
     }
 
     public MenuButton(@NotNull CachedPlayerV2 cachedPlayer) {
-        this.itemStack = new SkullBuilderUtil(cachedPlayer.getPlayerSkinData().getTexture(),cachedPlayer.getPlayerSkinData().getSignature()).get();
+        this(new SkullBuilderUtil(cachedPlayer.getPlayerSkinData().getTexture(),cachedPlayer.getPlayerSkinData().getSignature()).get());
     }
 
     public MenuButton(PlayerSkinData playerSkinData) {
-        this.itemStack = new SkullBuilderUtil(playerSkinData).get();
+        this(new SkullBuilderUtil(playerSkinData).get());
     }
 
     public MenuButton(@NotNull String texture) {
-        this.itemStack = new SkullBuilderUtil(texture).get();
+        this(new SkullBuilderUtil(texture).get());
+    }
+
+    public boolean isButtonUpdateRequested() {
+        return buttonUpdateRequested;
+    }
+
+    public void setButtonUpdateRequested(boolean buttonUpdateRequested) {
+        this.buttonUpdateRequested = buttonUpdateRequested;
     }
 
     public MenuButton name(String name) {
         name(new BukkitMsgBuilder(name).get());
+        setButtonUpdateRequested(true);
         return this;
     }
 
     public MenuButton name(Component name) {
         this.name = name;
+        setButtonUpdateRequested(true);
         return this;
     }
 
     public MenuButton addLore(TextComponent... components) {
         this.lore.addAll(Arrays.stream(components).toList());
+        setButtonUpdateRequested(true);
         return this;
     }
 
@@ -79,26 +91,31 @@ public class MenuButton {
             components.add(new BukkitMsgBuilder(s).get());
         }
         this.lore.addAll(components);
+        setButtonUpdateRequested(true);
         return this;
     }
 
     public MenuButton setLore(ArrayList<TextComponent> lore) {
         this.lore = lore;
+        setButtonUpdateRequested(true);
         return this;
     }
 
     public MenuButton setLore(TextComponent... textComponents) {
         this.setLore(new ArrayList<>(Arrays.asList(textComponents)));
+        setButtonUpdateRequested(true);
         return this;
     }
 
     public MenuButton resetLore() {
         this.lore = new ArrayList<>();
+        setButtonUpdateRequested(true);
         return this;
     }
 
     public MenuButton setItemStack(ItemStack itemStack) {
         this.itemStack = itemStack;
+        setButtonUpdateRequested(true);
         return this;
     }
 
@@ -108,16 +125,19 @@ public class MenuButton {
 
     public MenuButton addPersistantItemData(ItemData itemData) {
         this.getPersistantItemData().add(itemData);
+        setButtonUpdateRequested(true);
         return this;
     }
 
     public MenuButton setPersistantItemData(ArrayList<ItemData> persistantItemData) {
         this.persistantItemData = persistantItemData;
+        setButtonUpdateRequested(true);
         return this;
     }
 
     public MenuButton rightClick(Consumer<InventoryClickEvent> rightClick) {
         this.rightClick = rightClick;
+        setButtonUpdateRequested(true);
         return this;
     }
 
@@ -127,12 +147,14 @@ public class MenuButton {
 
     public MenuButton leftClick(Consumer<InventoryClickEvent> leftClick) {
         this.leftClick = leftClick;
+        setButtonUpdateRequested(true);
         return this;
     }
 
     public MenuButton click(Consumer<InventoryClickEvent> click) {
         this.rightClick = click;
         this.leftClick = click;
+        setButtonUpdateRequested(true);
         return this;
     }
 
@@ -167,6 +189,7 @@ public class MenuButton {
         }
         // Apply
         itemStack.setItemMeta(meta);
+        setButtonUpdateRequested(false);
         return this;
     }
 

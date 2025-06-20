@@ -8,7 +8,7 @@ import net.kyori.adventure.key.Key;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.ComponentLike;
 import net.kyori.adventure.translation.GlobalTranslator;
-import net.kyori.adventure.translation.TranslationRegistry;
+import net.kyori.adventure.translation.TranslationStore;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.jetbrains.annotations.NotNull;
@@ -16,6 +16,7 @@ import org.jetbrains.annotations.NotNull;
 import java.io.File;
 import java.io.InputStream;
 import java.text.MessageFormat;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -33,7 +34,8 @@ public class LocalizationManager {
     private final JavaPlugin plugin;
     private final List<Locale> enabledLocales;
     private final String registryNamespace;
-    private TranslationRegistry registry;
+    private TranslationStore translationStore;
+    private Map<Locale, Map<String, String>> dynamicTranslations = new HashMap<>();
     private Map<Locale, BoostedConfig> configCache;
 
     /**
@@ -56,8 +58,9 @@ public class LocalizationManager {
     }
 
     private void createRegistry() {
-        this.registry = TranslationRegistry.create(Key.key(registryNamespace, "translations"));
-        this.registry.defaultLocale(enabledLocales.get(0));
+        // File-based translations
+        this.translationStore = TranslationStore.messageFormat(Key.key(registryNamespace, "translations"));
+        this.translationStore.defaultLocale(enabledLocales.get(0));
     }
 
     /**
@@ -66,8 +69,8 @@ public class LocalizationManager {
     private void initializeLocalization() {
         createRegistry();
         loadConfigurations();
-        registerTranslations();
-        GlobalTranslator.translator().addSource(registry);
+        registerConfigTranslations();
+        GlobalTranslator.translator().addSource(translationStore);
     }
 
     /**
@@ -98,12 +101,30 @@ public class LocalizationManager {
     /**
      * Registers translations from loaded configurations to the registry.
      */
-    private void registerTranslations() {
+    private void registerConfigTranslations() {
         configCache.forEach((locale, config) -> {
             config.get().getStringRouteMappedValues(true).entrySet().stream()
                     .filter(this::isValidTranslationEntry)
                     .forEach(entry -> registerTranslationEntry(locale, entry.getKey(), entry.getValue()));
         });
+    }
+
+    /**
+     * Registers a translation that isn't file-based.
+     */
+    public void registerDynamicTranslation(@NotNull Locale locale, @NotNull String key, @NotNull String message) {
+        try {
+            Map<String, String> localeStrings = dynamicTranslations.computeIfAbsent(locale, l -> new ConcurrentHashMap<>());
+            localeStrings.put(key, message);
+            translationStore.register(
+                    key,
+                    locale,
+                    new MessageFormat(message)
+            );
+        } catch (Exception e) {
+            plugin.getLogger().warning("Failed to register translation for key '" + key + "', locale '" + locale + "': " + e.getMessage());
+            e.printStackTrace();
+        }
     }
 
     private boolean isValidTranslationEntry(Map.Entry<String, Object> entry) {
@@ -114,7 +135,7 @@ public class LocalizationManager {
 
     private void registerTranslationEntry(Locale locale, String key, Object value) {
         try {
-            registry.register(
+            translationStore.register(
                     key,
                     locale,
                     new MessageFormat(String.valueOf(value))
@@ -125,10 +146,17 @@ public class LocalizationManager {
     }
 
     /**
+     * Removes translations from translation store.
+     */
+    public void unregisterTranslationEntry(String key) {
+        translationStore.unregister(key);
+    }
+
+    /**
      * Reloads all localizations.
      */
     public void reload() {
-        GlobalTranslator.translator().removeSource(registry);
+        GlobalTranslator.translator().removeSource(translationStore);
         configCache.clear();
         initializeLocalization();
     }
@@ -201,5 +229,15 @@ public class LocalizationManager {
      */
     public String getString(@NotNull Player player, @NotNull String path, @NotNull ComponentLike... arguments) {
         return ChatUtils.getColorizer().serialize(getComponent(player,path,arguments));
+    }
+
+    /**
+     * Checks if a key has been registered.
+     *
+     * @param key The key to check
+     * @return If the key has any registered translation.
+     */
+    public boolean hasString(@NotNull String key) {
+        return translationStore.contains(key);
     }
 }

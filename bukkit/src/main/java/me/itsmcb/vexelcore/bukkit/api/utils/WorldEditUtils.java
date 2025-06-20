@@ -1,6 +1,5 @@
 package me.itsmcb.vexelcore.bukkit.api.utils;
 
-import com.fastasyncworldedit.core.entity.Metadatable;
 import com.sk89q.worldedit.EditSession;
 import com.sk89q.worldedit.WorldEdit;
 import com.sk89q.worldedit.bukkit.BukkitAdapter;
@@ -14,6 +13,7 @@ import com.sk89q.worldedit.function.operation.Operations;
 import com.sk89q.worldedit.math.BlockVector3;
 import com.sk89q.worldedit.regions.CuboidRegion;
 import com.sk89q.worldedit.session.ClipboardHolder;
+import me.itsmcb.vexelcore.bukkit.api.config.BukkitCoordinates;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.World;
@@ -22,6 +22,8 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.util.concurrent.CompletableFuture;
 
 public class WorldEditUtils {
 
@@ -33,6 +35,40 @@ public class WorldEditUtils {
                         File.separator + fileName + ".schem"
         );
     }
+
+    public static CompletableFuture<Void> pasteSchematic(File file, World world, BukkitCoordinates location, boolean ignoreAirBlocks) {
+        return CompletableFuture.runAsync(() -> {
+            ClipboardFormat format = ClipboardFormats.findByFile(file);
+            if (format == null) {
+                throw new IllegalArgumentException("Unrecognized schematic format: " + file.getName());
+            }
+
+            try (ClipboardReader reader = format.getReader(Files.newInputStream(file.toPath()))) {
+                Clipboard clipboard = reader.read();
+
+                Actor actor = BukkitAdapter.adapt(Bukkit.getConsoleSender());
+
+                try (EditSession editSession = WorldEdit.getInstance()
+                        .newEditSessionBuilder()
+                        .world(BukkitAdapter.adapt(world))
+                        .actor(actor)
+                        .maxBlocks(-1)
+                        .build()) {
+
+                    Operation operation = new ClipboardHolder(clipboard)
+                            .createPaste(editSession)
+                            .to(BlockVector3.at(location.getX(), location.getY(), location.getZ()))
+                            .ignoreAirBlocks(ignoreAirBlocks)
+                            .build();
+
+                    Operations.complete(operation);
+                }
+            } catch (IOException | RuntimeException e) {
+                throw new RuntimeException("Failed to paste schematic: " + file.getName(), e);
+            }
+        });
+    }
+
 
     public static void pasteSchematic(File file, Location location, boolean ignoreAirBlocks) {
         ClipboardFormat format = ClipboardFormats.findByFile(file);

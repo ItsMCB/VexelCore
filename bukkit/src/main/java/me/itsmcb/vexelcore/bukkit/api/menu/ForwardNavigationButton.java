@@ -5,19 +5,17 @@ import me.itsmcb.vexelcore.bukkit.api.utils.SkullBuilderUtil;
 import me.itsmcb.vexelcore.common.api.HeadTexture;
 import org.bukkit.Material;
 import org.bukkit.inventory.ItemStack;
-import org.jetbrains.annotations.NotNull;
 
 public class ForwardNavigationButton extends MenuButton {
 
     private PaginatedMenu paginatedMenu;
 
-    public ForwardNavigationButton(@NotNull String texture, PaginatedMenu paginatedMenu) {
-        super(texture);
-        this.paginatedMenu = paginatedMenu;
+    public ForwardNavigationButton(PaginatedMenu associatedMenu) {
+        super(Material.BLACK_STAINED_GLASS);
+        this.paginatedMenu = associatedMenu;
     }
 
-    @Override
-    public MenuButton refresh() {
+    public void updatePage() {
         if (!paginatedMenu.isLastPage()) {
             this.setItemStack(new SkullBuilderUtil(HeadTexture.GRAY_ARROW_RIGHHT.getTexture()).get());
             this.name("&r&d&lNext Page");
@@ -28,6 +26,11 @@ public class ForwardNavigationButton extends MenuButton {
             this.click(null);
             this.resetLore();
         }
+    }
+
+    @Override
+    public MenuButton refresh() {
+        updatePage();
         return super.refresh();
     }
 }

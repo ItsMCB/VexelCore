@@ -22,19 +22,21 @@ public class BukkitCoordinates implements ConfigurationSerializable {
     public BukkitCoordinates() {}
 
     public BukkitCoordinates(Location location) {
-        this.x = location.getX();
-        this.y = location.getY();
-        this.z = location.getZ();
+        this(location.getX(),location.getY(), location.getZ());
         this.yaw = location.getYaw();
         this.pitch = location.getPitch();
     }
 
     public BukkitCoordinates(double x, double y, double z, float yaw, float pitch) {
+        this(x,y,z);
+        this.yaw = yaw;
+        this.pitch = pitch;
+    }
+
+    public BukkitCoordinates(double x, double y, double z) {
         this.x = x;
         this.y = y;
         this.z = z;
-        this.yaw = yaw;
-        this.pitch = pitch;
     }
 
     public Location getLocation(World world) {

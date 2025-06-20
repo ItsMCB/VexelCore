@@ -21,4 +21,31 @@ public enum MenuRowSize {
     public static boolean isValidSize(int size) {
         return size > 0 && size % 9 == 0;
     }
+
+    /**
+     * Determines the appropriate menu size based on content count.
+     * Reserves the bottom row (9 slots) for navigation buttons.
+     *
+     * @param contentCount The number of content items to display
+     * @return The MenuRowSize that can accommodate the content plus navigation
+     */
+    public static MenuRowSize getMenuSizeForContent(int contentCount) {
+        // No content
+        if (contentCount <= 0) {
+            return ONE;
+        }
+
+        // Calculate required slots (content + bottom navigation)
+        int requiredSlots = contentCount + 9;
+
+        // Determine the smallest reasonable size
+        for (MenuRowSize size : values()) {
+            if (size.getSize() >= requiredSlots) {
+                return size;
+            }
+        }
+
+        // If content exceeds even the largest menu size, return the largest
+        return SIX;
+    }
 }

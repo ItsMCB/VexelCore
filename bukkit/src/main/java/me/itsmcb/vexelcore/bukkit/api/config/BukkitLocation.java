@@ -11,30 +11,34 @@ import java.util.Map;
 @SerializableAs("BukkitLocation")
 public class BukkitLocation extends BukkitCoordinates {
 
-    private String name;
+    private String worldName;
 
     public BukkitLocation() {}
 
     public BukkitLocation(Location location) {
         super(location.getX(), location.getY(), location.getZ(), location.getYaw(), location.getPitch());
-        this.name = location.getWorld().getName();
+        this.worldName = location.getWorld().getName();
     }
 
     public BukkitLocation(String name, double x, double y, double z, float yaw, float pitch) {
         super(x,y,z,yaw,pitch);
-        this.name = name;
+        this.worldName = name;
     }
 
+    /**
+     * Constructs location. Important: Assumes world is loaded!
+     * @return Location
+     */
     public Location getLocation() {
-        return new Location(Bukkit.getWorld(name),getX(),getY(),getZ(),getYaw(),getPitch());
+        return new Location(Bukkit.getWorld(worldName),getX(),getY(),getZ(),getYaw(),getPitch());
     }
 
-    public String getName() {
-        return name;
+    public String getWorldName() {
+        return worldName;
     }
 
-    public BukkitLocation setName(String name) {
-        this.name = name;
+    public BukkitLocation setWorldName(String worldName) {
+        this.worldName = worldName;
         return this;
     }
 
@@ -53,7 +57,7 @@ public class BukkitLocation extends BukkitCoordinates {
         try {
             BukkitLocation bl = new BukkitLocation();
             if (map.containsKey("name")) {
-                bl.setName((String) map.get("name"));
+                bl.setWorldName((String) map.get("name"));
             }
             if (map.containsKey("x")) {
                 bl.setX(Double.parseDouble((String) map.get("x")));
