@@ -1,5 +1,5 @@
 # VexelCore
-VexelCore is an API that enables Bukkit derivative (i.e. Paper, Purpur, etc.) and Velocity plugin developers to focus on features and offload complexity.
+VexelCore is an API that enables Paper and Velocity plugin developers to focus on features and offload complexity.
 
 ### 🔥 Why It's Awesome
 - Includes feature management system to simplify disabling/enabling/reloading
@@ -61,7 +61,7 @@ if (cmdHelper.argExists(0)) {
 
 and more.
 
-## Bukkit
+## "Bukkit" (Paper)
 - Custom command class (will eventually work for Velocity too)
   A command registered with the feature manager.
   - Automatically creates help page (@Override `help()` to customize)
@@ -109,7 +109,7 @@ If you are unable to build the project, please try Java 17 Temurin.
 We are targeting Java 17 to copy Minecraft.
 
 ## ✋ Help
-Please join [Martin's Community](https://discord.gg/QW2m6bYG4S) Discord server.
+Please join the [Libre Galaxy](https://discord.gg/86qJJHtDgT) Discord server.
 
 ## ⚖️ License
 VexelCore is currently licensed under the [GNU General Public License v3.0](https://www.gnu.org/licenses/gpl-3.0.en.html)

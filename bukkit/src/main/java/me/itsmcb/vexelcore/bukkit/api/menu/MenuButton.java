@@ -30,6 +30,7 @@ public class MenuButton {
     private Component name;
     private ArrayList<TextComponent> lore = new ArrayList<>();
     private ArrayList<ItemData> persistantItemData = new ArrayList<>();
+    private boolean hideToolTip = false;
 
     // Item click events
     private boolean moveable = false;
@@ -79,13 +80,25 @@ public class MenuButton {
         return this;
     }
 
+    /**
+     * Adds lore lines from a List of TextComponents.
+     * @param loreLines The list of TextComponents to add as lore.
+     * @return This MenuButton instance for chaining.
+     */
+    public MenuButton addLore(@NotNull List<TextComponent> loreLines) {
+        this.lore.addAll(loreLines);
+        setButtonUpdateRequested(true);
+        return this;
+    }
+
     public MenuButton addLore(TextComponent... components) {
         this.lore.addAll(Arrays.stream(components).toList());
         setButtonUpdateRequested(true);
         return this;
     }
 
-    public MenuButton addLore(String... lore) {
+
+    public MenuButton addLore(@NotNull String... lore) {
         List<TextComponent> components = new ArrayList<>();
         for (String s : lore) {
             components.add(new BukkitMsgBuilder(s).get());
@@ -95,13 +108,13 @@ public class MenuButton {
         return this;
     }
 
-    public MenuButton setLore(ArrayList<TextComponent> lore) {
+    public MenuButton setLore(@NotNull ArrayList<TextComponent> lore) {
         this.lore = lore;
         setButtonUpdateRequested(true);
         return this;
     }
 
-    public MenuButton setLore(TextComponent... textComponents) {
+    public MenuButton setLore(@NotNull TextComponent... textComponents) {
         this.setLore(new ArrayList<>(Arrays.asList(textComponents)));
         setButtonUpdateRequested(true);
         return this;
@@ -133,6 +146,16 @@ public class MenuButton {
         this.persistantItemData = persistantItemData;
         setButtonUpdateRequested(true);
         return this;
+    }
+
+    public MenuButton setHideToolTip(boolean hideToolTip) {
+        this.hideToolTip = hideToolTip;
+        setButtonUpdateRequested(true);
+        return this;
+    }
+
+    public boolean hideToolTip() {
+        return hideToolTip;
     }
 
     public MenuButton rightClick(Consumer<InventoryClickEvent> rightClick) {
@@ -181,6 +204,8 @@ public class MenuButton {
         meta.lore(lore.stream().map(l -> l.decoration(TextDecoration.ITALIC, false)).toList());
         // Tracking ID
         meta.getPersistentDataContainer().set(MenuManager.menuSystemIdKey, PersistentDataType.STRING, uuid+"");
+        // Tooltip
+        meta.setHideTooltip(hideToolTip);
         // Item data
         if (!getPersistantItemData().isEmpty()) {
             getPersistantItemData().forEach(itemData -> {
@@ -212,12 +237,19 @@ public class MenuButton {
         return itemStack;
     }
 
-    public ItemStack getCleanItemStack() {
+    public ItemStack getCleanItemStack(ArrayList<TextComponent> replacedLore) {
         ItemStack cleanIS = itemStack;
         ItemMeta itemMeta = cleanIS.getItemMeta();
         itemMeta.getPersistentDataContainer().remove(MenuManager.menuSystemIdKey);
+        if (replacedLore != null) {
+            itemMeta.lore(replacedLore);
+        }
         cleanIS.setItemMeta(itemMeta);
         return cleanIS;
+    }
+
+    public ItemStack getCleanItemStack() {
+        return getCleanItemStack(null);
     }
 
 }

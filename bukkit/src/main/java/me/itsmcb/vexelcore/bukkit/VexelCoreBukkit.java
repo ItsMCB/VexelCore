@@ -4,6 +4,7 @@ import dev.dejvokep.boostedyaml.spigot.SpigotSerializer;
 import me.itsmcb.vexelcore.bukkit.api.cache.CacheManagerV2;
 import me.itsmcb.vexelcore.bukkit.api.cache.exceptions.DataRequestFailure;
 import me.itsmcb.vexelcore.bukkit.api.cache.exceptions.DataSaveFailure;
+import me.itsmcb.vexelcore.bukkit.api.dialog.manager.DialogSessionManager;
 import me.itsmcb.vexelcore.bukkit.api.managers.CacheManager;
 import me.itsmcb.vexelcore.bukkit.api.menu.MenuManager;
 import me.itsmcb.vexelcore.bukkit.api.text.BukkitMsgBuilder;
@@ -44,6 +45,9 @@ public class VexelCoreBukkit extends JavaPlugin implements Listener {
         return menuManager;
     }
 
+    private DialogSessionManager dialogManager;
+    public DialogSessionManager getDialogManager() { return dialogManager; }
+
     private BoostedConfig mainConfig;
     public BoostedConfig getMainConfig() {
         return mainConfig;
@@ -67,6 +71,8 @@ public class VexelCoreBukkit extends JavaPlugin implements Listener {
         // Register menu system and respective listeners
         menuManager = new MenuManager(this);
         Bukkit.getPluginManager().registerEvents(menuManager, this);
+
+        dialogManager = new DialogSessionManager(this);
 
         cacheManager = new CacheManager(this);
         cacheManagerV2 = new CacheManagerV2(

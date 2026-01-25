@@ -1,6 +1,12 @@
 package me.itsmcb.vexelcore.bukkit.api.cache;
 
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
 import org.bukkit.entity.Player;
+
+import java.net.URI;
+import java.net.URL;
+import java.util.Base64;
 
 /**
  * Represents Minecraft player skin data
@@ -98,6 +104,36 @@ public class PlayerSkinData {
      */
     public boolean hasValidSkin() {
         return texture != null && signature != null;
+    }
+
+    /**
+     * Retrieves the skin URL from the texture data.
+     *
+     * @return The skin as a {@link URL} object or {@code null} if the texture doesn't exist or could not be parsed.
+     */
+    public URL getSkinUrl() {
+        if (this.texture == null) {
+            return null;
+        }
+        try {
+            // Decode the Base64 texture value to plain text and parse it as JSON
+            byte[] decodedTextureBytes = Base64.getDecoder().decode(this.texture);
+            JsonObject jsonObject = JsonParser.parseString(new String(decodedTextureBytes)).getAsJsonObject();
+
+            // Navigate through the JSON to the skin URL
+            JsonObject texturesObject = jsonObject.getAsJsonObject("textures");
+            if (texturesObject == null) {
+                return null;
+            }
+            JsonObject skinObject = texturesObject.getAsJsonObject("SKIN");
+            if (skinObject == null) {
+                return null;
+            }
+            return URI.create(skinObject.get("url").getAsString()).toURL();
+
+        } catch (Exception e) {
+            return null;
+        }
     }
 
     @Override

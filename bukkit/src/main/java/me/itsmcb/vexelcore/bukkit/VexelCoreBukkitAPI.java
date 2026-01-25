@@ -1,6 +1,7 @@
 package me.itsmcb.vexelcore.bukkit;
 
 import me.itsmcb.vexelcore.bukkit.api.cache.CacheManagerV2;
+import me.itsmcb.vexelcore.bukkit.api.dialog.manager.DialogSessionManager;
 import me.itsmcb.vexelcore.bukkit.api.menu.MenuManager;
 
 import java.util.List;
@@ -23,6 +24,10 @@ public class VexelCoreBukkitAPI {
 
     public static void refreshProxyServerNameCache() {
         VexelCoreBukkit.getInstance().getProxyManager().refreshServerNames();
+    }
+
+    public static DialogSessionManager getDialogManager() {
+        return VexelCoreBukkit.getInstance().getDialogManager();
     }
 
     /**

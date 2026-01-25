@@ -110,6 +110,21 @@ public class LocalizationManager {
     }
 
     /**
+     * Creates a MessageFormat object from a string with quotes correctly escaped.
+     *
+     * @param message Message input that might contain single quotes that need to be treated as literal characters.
+     * @return A new MessageFormat with correctly escaped quotes.
+     */
+    private MessageFormat createMessageFormat(String message) {
+        if (message == null) {
+            return new MessageFormat("");
+        }
+        // Replace every single apostrophe with two apostrophes.
+        String escapedMessage = message.replace("'", "''");
+        return new MessageFormat(escapedMessage);
+    }
+
+    /**
      * Registers a translation that isn't file-based.
      */
     public void registerDynamicTranslation(@NotNull Locale locale, @NotNull String key, @NotNull String message) {
@@ -119,7 +134,7 @@ public class LocalizationManager {
             translationStore.register(
                     key,
                     locale,
-                    new MessageFormat(message)
+                    createMessageFormat(message)
             );
         } catch (Exception e) {
             plugin.getLogger().warning("Failed to register translation for key '" + key + "', locale '" + locale + "': " + e.getMessage());
@@ -138,7 +153,7 @@ public class LocalizationManager {
             translationStore.register(
                     key,
                     locale,
-                    new MessageFormat(String.valueOf(value))
+                    createMessageFormat(String.valueOf(value))
             );
         } catch (Exception e) {
             plugin.getLogger().log(Level.WARNING, "Failed to register translation: " + key, e);

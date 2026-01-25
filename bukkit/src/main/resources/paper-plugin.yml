@@ -1,0 +1,39 @@
+name: VexelCore
+version: '${version}'
+main: me.itsmcb.vexelcore.bukkit.VexelCoreBukkit
+api-version: 1.21.11
+
+description: A useful API to offload complexity.
+authors:
+  - ItsMCB
+website: https://github.com/ItsMCB/VexelCore
+bootstrapper: me.itsmcb.vexelcore.bukkit.VexelCoreBootstrap
+loader: me.itsmcb.vexelcore.bukkit.VexelCoreLoader
+
+dependencies:
+  server:
+    FastAsyncWorldEdit:
+      required: false
+      load: BEFORE
+      join-classpath: true
+
+    WorldGuard:
+      required: false
+      load: BEFORE
+      join-classpath: true
+
+    PlaceholderAPI:
+      required: false
+      load: OMIT
+      join-classpath: true
+
+    floodgate:
+      required: false
+      load: OMIT
+      join-classpath: true
+
+    CoreProtect:
+      required: false
+      load: OMIT
+      join-classpath: true
+# Reminder: Add plugin dependence here. Add non-plugin dependencies (ex. MariaDB) to VexelCoreLoader.

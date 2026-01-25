@@ -147,14 +147,14 @@ public class CustomCommand extends Command {
 
     public void help(CommandSender sender) {
         new BukkitMsgBuilder("&8&m                                                    &r").send(sender);
-        new BukkitMsgBuilder("&d📚 &7Command Help &3"+getName()+"&7:").send(sender);
+        new BukkitMsgBuilder("&f📚 &7Command Help &3"+getName()+"&7:").send(sender);
         sendFormattedCommandUsage(this, sender,null);
         new BukkitMsgBuilder("&8&m                                                    &r").send(sender);
     }
 
     private void sendFormattedCommandUsage(CustomCommand command, CommandSender sender, String prefix) {
         String cmd = (prefix == null ? "" : prefix+" ")+command.getName();
-        TextComponent cmdHelp = new BukkitMsgBuilder("&8• &d/"+cmd)
+        TextComponent cmdHelp = new BukkitMsgBuilder("&8• &b/"+cmd)
                 .hover("&7Permission required: &e"+(Objects.equals(command.getPermission(), "") ? "None" : command.getPermission()))
                 .clickEvent(ClickEvent.Action.SUGGEST_COMMAND,"/"+cmd)
                 .get();

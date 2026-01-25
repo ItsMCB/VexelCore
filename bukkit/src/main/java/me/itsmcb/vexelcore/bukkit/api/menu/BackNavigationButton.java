@@ -18,11 +18,12 @@ public class BackNavigationButton extends MenuButton {
     public void updatePage() {
         if (paginatedMenu.pageCanGoBack()) {
             this.setItemStack(new SkullBuilderUtil(HeadTexture.GRAY_ARROW_LEFT.getTexture()).get());
-            this.name("&r&d&lPrevious Page");
+            this.name("&r&f&lPrevious Page");
             this.click(e -> paginatedMenu.pageGoBack());
             this.setLore(new BukkitMsgBuilder("&7Page&8: &7"+paginatedMenu.getPage()+"&8/&7"+paginatedMenu.getTotalPages()).get());
+            this.setHideToolTip(false);
         } else {
-            this.setItemStack(new ItemStack(Material.BLACK_STAINED_GLASS_PANE)).name("&7");
+            this.setItemStack(new ItemStack(Material.BLACK_STAINED_GLASS_PANE)).name("&7").setHideToolTip(true);
             this.click(null);
             this.resetLore();
         }

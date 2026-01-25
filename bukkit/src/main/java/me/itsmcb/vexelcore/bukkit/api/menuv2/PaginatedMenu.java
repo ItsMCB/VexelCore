@@ -19,7 +19,7 @@ public class PaginatedMenu extends MenuV2 {
         String arrowLeft = "eyJ0ZXh0dXJlcyI6eyJTS0lOIjp7InVybCI6Imh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvODY5NzFkZDg4MWRiYWY0ZmQ2YmNhYTkzNjE0NDkzYzYxMmY4Njk2NDFlZDU5ZDFjOTM2M2EzNjY2YTVmYTYifX19";
 
         addStaticItem(new LegacyPaginatedMenuButton(arrowLeft)
-                .name("&r&d&lPrevious Page")
+                .name("&r&f&lPrevious Page")
                 .slot(size-7)
                 .leftClickAction(event -> {
                     int newIndex = firstItemIndexIfPageAdded(-1);
@@ -37,7 +37,7 @@ public class PaginatedMenu extends MenuV2 {
         // Forward Button
         String arrowRight = "eyJ0ZXh0dXJlcyI6eyJTS0lOIjp7InVybCI6Imh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvZjMyY2E2NjA1NmI3Mjg2M2U5OGY3ZjMyYmQ3ZDk0YzdhMGQ3OTZhZjY5MWM5YWMzYTkxMzYzMzEzNTIyODhmOSJ9fX0";
         addStaticItem(new LegacyPaginatedMenuButton(arrowRight)
-                .name("&r&d&lNext Page")
+                .name("&r&f&lNext Page")
                 .slot(size-3)
                 .leftClickAction(event -> {
                     int newIndex = firstItemIndexIfPageAdded(1);
@@ -102,7 +102,7 @@ public class PaginatedMenu extends MenuV2 {
             // Show back arrow
             String arrowBack = "eyJ0ZXh0dXJlcyI6eyJTS0lOIjp7InVybCI6Imh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvYmU5YWU3YTRiZTY1ZmNiYWVlNjUxODEzODlhMmY3ZDQ3ZTJlMzI2ZGI1OWVhM2ViNzg5YTkyYzg1ZWE0NiJ9fX0";
             addStaticItem(new LegacyPaginatedMenuButton(arrowBack)
-                    .name("&r&d&lBack")
+                    .name("&r&f&lBack")
                     .slot(super.getSize()-5)
                     .leftClickAction(event -> {
                         getManager().open(super.getPreviousMenu(),player,this);

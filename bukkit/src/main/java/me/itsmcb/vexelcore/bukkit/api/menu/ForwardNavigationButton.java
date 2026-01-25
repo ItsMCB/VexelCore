@@ -17,12 +17,13 @@ public class ForwardNavigationButton extends MenuButton {
 
     public void updatePage() {
         if (!paginatedMenu.isLastPage()) {
-            this.setItemStack(new SkullBuilderUtil(HeadTexture.GRAY_ARROW_RIGHHT.getTexture()).get());
-            this.name("&r&d&lNext Page");
+            this.setItemStack(new SkullBuilderUtil(HeadTexture.GRAY_ARROW_RIGHT.getTexture()).get());
+            this.name("&r&f&lNext Page");
             this.click(e -> paginatedMenu.pageGoForward());
             this.setLore(new BukkitMsgBuilder("&7Page&8: &7"+paginatedMenu.getPage()+"&8/&7"+paginatedMenu.getTotalPages()).get());
+            this.setHideToolTip(false);
         } else {
-            this.setItemStack(new ItemStack(Material.BLACK_STAINED_GLASS_PANE)).name("&7");
+            this.setItemStack(new ItemStack(Material.BLACK_STAINED_GLASS_PANE)).name("&7").setHideToolTip(true);
             this.click(null);
             this.resetLore();
         }

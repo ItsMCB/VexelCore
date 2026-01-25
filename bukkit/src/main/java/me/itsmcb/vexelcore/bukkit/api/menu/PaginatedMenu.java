@@ -28,20 +28,38 @@ public class PaginatedMenu extends Menu {
      * Add navigation {@link MenuButton}s to template.
      */
     private void addPaginatedButtons() {
+        MenuButton blankGlassPane = new MenuButton(Material.BLACK_STAINED_GLASS_PANE).name("&7").setHideToolTip(true);
         // Left
-        setTemplateButton(getSize().getSize()-9,new MenuButton(Material.BLACK_STAINED_GLASS_PANE).name("&7"));
-        setTemplateButton(getSize().getSize()-8,new MenuButton(Material.BLACK_STAINED_GLASS_PANE).name("&7"));
+        setTemplateButton(getSize().getSize()-9,blankGlassPane);
+        setTemplateButton(getSize().getSize()-8,blankGlassPane);
         // Previous Arrow
         setTemplateButton(getSize().getSize()-7, back);
-        // Middle
-        setTemplateButton(getSize().getSize()-6,new MenuButton(Material.BLACK_STAINED_GLASS_PANE).name("&7"));
-        setTemplateButton(getSize().getSize()-5,new MenuButton(Material.BLACK_STAINED_GLASS_PANE).name("&7"));
-        setTemplateButton(getSize().getSize()-4,new MenuButton(Material.BLACK_STAINED_GLASS_PANE).name("&7"));
+
+        setTemplateButton(getSize().getSize()-6,blankGlassPane);
+        setTemplateButton(getSize().getSize()-4,blankGlassPane);
+
         // Forward Arrow
         setTemplateButton(getSize().getSize()-3, forward);
         // Right
-        setTemplateButton(getSize().getSize()-2,new MenuButton(Material.BLACK_STAINED_GLASS_PANE).name("&7"));
-        setTemplateButton(getSize().getSize()-1,new MenuButton(Material.BLACK_STAINED_GLASS_PANE).name("&7"));
+        setTemplateButton(getSize().getSize()-2,blankGlassPane);
+        setTemplateButton(getSize().getSize()-1,blankGlassPane);
+    }
+
+    /**
+     * Sets a button in the bottom navigation toolbar (last 9 slots).
+     *
+     * @param index  The relative index in the toolbar (0-8).
+     * @param button The button to place.
+     * @return This PaginatedMenu instance.
+     * @throws IllegalArgumentException if the index is not between 0 and 8.
+     */
+    public PaginatedMenu setToolbarButton(int index, MenuButton button) {
+        if (index < 0 || index > 8) {
+            throw new IllegalArgumentException("Toolbar index must be between 0 and 8.");
+        }
+        int absoluteIndex = getSize().getSize() - 9 + index;
+        setTemplateButton(absoluteIndex, button);
+        return this;
     }
 
     public int getPage() {
@@ -112,13 +130,15 @@ public class PaginatedMenu extends Menu {
      * Applies template buttons to the inventory.
      */
     private void applyTemplateAndPositionedButtons() {
+        int middle = getSize().getSize()-5;
         if (VexelCoreBukkitAPI.getMenuManager().hasPreviousMenu(this)) {
-            int middle = getSize().getSize()-5;
-            if (!getTemplatePositionedButtons().get(middle).getType().equals(Material.PLAYER_HEAD)) {
-                setTemplateButton(middle, new MenuButton(HeadTexture.GRAY_ARROW_DOWN.getTexture()).name("&r&d&lBack").click(e -> {
-                    VexelCoreBukkitAPI.getMenuManager().openPrevious(this, ((Player) e.getWhoClicked()).getPlayer());
-                }));
-            }
+            setTemplateButton(middle, new MenuButton(HeadTexture.GRAY_ARROW_DOWN.getTexture()).name("&f&lBack").click(e -> {
+                VexelCoreBukkitAPI.getMenuManager().openPrevious(this, ((Player) e.getWhoClicked()).getPlayer());
+            }));
+        } else {
+            setTemplateButton(middle, new MenuButton(HeadTexture.GRAY_X.getTexture()).name("&f&lExit").addLore("","&7➤ &f&nClick to close menu").click(e -> {
+                e.getWhoClicked().closeInventory();
+            }));
         }
         getTemplatePositionedButtons().forEach((position, button) ->
                 inventory.setItem(position, button.refresh().get())
