@@ -25,3 +25,9 @@ tasks.register('processSources', Sync) {
 tasks.named('compileJava') {
     source = processSources.outputs
 }
+
+java {
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(21)
+    }
+}
