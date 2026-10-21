@@ -113,6 +113,12 @@ public class VexelCoreBukkit extends JavaPlugin implements Listener {
         // Clean player cache
         getCacheManager().cleanInvalid();
         instance.getLogger().info("PlayerCache (V1) size is "+getCacheManager().getAllFromFile().size());
+        try {
+            instance.getLogger().info("PlayerCache (v2) size is "+cacheManagerV2.getAllPlayers().size());
+        } catch (DataRequestFailure e) {
+            throw new RuntimeException(e);
+        }
+
     }
 
     public static VexelCoreBukkit getInstance() {

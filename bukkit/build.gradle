@@ -1,6 +1,6 @@
 plugins {
     id 'java'
-    id "com.gradleup.shadow" version "9.0.0-beta11"
+    id "com.gradleup.shadow" version "9.4.1"
 }
 
 repositories {
@@ -19,9 +19,12 @@ repositories {
 
 dependencies {
     implementation project(':common')
-    compileOnly 'io.papermc.paper:paper-api:1.21.11-R0.1-SNAPSHOT' // Ref: https://artifactory.papermc.io/ui/native/universe/io/papermc/paper/paper-api/
+
+    // Updated Paper versioning (Year.Drop.Patch format)
+    compileOnly 'io.papermc.paper:paper-api:26.1.2.build.+'
+
     compileOnly 'com.sk89q.worldguard:worldguard-bukkit:7.0.7' // Ref: https://maven.enginehub.org/repo/com/sk89q/worldguard/worldguard-bukkit/
-    implementation(platform("com.intellectualsites.bom:bom-newest:1.55")) // Ref: https://github.com/IntellectualSites/bom
+    implementation(platform("com.intellectualsites.bom:bom-newest:1.56")) // Ref: https://github.com/IntellectualSites/bom
     compileOnly("com.fastasyncworldedit:FastAsyncWorldEdit-Core")
     compileOnly("com.fastasyncworldedit:FastAsyncWorldEdit-Bukkit")
     compileOnly 'me.clip:placeholderapi:2.11.7' // Ref: https://github.com/PlaceholderAPI/PlaceholderAPI/releases
@@ -34,12 +37,12 @@ dependencies {
 
 java {
     toolchain {
-        languageVersion = JavaLanguageVersion.of(21)
+        languageVersion = JavaLanguageVersion.of(25)
     }
 }
 
 tasks.withType(JavaCompile).configureEach {
-    options.release = 21
+    options.release = 25
 }
 
 processResources {
@@ -66,6 +69,7 @@ shadowJar {
     relocate("dev.dejvokep.boosted-yaml-spigot", "libs.dev.dejvokep.boosted-yaml-spigot")
     exclude '**/LICENSE' // Temp -- Handle better before proper release
 }
+
 artifacts {
     archives shadowJar
 }
