@@ -39,6 +39,7 @@ public class VexelPaginatedDialog<T> {
     private final List<T> items;
     private Function<T, CompletableFuture<ActionButton>> itemRenderer;
     private Consumer<Player> parentAction;
+    private boolean showCloseButton = true;
 
     public VexelPaginatedDialog(String title, List<T> items) {
         this.title = title;
@@ -51,12 +52,12 @@ public class VexelPaginatedDialog<T> {
     }
 
     public VexelPaginatedDialog<T> addMessage(String text) {
-        this.bodyParts.add(DialogBody.plainMessage(new BukkitMsgBuilder(text).get(),600));
+        this.bodyParts.add(DialogBody.plainMessage(new BukkitMsgBuilder(text).get(), 600));
         return this;
     }
 
     public VexelPaginatedDialog<T> addMessage(Component component) {
-        this.bodyParts.add(DialogBody.plainMessage(component,600));
+        this.bodyParts.add(DialogBody.plainMessage(component, 600));
         return this;
     }
 
@@ -67,6 +68,11 @@ public class VexelPaginatedDialog<T> {
 
     public VexelPaginatedDialog<T> setParent(Consumer<Player> parentAction) {
         this.parentAction = parentAction;
+        return this;
+    }
+
+    public VexelPaginatedDialog<T> setShowCloseButton(boolean showCloseButton) {
+        this.showCloseButton = showCloseButton;
         return this;
     }
 
@@ -131,7 +137,7 @@ public class VexelPaginatedDialog<T> {
                 if (page > 0) {
                     Key prevKey = VexelCoreBukkitAPI.getDialogManager().addCallback(player.getUniqueId(), e -> open(player, page - 1));
 
-                    finalActions.add(ActionButton.builder(ChatUtils.makeLabel(HeadTexture.GRAY_ARROW_LEFT,backwardLabel))
+                    finalActions.add(ActionButton.builder(ChatUtils.makeLabel(HeadTexture.GRAY_ARROW_LEFT, backwardLabel))
                             .action(DialogAction.customClick(prevKey, null))
                             .build());
                 }
@@ -139,7 +145,7 @@ public class VexelPaginatedDialog<T> {
                 if (page < totalPages - 1) {
                     Key nextKey = VexelCoreBukkitAPI.getDialogManager().addCallback(player.getUniqueId(), e -> open(player, page + 1));
 
-                    finalActions.add(ActionButton.builder(ChatUtils.makeLabel(HeadTexture.GRAY_ARROW_RIGHT,forwardLabel))
+                    finalActions.add(ActionButton.builder(ChatUtils.makeLabel(HeadTexture.GRAY_ARROW_RIGHT, forwardLabel))
                             .action(DialogAction.customClick(nextKey, null))
                             .build());
                 }
@@ -153,6 +159,12 @@ public class VexelPaginatedDialog<T> {
                 footerBtn = ActionButton.builder(backLabel)
                         .action(DialogAction.customClick(backKey, null))
                         .build();
+
+                // If this dialog has a parent, also add a dedicated Close button so players
+                // in deep menus can dismiss the dialog immediately without clicking Back repeatedly.
+                if (showCloseButton) {
+                    finalActions.add(ActionButton.builder(closeLabel).build());
+                }
             } else {
                 footerBtn = ActionButton.builder(closeLabel).build();
             }

@@ -28,6 +28,7 @@ public class VexelButtonDialog {
     private int columns = 3;
 
     private Consumer<Player> parentAction;
+    private boolean showCloseButton = true;
 
     public VexelButtonDialog(String title) {
         this.title = new BukkitMsgBuilder(title).get();
@@ -39,12 +40,12 @@ public class VexelButtonDialog {
     }
 
     public VexelButtonDialog addMessage(String text) {
-        this.bodyParts.add(DialogBody.plainMessage(new BukkitMsgBuilder(text).get(),600));
+        this.bodyParts.add(DialogBody.plainMessage(new BukkitMsgBuilder(text).get(), 600));
         return this;
     }
 
     public VexelButtonDialog addMessage(Component text) {
-        this.bodyParts.add(DialogBody.plainMessage(text,600));
+        this.bodyParts.add(DialogBody.plainMessage(text, 600));
         return this;
     }
 
@@ -76,6 +77,11 @@ public class VexelButtonDialog {
         return this;
     }
 
+    public VexelButtonDialog setShowCloseButton(boolean showCloseButton) {
+        this.showCloseButton = showCloseButton;
+        return this;
+    }
+
     /**
      * Builds the dialog and safely opens it for the player.
      */
@@ -104,6 +110,12 @@ public class VexelButtonDialog {
                 bottomButton = ActionButton.builder(backLabel)
                         .action(DialogAction.customClick(backKey, null))
                         .build();
+
+                // If this dialog has a parent, also add a dedicated Close button so players
+                // in deep menus can dismiss the dialog immediately without clicking Back repeatedly.
+                if (showCloseButton) {
+                    finalButtons.add(ActionButton.builder(closeLabel).build());
+                }
             } else {
                 bottomButton = ActionButton.builder(closeLabel).build();
             }

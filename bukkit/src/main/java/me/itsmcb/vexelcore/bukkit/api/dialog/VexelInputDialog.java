@@ -25,12 +25,20 @@ public class VexelInputDialog {
 
     private Component confirmLabel = new BukkitMsgBuilder("&a» Confirm «").get(); // Todo localize
     private Component cancelLabel = new BukkitMsgBuilder("&c» Cancel «").get(); // Todo localize
+    private Component backLabel = new BukkitMsgBuilder("&c« Back").get(); // Todo localize
+    private boolean customCancelLabel = false;
 
     private Consumer<DialogContext> onConfirm;
     private Consumer<DialogContext> onCancel;
+    private Consumer<Player> parentAction;
 
     public VexelInputDialog(String title) {
         this.title = new BukkitMsgBuilder(title).get();
+    }
+
+    public VexelInputDialog addBody(DialogBody body) {
+        this.bodyParts.add(body);
+        return this;
     }
 
     public VexelInputDialog addMessage(String text) {
@@ -39,7 +47,7 @@ public class VexelInputDialog {
     }
 
     public VexelInputDialog addMessage(Component text) {
-        this.bodyParts.add(DialogBody.plainMessage(text,500));
+        this.bodyParts.add(DialogBody.plainMessage(text, 500));
         return this;
     }
 
@@ -55,6 +63,17 @@ public class VexelInputDialog {
 
     public VexelInputDialog setCancelButton(String text) {
         this.cancelLabel = new BukkitMsgBuilder(text).get();
+        this.customCancelLabel = true;
+        return this;
+    }
+
+    public VexelInputDialog setBackLabel(String text) {
+        this.backLabel = new BukkitMsgBuilder(text).get();
+        return this;
+    }
+
+    public VexelInputDialog setParent(Consumer<Player> parentAction) {
+        this.parentAction = parentAction;
         return this;
     }
 
@@ -84,11 +103,24 @@ public class VexelInputDialog {
                 confirmKey = VexelCoreBukkitAPI.getDialogManager().addCallback(player.getUniqueId(), e -> {});
             }
 
+            Consumer<DialogContext> effectiveCancel = onCancel;
+            Component effectiveCancelLabel = cancelLabel;
+
+            if (parentAction != null) {
+                if (!customCancelLabel) {
+                    effectiveCancelLabel = backLabel;
+                }
+                if (effectiveCancel == null) {
+                    effectiveCancel = ctx -> parentAction.accept(ctx.getPlayer());
+                }
+            }
+
             Key cancelKey = null;
-            if (onCancel != null) {
+            if (effectiveCancel != null) {
+                final Consumer<DialogContext> finalCancel = effectiveCancel;
                 cancelKey = VexelCoreBukkitAPI.getDialogManager().addCallback(player.getUniqueId(), event -> {
                     DialogContext ctx = new DialogContext(player, event.getDialogResponseView());
-                    onCancel.accept(ctx);
+                    finalCancel.accept(ctx);
                 });
             }
 
@@ -100,7 +132,7 @@ public class VexelInputDialog {
                     .action(DialogAction.customClick(confirmKey, null))
                     .build();
 
-            ActionButton cancelBtn = ActionButton.builder(cancelLabel)
+            ActionButton cancelBtn = ActionButton.builder(effectiveCancelLabel)
                     .action(cancelAction)
                     .build();
 
