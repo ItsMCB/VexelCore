@@ -23,7 +23,7 @@ public enum MenuRowSize {
     }
 
     /**
-     * Determines the appropriate menu size based on content count.
+     * Determines the appropriate menu size based on content count for a {@link PaginatedMenu}.
      * Reserves the bottom row (9 slots) for navigation buttons.
      *
      * @param contentCount The number of content items to display
@@ -46,6 +46,25 @@ public enum MenuRowSize {
         }
 
         // If content exceeds even the largest menu size, return the largest
+        return SIX;
+    }
+
+    /**
+     * Determines the smallest menu size that fits the given item count for a standard {@link Menu}
+     * (without reserving a bottom navigation row).
+     *
+     * @param itemCount The number of items to display
+     * @return The smallest MenuRowSize that can accommodate the items
+     */
+    public static MenuRowSize getMenuSizeForItems(int itemCount) {
+        if (itemCount <= 0) {
+            return ONE;
+        }
+        for (MenuRowSize size : values()) {
+            if (size.getSize() >= itemCount) {
+                return size;
+            }
+        }
         return SIX;
     }
 }

@@ -4,6 +4,7 @@ import org.bukkit.Location;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
 import org.bukkit.util.Vector;
+import org.jetbrains.annotations.NotNull;
 
 public class LocationUtils {
 
@@ -46,6 +47,49 @@ public class LocationUtils {
 
     public static Location toCenter(Location location) {
         return location.set(location.getBlockX()+0.5,location.getBlockY(),location.getBlockZ()+0.5);
+    }
+
+    /**
+     * Finds the highest safe solid block location at the given X/Z coordinates,
+     * centered on the block above the solid surface. Falls back to a clone of
+     * the original location if no safe block is found.
+     *
+     * @param loc Starting location.
+     * @return Centered location on top of the highest safe solid block.
+     */
+    public static @NotNull Location getHighestSafeLocation(@NotNull Location loc) {
+        Location original = loc.clone();
+        if (loc.getWorld() == null) {
+            return original;
+        }
+        Location check = loc.toHighestLocation();
+        if (isSafeSolidBlock(check)) {
+            return toCenter(check.add(0, 1, 0));
+        }
+        for (int y = check.getBlockY(); y > check.getWorld().getMinHeight(); y--) {
+            check.set(check.getX(), y, check.getZ());
+            if (isSafeSolidBlock(check)) {
+                return toCenter(check.add(0, 1, 0));
+            }
+        }
+        return original;
+    }
+
+    /**
+     * Determines whether the block at the given location is a safe solid surface to stand on.
+     *
+     * @param loc Location of the block to inspect.
+     * @return {@code true} if solid and not a hazardous/non-full block type.
+     */
+    public static boolean isSafeSolidBlock(@NotNull Location loc) {
+        String value = loc.getBlock().getType().key().value();
+        if (value.contains("fence") || value.contains("trapdoor") || value.contains("button")
+                || value.contains("sign") || value.contains("wall") || value.contains("bud") || value.contains("vine")
+                || value.contains("ladder") || value.contains("glow") || value.contains("web") || value.contains("torch")
+                || value.contains("tripwire") || value.contains("coral_fan") || value.contains("coral_wall_fan") || value.contains("fire")) {
+            return false;
+        }
+        return loc.getBlock().getType().isSolid();
     }
 
 }

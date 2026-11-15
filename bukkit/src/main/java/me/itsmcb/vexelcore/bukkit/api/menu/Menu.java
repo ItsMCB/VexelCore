@@ -3,6 +3,7 @@ package me.itsmcb.vexelcore.bukkit.api.menu;
 import me.itsmcb.vexelcore.bukkit.api.text.BukkitMsgBuilder;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
+import org.bukkit.event.inventory.InventoryType;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.InventoryHolder;
 import org.bukkit.scheduler.BukkitRunnable;
@@ -19,10 +20,12 @@ public class Menu implements InventoryHolder {
 
     public Inventory inventory;
     private MenuRowSize size;
+    private InventoryType inventoryType;
     private String title;
     private boolean clickToClose = true;
     private boolean persistent = false;
     private boolean menuUpdateRequested = false;
+    private boolean refreshTaskStarted = false;
     private BukkitRunnable refreshRunnable = new BukkitRunnable() {
         @Override
         public void run() {
@@ -37,22 +40,43 @@ public class Menu implements InventoryHolder {
         this.size = size;
         this.title = title;
         updateInventory();
-        refreshRunnable.runTaskTimer(Bukkit.getPluginManager().getPlugin("VexelCore"), 0, 20);
+    }
+
+    public Menu(InventoryType inventoryType, String title) {
+        this.inventoryType = inventoryType;
+        this.title = title;
+        updateInventory();
     }
 
     /* Inventory */
 
     private void updateInventory() {
-        this.inventory = Bukkit.createInventory(this,size.getSize(),new BukkitMsgBuilder(title).get());
+        if (inventoryType != null) {
+            this.inventory = Bukkit.createInventory(this, inventoryType, new BukkitMsgBuilder(title).get());
+        } else {
+            MenuRowSize targetSize = size != null ? size : MenuRowSize.THREE;
+            this.inventory = Bukkit.createInventory(this, targetSize.getSize(), new BukkitMsgBuilder(title).get());
+        }
+        setMenuUpdateRequested(true);
     }
 
     public void setSize(MenuRowSize size) {
         this.size = size;
+        this.inventoryType = null;
         updateInventory();
     }
 
     public MenuRowSize getSize() {
         return size;
+    }
+
+    public InventoryType getInventoryType() {
+        return inventoryType;
+    }
+
+    public void setInventoryType(InventoryType inventoryType) {
+        this.inventoryType = inventoryType;
+        updateInventory();
     }
 
     public String getTitle() {
@@ -65,8 +89,17 @@ public class Menu implements InventoryHolder {
     }
 
     public Menu open(Player player) {
+        startRefreshTaskIfNeeded();
+        refresh();
         player.openInventory(getInventory());
         return this;
+    }
+
+    private void startRefreshTaskIfNeeded() {
+        if (!refreshTaskStarted) {
+            refreshTaskStarted = true;
+            refreshRunnable.runTaskTimer(Bukkit.getPluginManager().getPlugin("VexelCore"), 20L, 20L);
+        }
     }
 
     /**
@@ -98,11 +131,17 @@ public class Menu implements InventoryHolder {
         this.menuUpdateRequested = menuUpdateRequested;
     }
 
+    public boolean isMenuUpdateRequested() {
+        return menuUpdateRequested;
+    }
+
     /**
      * Prepare menu to be destroyed by cancelling the runnable refreshing {@link MenuButton}s.
      */
     public void unload() {
-        refreshRunnable.cancel();
+        if (refreshTaskStarted && !refreshRunnable.isCancelled()) {
+            refreshRunnable.cancel();
+        }
     }
 
     @NotNull

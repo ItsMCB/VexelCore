@@ -2,6 +2,7 @@ package me.itsmcb.vexelcore.bukkit.api.framework;
 
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.minimessage.MiniMessage;
+import net.kyori.adventure.text.minimessage.tag.resolver.Placeholder;
 import net.kyori.adventure.text.minimessage.tag.resolver.TagResolver;
 import net.kyori.adventure.text.minimessage.tag.standard.StandardTags;
 import org.bukkit.command.CommandSender;
@@ -69,5 +70,43 @@ public final class TextUtils {
      */
     public static void sendSafe(@NotNull CommandSender sender, @NotNull String input) {
         sender.sendMessage(mmSafe(input));
+    }
+
+    /**
+     * Escapes single quotes for safe embedding inside MiniMessage tag attributes.
+     */
+    public static @NotNull String escapeSingleQuotes(@NotNull String input) {
+        return input.replace("'", "\\'");
+    }
+
+    /**
+     * Sends a tree-formatted status line whose value copies to clipboard when clicked.
+     */
+    public static void sendCopyable(@NotNull CommandSender sender, @NotNull String label, @NotNull String value) {
+        send(sender,
+                "<dark_gray>╠═ <gray><label>: <click:copy_to_clipboard:'" + escapeSingleQuotes(value) + "'><hover:show_text:'<gray>Click to copy</gray>'><dark_aqua><val></dark_aqua></hover></click></gray></dark_gray>",
+                Placeholder.unparsed("label", label),
+                Placeholder.unparsed("val", value));
+    }
+
+    /**
+     * Sends a tree-formatted status line whose value is hidden until hovered and copies to clipboard when clicked.
+     */
+    public static void sendHiddenCopyable(@NotNull CommandSender sender, @NotNull String label, @NotNull String value) {
+        send(sender,
+                "<dark_gray>╠═ <gray><label>: <click:copy_to_clipboard:'" + escapeSingleQuotes(value) + "'><hover:show_text:'<gray>Click to copy: <dark_aqua><val></dark_aqua></gray>'><dark_aqua>Hidden (hover to view)</dark_aqua></hover></click></gray></dark_gray>",
+                Placeholder.unparsed("label", label),
+                Placeholder.unparsed("val", value));
+    }
+
+    /**
+     * Sends a tree-formatted status line whose value opens a URL when clicked.
+     */
+    public static void sendUrl(@NotNull CommandSender sender, @NotNull String label, @NotNull String url, @NotNull String hover) {
+        send(sender,
+                "<dark_gray>╠═ <gray><label>: <click:open_url:'" + escapeSingleQuotes(url) + "'><hover:show_text:'<gray><hover></gray>'><dark_aqua><url></dark_aqua></hover></click></gray></dark_gray>",
+                Placeholder.unparsed("label", label),
+                Placeholder.unparsed("hover", hover),
+                Placeholder.unparsed("url", url));
     }
 }

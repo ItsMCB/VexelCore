@@ -4,10 +4,12 @@ import com.google.common.io.ByteArrayDataOutput;
 import com.google.common.io.ByteStreams;
 import me.itsmcb.vexelcore.bukkit.VexelCoreBukkit;
 import org.bukkit.Bukkit;
+import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.scheduler.BukkitRunnable;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -37,6 +39,13 @@ public class ProxyManager implements Listener {
         ByteArrayDataOutput outGS = ByteStreams.newDataOutput();
         outGS.writeUTF("GetServers");
         Bukkit.getServer().sendPluginMessage(instance, "BungeeCord", outGS.toByteArray());
+    }
+
+    public void connect(@NotNull Player player, @NotNull String serverName) {
+        ByteArrayDataOutput outCon = ByteStreams.newDataOutput();
+        outCon.writeUTF("Connect");
+        outCon.writeUTF(serverName);
+        player.sendPluginMessage(instance, "BungeeCord", outCon.toByteArray());
     }
 
     private HashMap<UUID, String> playerBrands = new HashMap<>();

@@ -7,9 +7,11 @@ import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import io.papermc.paper.command.brigadier.CommandSourceStack;
 import io.papermc.paper.command.brigadier.Commands;
+import me.itsmcb.vexelcore.common.api.command.CommandNavigation;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.minimessage.tag.resolver.Placeholder;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.HashSet;
 import java.util.List;
@@ -57,6 +59,7 @@ public abstract class VexelCommandGroup<C extends VexelContext> implements Vexel
     private final String name;
     private final String description;
     private final String permission;
+    private final @Nullable String featureRoute;
 
     /**
      * Creates a command group with the given metadata.
@@ -66,11 +69,32 @@ public abstract class VexelCommandGroup<C extends VexelContext> implements Vexel
      * @param description The description (supports MiniMessage).
      * @param permission  The required permission.
      */
-    public VexelCommandGroup(@NotNull C context, @NotNull String name, @NotNull String description, @NotNull String permission) {
+    public VexelCommandGroup(@NotNull C context,
+                             @NotNull String name,
+                             @NotNull String description,
+                             @NotNull String permission) {
+        this(context, name, description, permission, null);
+    }
+
+    /**
+     * Creates a command group with the given metadata and an optional config feature route.
+     *
+     * @param context      The plugin context.
+     * @param name         The literal name of this group.
+     * @param description  The description (supports MiniMessage).
+     * @param permission   The required permission.
+     * @param featureRoute Optional config route checked via {@link VexelContext#isFeatureEnabled(String)}.
+     */
+    public VexelCommandGroup(@NotNull C context,
+                             @NotNull String name,
+                             @NotNull String description,
+                             @NotNull String permission,
+                             @Nullable String featureRoute) {
         this.context = context;
         this.name = name;
         this.description = description;
         this.permission = permission;
+        this.featureRoute = featureRoute;
     }
 
     // ── Metadata ─────────────────────────────────────────────────────────
@@ -88,6 +112,20 @@ public abstract class VexelCommandGroup<C extends VexelContext> implements Vexel
     @Override
     public @NotNull String getPermission() {
         return permission;
+    }
+
+    @Override
+    public @Nullable String getFeatureRoute() {
+        return featureRoute;
+    }
+
+    @Override
+    public boolean hasPermission(@NotNull CommandSourceStack source) {
+        if (featureRoute != null && !context.isFeatureEnabled(featureRoute)) {
+            return false;
+        }
+        String perm = getPermission();
+        return perm.isEmpty() || source.getSender().hasPermission(perm);
     }
 
     /**
@@ -253,31 +291,6 @@ public abstract class VexelCommandGroup<C extends VexelContext> implements Vexel
             );
         }
 
-        if (maxPages > 1) {
-            int prevPage = actualPage - 1;
-            int nextPage = actualPage + 1;
-
-            StringBuilder nav = new StringBuilder();
-
-            if (actualPage > 1) {
-                nav.append("<click:run_command:'").append(cmd).append(" help ").append(prevPage)
-                        .append("'><hover:show_text:'<gray>Click to view page </gray><yellow>").append(prevPage)
-                        .append("</yellow>'><aqua>« Prev</aqua></hover></click><dark_gray> | </dark_gray>");
-            }
-
-            nav.append("<gray>Page </gray><yellow><page></yellow><gray> of </gray><yellow><max></yellow>");
-
-            if (actualPage < maxPages) {
-                nav.append("<dark_gray> | </dark_gray><click:run_command:'").append(cmd).append(" help ").append(nextPage)
-                        .append("'><hover:show_text:'<gray>Click to view page </gray><yellow>").append(nextPage)
-                        .append("</yellow>'><aqua>Next »</aqua></hover></click>");
-            }
-
-            TextUtils.send(source.getSender(),
-                    nav.toString(),
-                    Placeholder.unparsed("page", String.valueOf(actualPage)),
-                    Placeholder.unparsed("max", String.valueOf(maxPages))
-            );
-        }
+        CommandNavigation.send(source.getSender(), cmd + " help", actualPage, maxPages);
     }
 }

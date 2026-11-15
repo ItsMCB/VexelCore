@@ -52,6 +52,7 @@ public abstract class VexelSubCommand<C extends VexelContext> implements VexelCo
     private final String name;
     private final String description;
     private final String permission;
+    private final @Nullable String featureRoute;
 
     /**
      * Convenience constructor that sets static metadata, reducing boilerplate.
@@ -63,10 +64,28 @@ public abstract class VexelSubCommand<C extends VexelContext> implements VexelCo
      * @param permission  The required permission.
      */
     public VexelSubCommand(@NotNull C context, @NotNull String name, @NotNull String description, @NotNull String permission) {
+        this(context, name, description, permission, null);
+    }
+
+    /**
+     * Convenience constructor with an optional config feature route.
+     *
+     * @param context      The plugin context.
+     * @param name         The literal name of this sub-command.
+     * @param description  The description (supports MiniMessage).
+     * @param permission   The required permission.
+     * @param featureRoute Optional config route checked via {@link VexelContext#isFeatureEnabled(String)}.
+     */
+    public VexelSubCommand(@NotNull C context,
+                           @NotNull String name,
+                           @NotNull String description,
+                           @NotNull String permission,
+                           @Nullable String featureRoute) {
         this.context = context;
         this.name = name;
         this.description = description;
         this.permission = permission;
+        this.featureRoute = featureRoute;
     }
 
     // ── Metadata (final getters — can still be overridden if dynamic behavior is needed) ──
@@ -84,6 +103,11 @@ public abstract class VexelSubCommand<C extends VexelContext> implements VexelCo
     @Override
     public @NotNull String getPermission() {
         return permission;
+    }
+
+    @Override
+    public @Nullable String getFeatureRoute() {
+        return featureRoute;
     }
 
     // ── Abstract methods ─────────────────────────────────────────────────
@@ -105,6 +129,15 @@ public abstract class VexelSubCommand<C extends VexelContext> implements VexelCo
     public abstract void execute(@NotNull CommandContext<CommandSourceStack> ctx) throws CommandSyntaxException;
 
     // ── Permission / requirements ────────────────────────────────────────
+
+    @Override
+    public boolean hasPermission(@NotNull CommandSourceStack source) {
+        if (featureRoute != null && !context.isFeatureEnabled(featureRoute)) {
+            return false;
+        }
+        String perm = getPermission();
+        return perm.isEmpty() || source.getSender().hasPermission(perm);
+    }
 
     /**
      * Checks additional requirements beyond permission (e.g., must be in a certain world).

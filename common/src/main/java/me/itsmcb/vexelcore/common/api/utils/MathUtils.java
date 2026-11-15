@@ -1,12 +1,14 @@
 package me.itsmcb.vexelcore.common.api.utils;
 
-import java.util.Random;
+import java.util.concurrent.ThreadLocalRandom;
 
 public class MathUtils {
 
     public static int randomIntBetween(int min, int max) {
-        Random random = new Random();
-        return random.nextInt(max - min) + min;
+        if (min >= max) {
+            return min;
+        }
+        return ThreadLocalRandom.current().nextInt(min, max + 1);
     }
 
     public static boolean isDifferenceGreaterThan(int num1, int num2, int x) {

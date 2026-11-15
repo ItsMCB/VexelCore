@@ -72,6 +72,17 @@ public interface VexelContext {
     void overrideService(@NotNull Object service);
 
     /**
+     * Checks whether a configuration-gated feature route is enabled.
+     * Subclasses may override this to inspect their main configuration file.
+     *
+     * @param featureRoute The configuration route, or {@code null} if always enabled.
+     * @return {@code true} if the feature is enabled.
+     */
+    default boolean isFeatureEnabled(@Nullable String featureRoute) {
+        return true;
+    }
+
+    /**
      * Returns the underlying JavaPlugin instance.
      *
      * @return The plugin instance.

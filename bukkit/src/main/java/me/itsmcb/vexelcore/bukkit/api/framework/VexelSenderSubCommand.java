@@ -5,6 +5,7 @@ import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import io.papermc.paper.command.brigadier.CommandSourceStack;
 import org.bukkit.command.CommandSender;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 /**
  * A {@link VexelSubCommand} that can be executed by any {@link CommandSender}
@@ -18,7 +19,15 @@ import org.jetbrains.annotations.NotNull;
 public abstract class VexelSenderSubCommand<C extends VexelContext> extends VexelSubCommand<C> {
 
     public VexelSenderSubCommand(@NotNull C context, @NotNull String name, @NotNull String description, @NotNull String permission) {
-        super(context, name, description, permission);
+        this(context, name, description, permission, null);
+    }
+
+    public VexelSenderSubCommand(@NotNull C context,
+                                 @NotNull String name,
+                                 @NotNull String description,
+                                 @NotNull String permission,
+                                 @Nullable String featureRoute) {
+        super(context, name, description, permission, featureRoute);
     }
 
     @Override

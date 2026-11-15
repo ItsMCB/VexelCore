@@ -5,6 +5,7 @@ import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import io.papermc.paper.command.brigadier.CommandSourceStack;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
 
@@ -48,10 +49,20 @@ public interface VexelCommandNode {
 
     /**
      * Returns the permission required to access this node.
+     * An empty string indicates an unrestricted command.
      *
      * @return The permission string.
      */
     @NotNull String getPermission();
+
+    /**
+     * Returns the optional config feature route gating this command node.
+     *
+     * @return The feature route, or {@code null} if not gated by a config route.
+     */
+    default @Nullable String getFeatureRoute() {
+        return null;
+    }
 
     /**
      * Returns the child nodes of this node.
@@ -75,13 +86,15 @@ public interface VexelCommandNode {
 
     /**
      * Checks whether the given source has permission to access this node.
+     * Blank permissions are treated as unrestricted.
      * Subclasses can override to add additional requirements (e.g., player-only).
      *
      * @param source The command source stack.
      * @return {@code true} if the source can access this node.
      */
     default boolean hasPermission(@NotNull CommandSourceStack source) {
-        return source.getSender().hasPermission(getPermission());
+        String perm = getPermission();
+        return perm.isEmpty() || source.getSender().hasPermission(perm);
     }
 
     /**

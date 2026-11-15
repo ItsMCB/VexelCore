@@ -113,16 +113,45 @@ public class PaginatedMenu extends Menu {
     }
 
     @Override
+    public void refresh() {
+        if (isMenuUpdateRequested() || hasVisibleButtonUpdateRequested()) {
+            rebuildMenu();
+            setMenuUpdateRequested(false);
+        }
+    }
+
+    private boolean hasVisibleButtonUpdateRequested() {
+        if (getTemplatePositionedButtons().values().stream().anyMatch(MenuButton::isButtonUpdateRequested)) {
+            return true;
+        }
+        int availableContentSpace = calculateAvailableInventorySpace();
+        int startIndexPositioned = (page - 1) * availableContentSpace;
+        int endIndexPositioned = startIndexPositioned + availableContentSpace;
+        boolean positionedNeedsUpdate = getPositionedButtons().entrySet().stream()
+                .filter(entry -> entry.getKey() >= startIndexPositioned && entry.getKey() < endIndexPositioned)
+                .anyMatch(entry -> entry.getValue().isButtonUpdateRequested());
+        if (positionedNeedsUpdate) {
+            return true;
+        }
+        int unpositionedStartIndex = calculateUnpositionedStartIndex(availableContentSpace);
+        int unpositionedEndIndex = Math.min(getUnpositionedButtons().size(), unpositionedStartIndex + availableContentSpace);
+        for (int i = unpositionedStartIndex; i < unpositionedEndIndex; i++) {
+            if (getUnpositionedButtons().get(i).isButtonUpdateRequested()) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    @Override
     public void rebuildMenu() {
         inventory.clear();
         final int inventorySize = getSize().getSize();
         final int templateButtonSize = getTemplatePositionedButtons().size();
         final int availableButtonSlots = inventorySize - templateButtonSize;
 
-        getTemplatePositionedButtons().forEach((i,b) -> b.refresh()); // Ensure ALL template and positioned buttons update if needed (some may not be refreshed via method below)
         applyTemplateAndPositionedButtons();
         int filledSlots = applyPositionedButtons(availableButtonSlots);
-        getUnpositionedButtons().forEach(MenuButton::refresh); // Ensure ALL unpositioned buttons update if needed (some may not be refreshed via method below)
         applyUnpositionedButtons(inventorySize, filledSlots);
     }
 

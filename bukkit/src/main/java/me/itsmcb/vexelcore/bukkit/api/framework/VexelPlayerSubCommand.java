@@ -5,6 +5,7 @@ import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import io.papermc.paper.command.brigadier.CommandSourceStack;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 /**
  * A {@link VexelSubCommand} that can only be executed by {@link Player}s.
@@ -19,7 +20,15 @@ import org.jetbrains.annotations.NotNull;
 public abstract class VexelPlayerSubCommand<C extends VexelContext> extends VexelSubCommand<C> {
 
     public VexelPlayerSubCommand(@NotNull C context, @NotNull String name, @NotNull String description, @NotNull String permission) {
-        super(context, name, description, permission);
+        this(context, name, description, permission, null);
+    }
+
+    public VexelPlayerSubCommand(@NotNull C context,
+                                 @NotNull String name,
+                                 @NotNull String description,
+                                 @NotNull String permission,
+                                 @Nullable String featureRoute) {
+        super(context, name, description, permission, featureRoute);
     }
 
     @Override

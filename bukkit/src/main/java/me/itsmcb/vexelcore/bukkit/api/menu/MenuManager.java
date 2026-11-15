@@ -5,8 +5,10 @@ import org.bukkit.NamespacedKey;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
+import org.bukkit.event.inventory.InventoryAction;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.inventory.InventoryCloseEvent;
+import org.bukkit.event.inventory.InventoryDragEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.persistence.PersistentDataContainer;
 import org.bukkit.persistence.PersistentDataType;
@@ -62,7 +64,7 @@ public class MenuManager implements Listener {
     public boolean open(@NotNull Menu menu, @NotNull Player player) {
         if (!registeredMenus.contains(menu)) {
             if (!register(menu)) {
-             return false;
+                return false;
             }
         }
         menu.open(player);
@@ -88,33 +90,24 @@ public class MenuManager implements Listener {
         if (foundUUID == null) {
             return null;
         }
-        return UUID.fromString(foundUUID);
+        try {
+            return UUID.fromString(foundUUID);
+        } catch (IllegalArgumentException e) {
+            return null;
+        }
     }
 
     /**
-     * Retrieves a list of all template buttons from all registered menus.
-     * Template buttons are typically static elements like navigation buttons.
+     * Retrieves a list of all menu buttons (template, positioned, and unpositioned) from the given {@link Menu}.
      *
-     * @return A {@link List} of {@link MenuButton}s from all registered menus.
+     * @param menu The menu to collect buttons from.
+     * @return A {@link List} of all {@link MenuButton}s in the menu.
      */
-    private List<MenuButton> getAllTemplateButtons() {
+    private List<MenuButton> getMenuButtons(@NotNull Menu menu) {
         ArrayList<MenuButton> buttons = new ArrayList<>();
-        registeredMenus.forEach(menu -> buttons.addAll(menu.getTemplatePositionedButtons().values()));
-        return buttons;
-    }
-
-    /**
-     * Retrieves a list of all menu buttons (template, positioned, and unpositioned) from all registered menus.
-     *
-     * @return A {@link List} of all {@link MenuButton}s across all registered menus.
-     */
-    private List<MenuButton> getAllMenuButtons() {
-        ArrayList<MenuButton> buttons = new ArrayList<>();
-        registeredMenus.forEach(menu -> {
-            buttons.addAll(menu.getTemplatePositionedButtons().values());
-            buttons.addAll(menu.getPositionedButtons().values());
-            buttons.addAll(menu.getUnpositionedButtons());
-        });
+        buttons.addAll(menu.getTemplatePositionedButtons().values());
+        buttons.addAll(menu.getPositionedButtons().values());
+        buttons.addAll(menu.getUnpositionedButtons());
         return buttons;
     }
 
@@ -125,21 +118,34 @@ public class MenuManager implements Listener {
      */
     @EventHandler
     public void InventoryClick(@NotNull InventoryClickEvent event) {
-        // Handle non-menu click
+        // Handle non-menu inventory views
+        if (!(event.getView().getTopInventory().getHolder() instanceof Menu menu)) {
+            return;
+        }
         if (event.getClickedInventory() == null) {
             return;
         }
-        if (!(event.getClickedInventory().getHolder() instanceof Menu menu)) {
+        // Prevent shift-clicking items into the menu or pulling menu items via double-click from player inventory
+        if (!(event.getClickedInventory().getHolder() instanceof Menu)) {
+            if (event.isShiftClick() || event.getAction() == InventoryAction.COLLECT_TO_CURSOR) {
+                event.setCancelled(true);
+            }
             return;
         }
         ItemStack cursorItem = event.getCurrentItem();
         if (cursorItem == null) {
+            event.setCancelled(true);
             return;
         }
         // Determine if it's a menu item
         UUID itemUUID = getMenuItemUUID(cursorItem);
-        Optional<MenuButton> optional = getAllMenuButtons().stream().filter(m -> m.getUUID().equals(itemUUID)).findFirst();
+        if (itemUUID == null) {
+            event.setCancelled(true);
+            return;
+        }
+        Optional<MenuButton> optional = getMenuButtons(menu).stream().filter(m -> m.getUUID().equals(itemUUID)).findFirst();
         if (optional.isEmpty()) {
+            event.setCancelled(true);
             return;
         }
         MenuButton button = optional.get();
@@ -148,8 +154,10 @@ public class MenuManager implements Listener {
             event.setCancelled(true);
         }
         // Close menu if necessary before handling click (which may include opening a new menu which should not be interfered with)
-        Player player = (Player) event.getWhoClicked();
-        boolean isTemplateButton = getAllTemplateButtons().contains(optional.get());
+        if (!(event.getWhoClicked() instanceof Player player)) {
+            return;
+        }
+        boolean isTemplateButton = menu.getTemplatePositionedButtons().containsValue(button);
         // Don't close if user clicked on a template element (ex. forward/back button)
         if (menu.isClickToClose() && !(isTemplateButton)) {
             player.closeInventory();
@@ -166,6 +174,29 @@ public class MenuManager implements Listener {
         // Moved via number key press (to hot bar)
         if (event.getClick().isKeyboardClick() && button.getRightClick() != null) {
             button.getRightClick().accept(event);
+        }
+        // Refresh immediately if this menu is still open
+        if (player.getOpenInventory().getTopInventory().getHolder() == menu) {
+            menu.refresh();
+        }
+    }
+
+    /**
+     * Prevents dragging items into registered {@link Menu} slots.
+     *
+     * @param event The {@link InventoryDragEvent} to handle.
+     */
+    @EventHandler
+    public void InventoryDrag(@NotNull InventoryDragEvent event) {
+        if (!(event.getInventory().getHolder() instanceof Menu)) {
+            return;
+        }
+        int topSize = event.getView().getTopInventory().getSize();
+        for (int slot : event.getRawSlots()) {
+            if (slot < topSize) {
+                event.setCancelled(true);
+                return;
+            }
         }
     }
 

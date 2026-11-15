@@ -77,6 +77,7 @@ public class BukkitFeature extends VexelCoreFeature {
             runningRunnables.forEach(runnable -> {
                 runnable.getRunnable().cancel();
             });
+            runningRunnables.clear();
             disableTriggers();
         }
     }

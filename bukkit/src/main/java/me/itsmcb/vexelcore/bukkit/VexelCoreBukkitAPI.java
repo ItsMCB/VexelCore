@@ -3,6 +3,8 @@ package me.itsmcb.vexelcore.bukkit;
 import me.itsmcb.vexelcore.bukkit.api.cache.CacheManagerV2;
 import me.itsmcb.vexelcore.bukkit.api.dialog.manager.DialogSessionManager;
 import me.itsmcb.vexelcore.bukkit.api.menu.MenuManager;
+import org.bukkit.entity.Player;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.List;
 import java.util.UUID;
@@ -24,6 +26,10 @@ public class VexelCoreBukkitAPI {
 
     public static void refreshProxyServerNameCache() {
         VexelCoreBukkit.getInstance().getProxyManager().refreshServerNames();
+    }
+
+    public static void connectPlayerToServer(@NotNull Player player, @NotNull String serverName) {
+        VexelCoreBukkit.getInstance().getProxyManager().connect(player, serverName);
     }
 
     public static DialogSessionManager getDialogManager() {

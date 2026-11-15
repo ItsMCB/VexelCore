@@ -4,6 +4,7 @@ import me.itsmcb.vexelcore.bukkit.api.cache.CachedPlayerV2;
 import me.itsmcb.vexelcore.bukkit.api.cache.PlayerSkinData;
 import me.itsmcb.vexelcore.bukkit.api.text.BukkitMsgBuilder;
 import me.itsmcb.vexelcore.bukkit.api.utils.SkullBuilderUtil;
+import me.itsmcb.vexelcore.common.api.HeadTexture;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.TextComponent;
 import net.kyori.adventure.text.format.TextDecoration;
@@ -54,6 +55,10 @@ public class MenuButton {
 
     public MenuButton(PlayerSkinData playerSkinData) {
         this(new SkullBuilderUtil(playerSkinData).get());
+    }
+
+    public MenuButton(@NotNull HeadTexture headTexture) {
+        this(headTexture.getTexture());
     }
 
     public MenuButton(@NotNull String texture) {
@@ -196,12 +201,16 @@ public class MenuButton {
      */
     public MenuButton refresh() {
         ItemMeta meta = itemStack.getItemMeta();
+        if (meta == null) {
+            setButtonUpdateRequested(false);
+            return this;
+        }
         // Name
         if (name != null) {
             meta.displayName(Component.text().decoration(TextDecoration.ITALIC, false).append(name).build());
         }
         // Lore
-        meta.lore(lore.stream().map(l -> l.decoration(TextDecoration.ITALIC, false)).toList());
+        meta.lore(lore.isEmpty() ? null : lore.stream().map(l -> l.decoration(TextDecoration.ITALIC, false)).toList());
         // Tracking ID
         meta.getPersistentDataContainer().set(MenuManager.menuSystemIdKey, PersistentDataType.STRING, uuid+"");
         // Tooltip
@@ -238,8 +247,11 @@ public class MenuButton {
     }
 
     public ItemStack getCleanItemStack(ArrayList<TextComponent> replacedLore) {
-        ItemStack cleanIS = itemStack;
+        ItemStack cleanIS = itemStack.clone();
         ItemMeta itemMeta = cleanIS.getItemMeta();
+        if (itemMeta == null) {
+            return cleanIS;
+        }
         itemMeta.getPersistentDataContainer().remove(MenuManager.menuSystemIdKey);
         if (replacedLore != null) {
             itemMeta.lore(replacedLore);

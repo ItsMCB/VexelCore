@@ -41,22 +41,22 @@ public class FileUtils {
             return false;
         }
         Files.walk(source)
-            .forEach(sourcePath -> {
-                Path relativePath = source.relativize(sourcePath);
-                Path targetPath = target.resolve(relativePath);
-                if (!(ignoredFiles.contains(relativePath))) {
-                    try {
-                        Files.copy(sourcePath,targetPath, StandardCopyOption.REPLACE_EXISTING);
-                    } catch (IOException e) {
-                        throw new RuntimeException(e);
+                .forEach(sourcePath -> {
+                    Path relativePath = source.relativize(sourcePath);
+                    Path targetPath = target.resolve(relativePath);
+                    if (!(ignoredFiles.contains(relativePath))) {
+                        try {
+                            Files.copy(sourcePath,targetPath, StandardCopyOption.REPLACE_EXISTING);
+                        } catch (IOException e) {
+                            throw new RuntimeException(e);
+                        }
                     }
-                }
-            });
+                });
         return true;
     }
 
     public static String getLastTextInstanceFromFile(@NotNull Path path, @NotNull String textWhere) {
-        AtomicReference<String> foundText = null;
+        AtomicReference<String> foundText = new AtomicReference<>();
         try (Stream<String> stream = Files.lines(path)) {
             stream.filter(lines -> lines.contains(textWhere)).forEach(line -> {
                 foundText.set(line.replace(textWhere, "").trim());
@@ -107,7 +107,8 @@ public class FileUtils {
     }
 
     public static long getDiskUsedBytes() {
-        return getOSRoot().getTotalSpace();
+        File root = getOSRoot();
+        return root.getTotalSpace() - root.getUsableSpace();
     }
 
     public static long getDiskAvailableBytes() {

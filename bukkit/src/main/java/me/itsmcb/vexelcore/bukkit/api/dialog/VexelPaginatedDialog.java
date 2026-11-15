@@ -15,16 +15,41 @@ import net.kyori.adventure.key.Key;
 import net.kyori.adventure.text.Component;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
+import org.bukkit.plugin.Plugin;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.Consumer;
 import java.util.function.Function;
+import java.util.logging.Level;
 
+/**
+ * Paginated dialog helper built on VexelCore's {@code DialogSessionManager}.
+ * Resolves async button templates first, then registers callbacks inside
+ * {@code openDialog} so {@code startNewSession} never discards content callbacks.
+ */
 public class VexelPaginatedDialog<T> {
 
+    public record ButtonEntry(
+            @NotNull Component label,
+            @Nullable Component tooltip,
+            @Nullable Consumer<Player> action
+    ) {
+        public static @NotNull ButtonEntry of(@NotNull Component label, @Nullable String tooltip, @Nullable Consumer<Player> action) {
+            return new ButtonEntry(label, tooltip != null ? new BukkitMsgBuilder(tooltip).get() : null, action);
+        }
+
+        public static @NotNull ButtonEntry of(@NotNull String label, @Nullable String tooltip, @Nullable Consumer<Player> action) {
+            return new ButtonEntry(new BukkitMsgBuilder(label).get(), tooltip != null ? new BukkitMsgBuilder(tooltip).get() : null, action);
+        }
+    }
+
+    private final Plugin plugin;
     private final String title;
+    private final List<T> items;
     private final List<DialogBody> bodyParts = new ArrayList<>();
 
     private Component forwardLabel = new BukkitMsgBuilder("&fNext Page").get(); // Todo localize
@@ -35,38 +60,53 @@ public class VexelPaginatedDialog<T> {
     // Defaults
     private int itemsPerPage = 10;
     private int columns = 2;
+    private String emptyMessage = "&7Nothing to display.";
 
-    private final List<T> items;
-    private Function<T, CompletableFuture<ActionButton>> itemRenderer;
+    private Function<T, CompletableFuture<ButtonEntry>> entryRenderer;
     private Consumer<Player> parentAction;
     private boolean showCloseButton = true;
 
-    public VexelPaginatedDialog(String title, List<T> items) {
+    public VexelPaginatedDialog(@NotNull String title, @NotNull List<T> items) {
+        this(VexelCoreBukkit.getInstance(), title, items);
+    }
+
+    public VexelPaginatedDialog(@NotNull Plugin plugin, @NotNull String title, @NotNull List<T> items) {
+        this.plugin = plugin;
         this.title = title;
         this.items = items;
     }
 
-    public VexelPaginatedDialog<T> setRenderer(Function<T, CompletableFuture<ActionButton>> renderer) {
-        this.itemRenderer = renderer;
+    public VexelPaginatedDialog<T> setRenderer(@NotNull Function<T, ButtonEntry> renderer) {
+        this.entryRenderer = item -> CompletableFuture.completedFuture(renderer.apply(item));
         return this;
     }
 
-    public VexelPaginatedDialog<T> addMessage(String text) {
+    public VexelPaginatedDialog<T> setAsyncRenderer(@NotNull Function<T, CompletableFuture<ButtonEntry>> renderer) {
+        this.entryRenderer = renderer;
+        return this;
+    }
+
+    public VexelPaginatedDialog<T> addMessage(@NotNull String text) {
         this.bodyParts.add(DialogBody.plainMessage(new BukkitMsgBuilder(text).get(), 600));
         return this;
     }
 
-    public VexelPaginatedDialog<T> addMessage(Component component) {
+    public VexelPaginatedDialog<T> addMessage(@NotNull Component component) {
         this.bodyParts.add(DialogBody.plainMessage(component, 600));
         return this;
     }
 
-    public VexelPaginatedDialog<T> addBody(DialogBody body) {
+    public VexelPaginatedDialog<T> addBody(@NotNull DialogBody body) {
         this.bodyParts.add(body);
         return this;
     }
 
-    public VexelPaginatedDialog<T> setParent(Consumer<Player> parentAction) {
+    public VexelPaginatedDialog<T> setEmptyMessage(@NotNull String emptyMessage) {
+        this.emptyMessage = emptyMessage;
+        return this;
+    }
+
+    public VexelPaginatedDialog<T> setParent(@Nullable Consumer<Player> parentAction) {
         this.parentAction = parentAction;
         return this;
     }
@@ -76,67 +116,109 @@ public class VexelPaginatedDialog<T> {
         return this;
     }
 
-    public VexelPaginatedDialog<T> setItemsPerPage(int amount) {
-        this.itemsPerPage = amount;
+    public VexelPaginatedDialog<T> setItemsPerPage(int itemsPerPage) {
+        this.itemsPerPage = Math.max(1, itemsPerPage);
         return this;
     }
 
     public VexelPaginatedDialog<T> setColumns(int columns) {
-        this.columns = columns;
+        this.columns = Math.max(1, columns);
         return this;
     }
 
     /**
      * Builds the dialog and safely opens it for the player. Starts at the first page.
      */
-    public void open(Player player) {
+    public void open(@NotNull Player player) {
         open(player, 0);
     }
 
     /**
      * Builds the dialog and safely opens it for the player. Starts at the provided page number.
      */
-    private void open(Player player, int page) {
+    private void open(@NotNull Player player, int page) {
+        if (items.isEmpty()) {
+            showEmptyState(player);
+            return;
+        }
+
         // Calculations
         int totalItems = items.size();
         int totalPages = (int) Math.ceil((double) totalItems / itemsPerPage);
-        final int currentPage = Math.max(0, Math.min(page, totalPages - 1));
-
+        int currentPage = Math.max(0, Math.min(page, totalPages - 1));
         int startIndex = currentPage * itemsPerPage;
         int endIndex = Math.min(startIndex + itemsPerPage, totalItems);
 
-        List<T> pageItems = (totalItems > 0) ? items.subList(startIndex, endIndex) : new ArrayList<>();
+        List<T> pageItems = items.subList(startIndex, endIndex);
 
         // Start Rendering Async
-        List<CompletableFuture<ActionButton>> futures = pageItems.stream()
-                .map(item -> itemRenderer.apply(item))
+        List<CompletableFuture<ButtonEntry>> futures = pageItems.stream()
+                .map(entryRenderer)
                 .toList();
 
         // Join
         CompletableFuture.allOf(futures.toArray(new CompletableFuture[0])).thenAccept(v -> {
-            List<ActionButton> renderedButtons = futures.stream().map(CompletableFuture::join).toList();
+            List<ButtonEntry> entries = futures.stream().map(CompletableFuture::join).toList();
 
             // Build UI on Main Thread
-            Bukkit.getScheduler().runTask(VexelCoreBukkit.getInstance(), () -> {
-                buildAndShow(player, renderedButtons, currentPage, totalPages);
+            Bukkit.getScheduler().runTask(plugin, () -> {
+                if (player.isOnline()) {
+                    buildAndShow(player, entries, currentPage, totalPages);
+                }
             });
         }).exceptionally(ex -> {
-            ex.printStackTrace();
+            plugin.getLogger().log(Level.WARNING, "Failed to render paginated dialog '" + title + "'", ex);
             return null;
         });
     }
 
-    private void buildAndShow(Player player, List<ActionButton> contentButtons, int page, int totalPages) {
-        VexelCoreBukkitAPI.getDialogManager().openDialog(player, () -> {
+    private void showEmptyState(@NotNull Player player) {
+        if (parentAction != null) {
+            VexelCoreBukkitAPI.getDialogManager().openDialog(player, () -> {
+                Key backKey = VexelCoreBukkitAPI.getDialogManager().addCallback(player.getUniqueId(), e -> parentAction.accept(player));
+                ActionButton backBtn = ActionButton.builder(backLabel)
+                        .action(DialogAction.customClick(backKey, null))
+                        .build();
+                Dialog dialog = Dialog.create(builder -> builder.empty()
+                        .base(DialogBase.builder(new BukkitMsgBuilder(title).get())
+                                .body(List.of(DialogBody.plainMessage(new BukkitMsgBuilder(emptyMessage).get(), 600)))
+                                .build())
+                        .type(DialogType.notice(backBtn))
+                );
+                player.showDialog(dialog);
+            });
+            return;
+        }
+        new VexelNoticeDialog()
+                .setLabel(title)
+                .setMessage(emptyMessage)
+                .show(player);
+    }
 
-            List<ActionButton> finalActions = new ArrayList<>(contentButtons);
+    private void buildAndShow(@NotNull Player player,
+                              @NotNull List<ButtonEntry> entries,
+                              int page,
+                              int totalPages) {
+        VexelCoreBukkitAPI.getDialogManager().openDialog(player, () -> {
+            List<ActionButton> finalActions = new ArrayList<>();
+
+            for (ButtonEntry entry : entries) {
+                Key btnKey = VexelCoreBukkitAPI.getDialogManager().addCallback(player.getUniqueId(), e -> {
+                    if (entry.action() != null) {
+                        entry.action().accept(player);
+                    }
+                });
+                finalActions.add(ActionButton.builder(entry.label())
+                        .tooltip(entry.tooltip())
+                        .action(DialogAction.customClick(btnKey, null))
+                        .build());
+            }
 
             // Navigation logic. Append Previous/Next buttons only if relevant.
             if (totalPages > 1) {
                 // Previous Button
                 if (page > 0) {
                     Key prevKey = VexelCoreBukkitAPI.getDialogManager().addCallback(player.getUniqueId(), e -> open(player, page - 1));
-
                     finalActions.add(ActionButton.builder(ChatUtils.makeLabel(HeadTexture.GRAY_ARROW_LEFT, backwardLabel))
                             .action(DialogAction.customClick(prevKey, null))
                             .build());
@@ -144,7 +226,6 @@ public class VexelPaginatedDialog<T> {
                 // Next Button
                 if (page < totalPages - 1) {
                     Key nextKey = VexelCoreBukkitAPI.getDialogManager().addCallback(player.getUniqueId(), e -> open(player, page + 1));
-
                     finalActions.add(ActionButton.builder(ChatUtils.makeLabel(HeadTexture.GRAY_ARROW_RIGHT, forwardLabel))
                             .action(DialogAction.customClick(nextKey, null))
                             .build());
@@ -155,7 +236,6 @@ public class VexelPaginatedDialog<T> {
             ActionButton footerBtn;
             if (parentAction != null) {
                 Key backKey = VexelCoreBukkitAPI.getDialogManager().addCallback(player.getUniqueId(), e -> parentAction.accept(player));
-
                 footerBtn = ActionButton.builder(backLabel)
                         .action(DialogAction.customClick(backKey, null))
                         .build();

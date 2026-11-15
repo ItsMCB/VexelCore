@@ -30,7 +30,7 @@ public class WorldUtils {
     }
 
     public static boolean exists(String name) {
-        return getAllWorldNames().stream().map(wn -> wn.equalsIgnoreCase(name)).findFirst().isPresent();
+        return getAllWorldNames().stream().anyMatch(wn -> wn.equalsIgnoreCase(name));
     }
 
     public static boolean kickAllFromWorld(@NotNull World worldNameToKickFrom, String worldNameToSendTo) {
@@ -53,7 +53,7 @@ public class WorldUtils {
     }
 
     public static boolean isLoaded(String name) {
-        return getLoadedWorlds().stream().map(world -> world.getName().equalsIgnoreCase(name)).toList().size() > 0;
+        return getLoadedWorlds().stream().anyMatch(world -> world.getName().equalsIgnoreCase(name));
     }
 
     public static boolean unloadWorld(String worldName) {

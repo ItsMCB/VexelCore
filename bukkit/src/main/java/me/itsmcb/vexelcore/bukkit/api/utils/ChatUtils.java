@@ -1,5 +1,6 @@
 package me.itsmcb.vexelcore.bukkit.api.utils;
 
+import me.clip.placeholderapi.PlaceholderAPI;
 import me.itsmcb.vexelcore.bukkit.api.cache.CachedPlayerV2;
 import me.itsmcb.vexelcore.bukkit.api.text.BukkitMsgBuilder;
 import me.itsmcb.vexelcore.common.api.HeadTexture;
@@ -14,6 +15,7 @@ import org.bukkit.Material;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -49,6 +51,22 @@ public class ChatUtils {
         return getColorizer().deserialize(
                 getColorizer().serialize(component)
         );
+    }
+
+    /**
+     * Applies PlaceholderAPI placeholders to the given text if PlaceholderAPI is loaded.
+     *
+     * @param player The player context for placeholders (may be null).
+     * @param text   The input text.
+     * @return The text with placeholders resolved, or the original text if PAPI is not loaded.
+     */
+    public static @Nullable String applyPlaceholders(@Nullable OfflinePlayer player, @Nullable String text) {
+        if (text == null || text.isEmpty()) {
+            return text;
+        }
+        return PluginUtils.pluginIsLoaded("PlaceholderAPI")
+                ? PlaceholderAPI.setPlaceholders(player, text)
+                : text;
     }
 
     /**
@@ -103,11 +121,11 @@ public class ChatUtils {
             Pattern.compile("(?i)([&§])(#[0-9A-F]{6}|[0-9A-FK-ORL])");
 
     /**
-     * Pattern to strip all known color and format codes.
+     * Pattern to strip all known color and format codes, including Bukkit '&x&R&R&G&G&B&B' hex sequences.
      * The trailing '+' makes it match consecutive codes (e.g., "&c&l") as a single unit for replacement.
      */
     private static final Pattern STRIP_CODES_PATTERN =
-            Pattern.compile("(?i)(?:[&§](?:#[0-9A-F]{6}|[0-9A-FK-ORL]))+");
+            Pattern.compile("(?i)(?:[&§]x(?:[&§][0-9A-F]){6}|[&§](?:#[0-9A-F]{6}|[0-9A-FK-ORL]))+");
 
     // Character sets
     private static final Set<Character> LEGACY_COLOR_CHARS = "0123456789abcdef".chars()
@@ -380,6 +398,22 @@ public class ChatUtils {
                 )
                 .hat(true)
                 .build();
+    }
+
+    /**
+     * Produces a component showing the Base64 player head to the left and the text to the right.
+     */
+    public static @NotNull Component makeHeadLabel(@NotNull String textureBase64, @NotNull String text) {
+        return Component.empty()
+                .append(Component.object(getPlayerHeadObjectContents(textureBase64)))
+                .append(new BukkitMsgBuilder(" " + text).get());
+    }
+
+    /**
+     * Produces a component showing a cached player's head to the left and the text to the right.
+     */
+    public static @NotNull Component makeLabel(@NotNull CachedPlayerV2 cachedPlayer, @NotNull String text) {
+        return makeHeadLabel(cachedPlayer.getPlayerSkinData().getTexture(), text);
     }
 
     /**

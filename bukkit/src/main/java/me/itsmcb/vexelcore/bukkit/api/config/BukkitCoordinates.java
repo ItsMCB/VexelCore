@@ -95,11 +95,11 @@ public class BukkitCoordinates implements ConfigurationSerializable {
     @Override
     public @NotNull Map<String, Object> serialize() {
         LinkedHashMap<String,Object> map = new LinkedHashMap<>();
-        map.put("x",x+"");
-        map.put("y",y+"");
-        map.put("z",z+"");
-        map.put("yaw",yaw+"");
-        map.put("pitch",pitch+"");
+        map.put("x", x + "");
+        map.put("y", y + "");
+        map.put("z", z + "");
+        map.put("yaw", yaw + "");
+        map.put("pitch", pitch + "");
         return map;
     }
 
@@ -107,23 +107,36 @@ public class BukkitCoordinates implements ConfigurationSerializable {
         try {
             BukkitCoordinates bl = new BukkitCoordinates();
             if (map.containsKey("x")) {
-                bl.setX(Double.parseDouble((String) map.get("x")));
+                bl.setX(parseDouble(map.get("x"), 0.0));
             }
             if (map.containsKey("y")) {
-                bl.setY(Double.parseDouble((String) map.get("y")));
+                bl.setY(parseDouble(map.get("y"), 64.0));
             }
             if (map.containsKey("z")) {
-                bl.setZ(Double.parseDouble((String) map.get("z")));
+                bl.setZ(parseDouble(map.get("z"), 0.0));
             }
             if (map.containsKey("yaw")) {
-                bl.setYaw(Float.parseFloat((String) map.get("yaw")));
+                bl.setYaw((float) parseDouble(map.get("yaw"), 0.0));
             }
             if (map.containsKey("pitch")) {
-                bl.setPitch(Float.parseFloat((String) map.get("pitch")));
+                bl.setPitch((float) parseDouble(map.get("pitch"), 0.0));
             }
             return bl;
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
+    }
+
+    protected static double parseDouble(Object val, double fallback) {
+        if (val instanceof Number num) {
+            return num.doubleValue();
+        }
+        if (val instanceof String str) {
+            try {
+                return Double.parseDouble(str);
+            } catch (NumberFormatException ignored) {
+            }
+        }
+        return fallback;
     }
 }

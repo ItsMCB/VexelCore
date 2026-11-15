@@ -1,35 +1,32 @@
 package me.itsmcb.vexelcore.common.api.manager;
 
-import java.util.ArrayList;
-import java.util.Timer;
-import java.util.TimerTask;
+import java.util.Map;
 import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
 
 public class CooldownManager {
 
-    private final long cooldownTime;
-    private ArrayList<UUID> playerUUIDsInCooldown = new ArrayList<>();
+    private final long cooldownMillis;
+    private final Map<UUID, Long> cooldownExpirations = new ConcurrentHashMap<>();
 
-    public CooldownManager (long cooldownSeconds) {
-        this.cooldownTime = cooldownSeconds;
+    public CooldownManager(long cooldownSeconds) {
+        this.cooldownMillis = cooldownSeconds * 1000L;
     }
 
     public void activateCooldown(UUID playerUUID) {
-        playerUUIDsInCooldown.add(playerUUID);
-        new Timer().schedule(
-                new TimerTask() {
-                    @Override
-                    public void run() {
-                        playerUUIDsInCooldown.remove(playerUUID);
-                    }
-                },
-                1000*cooldownTime
-        );
+        cooldownExpirations.put(playerUUID, System.currentTimeMillis() + cooldownMillis);
     }
 
     public boolean isInCooldown(UUID playerUUID) {
-        return playerUUIDsInCooldown.contains(playerUUID);
+        Long expiresAt = cooldownExpirations.get(playerUUID);
+        if (expiresAt == null) {
+            return false;
+        }
+        if (System.currentTimeMillis() >= expiresAt) {
+            cooldownExpirations.remove(playerUUID, expiresAt);
+            return false;
+        }
+        return true;
     }
 
 }
-

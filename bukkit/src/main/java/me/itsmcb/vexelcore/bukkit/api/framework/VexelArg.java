@@ -11,6 +11,8 @@ import com.mojang.brigadier.suggestion.SuggestionsBuilder;
 import io.papermc.paper.command.brigadier.CommandSourceStack;
 import io.papermc.paper.command.brigadier.Commands;
 import io.papermc.paper.command.brigadier.MessageComponentSerializer;
+import io.papermc.paper.command.brigadier.argument.ArgumentTypes;
+import io.papermc.paper.command.brigadier.argument.resolvers.selector.PlayerSelectorArgumentResolver;
 import net.kyori.adventure.text.Component;
 import org.bukkit.Bukkit;
 import org.bukkit.World;
@@ -92,6 +94,21 @@ public class VexelArg<T> {
     public @NotNull String getDescription() { return description; }
     public boolean isOptional() { return optional; }
 
+    /**
+     * Returns a copy of this argument marked as optional.
+     */
+    public @NotNull VexelArg<T> asOptional() {
+        return new Builder<>(name, type, typeClass, description)
+                .optional(true)
+                .suggestionMode(suggestionMode)
+                .suggestsNullable(staticChoices)
+                .suggestsSupplierNullable(dynamicChoices)
+                .suggestsContextualNullable(contextualChoices)
+                .suggestsAsyncNullable(asyncChoices)
+                .suggestsCustomNullable(customSuggestionProvider)
+                .build();
+    }
+
     // ── Convenience factory methods ──────────────────────────────────────
 
     /** Creates a {@link StringArgumentType#string()} argument (quoted, allows spaces). */
@@ -124,6 +141,16 @@ public class VexelArg<T> {
     /** Quick-build shortcut for the common case. */
     public static <T> VexelArg<T> of(@NotNull String name, @NotNull ArgumentType<T> type, @NotNull Class<T> typeClass, @NotNull String description) {
         return builder(name, type, typeClass, description).build();
+    }
+
+    /** Creates a Paper Brigadier player selector argument ({@link ArgumentTypes#player()}). */
+    public static VexelArg<PlayerSelectorArgumentResolver> player(@NotNull String name, @NotNull String description) {
+        return builder(name, ArgumentTypes.player(), PlayerSelectorArgumentResolver.class, description).build();
+    }
+
+    /** Creates an optional Paper Brigadier player selector argument ({@link ArgumentTypes#player()}). */
+    public static VexelArg<PlayerSelectorArgumentResolver> optionalPlayer(@NotNull String name, @NotNull String description) {
+        return builder(name, ArgumentTypes.player(), PlayerSelectorArgumentResolver.class, description).optional().build();
     }
 
     /** Creates a word argument (no spaces) with built-in tab completion for currently online players. */
@@ -270,6 +297,12 @@ public class VexelArg<T> {
             this.customSuggestionProvider = customSuggestionProvider;
             return this;
         }
+
+        private Builder<T> suggestsNullable(@Nullable List<String> staticChoices) { this.staticChoices = staticChoices; return this; }
+        private Builder<T> suggestsSupplierNullable(@Nullable Supplier<List<String>> dynamicChoices) { this.dynamicChoices = dynamicChoices; return this; }
+        private Builder<T> suggestsContextualNullable(@Nullable Function<CommandContext<CommandSourceStack>, List<String>> contextualChoices) { this.contextualChoices = contextualChoices; return this; }
+        private Builder<T> suggestsAsyncNullable(@Nullable Function<CommandContext<CommandSourceStack>, CompletableFuture<List<String>>> asyncChoices) { this.asyncChoices = asyncChoices; return this; }
+        private Builder<T> suggestsCustomNullable(@Nullable SuggestionProvider<CommandSourceStack> customSuggestionProvider) { this.customSuggestionProvider = customSuggestionProvider; return this; }
 
         public VexelArg<T> build() {
             return new VexelArg<>(this);
