@@ -16,6 +16,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Objects;
 import java.util.function.Predicate;
 
 @SerializableAs("MsgBuilder")
@@ -100,7 +101,7 @@ public class BukkitMsgBuilder extends CommonMsgBuilder implements ConfigurationS
             map.put("hover-text", getHoverText());
         }
         if (getClickEventAction() != null) {
-            map.put("click-event-action", getClickEventAction().toString());
+            map.put("click-event-action", serializeClickEventAction(getClickEventAction()));
         }
         if (getClickEventValue() != null) {
             map.put("click-event-value", getClickEventValue());
@@ -109,17 +110,53 @@ public class BukkitMsgBuilder extends CommonMsgBuilder implements ConfigurationS
     }
 
     public static BukkitMsgBuilder deserialize(Map<String, Object> map) {
-        BukkitMsgBuilder msgBuilder = new BukkitMsgBuilder((String) map.get("message-text"));
-        if (map.containsKey("hover-text")) {
-            msgBuilder.hover((String) map.get("hover-text"));
+        String messageText = map.get("message-text") instanceof String text ? text : "";
+        BukkitMsgBuilder msgBuilder = new BukkitMsgBuilder(messageText);
+        if (map.get("hover-text") instanceof String hoverText) {
+            msgBuilder.hover(hoverText);
         }
-        if (map.containsKey("click-event-action") && map.containsKey("click-event-value")) {
-            String action = (String) map.get("click-event-action");
-            String value = (String) map.get("click-event-value");
+        if (map.get("click-event-action") instanceof String action && map.get("click-event-value") instanceof String value) {
             if (!action.isBlank() && !value.isBlank()) {
-                msgBuilder.clickEvent(ClickEvent.Action.valueOf(action.toUpperCase(Locale.ROOT)), value);
+                ClickEvent.Action parsedAction = parseClickEventAction(action);
+                if (parsedAction != null) {
+                    msgBuilder.clickEvent(parsedAction, value);
+                }
             }
         }
         return msgBuilder;
+    }
+
+    private static ClickEvent.Action parseClickEventAction(String action) {
+        return switch (action.toUpperCase(Locale.ROOT)) {
+            case "OPEN_URL" -> ClickEvent.Action.OPEN_URL;
+            case "OPEN_FILE" -> ClickEvent.Action.OPEN_FILE;
+            case "RUN_COMMAND" -> ClickEvent.Action.RUN_COMMAND;
+            case "SUGGEST_COMMAND" -> ClickEvent.Action.SUGGEST_COMMAND;
+            case "CHANGE_PAGE" -> ClickEvent.Action.CHANGE_PAGE;
+            case "COPY_TO_CLIPBOARD" -> ClickEvent.Action.COPY_TO_CLIPBOARD;
+            default -> null;
+        };
+    }
+
+    private static String serializeClickEventAction(ClickEvent.Action action) {
+        if (Objects.equals(action, ClickEvent.Action.OPEN_URL)) {
+            return "OPEN_URL";
+        }
+        if (Objects.equals(action, ClickEvent.Action.OPEN_FILE)) {
+            return "OPEN_FILE";
+        }
+        if (Objects.equals(action, ClickEvent.Action.RUN_COMMAND)) {
+            return "RUN_COMMAND";
+        }
+        if (Objects.equals(action, ClickEvent.Action.SUGGEST_COMMAND)) {
+            return "SUGGEST_COMMAND";
+        }
+        if (Objects.equals(action, ClickEvent.Action.CHANGE_PAGE)) {
+            return "CHANGE_PAGE";
+        }
+        if (Objects.equals(action, ClickEvent.Action.COPY_TO_CLIPBOARD)) {
+            return "COPY_TO_CLIPBOARD";
+        }
+        return action.toString();
     }
 }

@@ -66,7 +66,7 @@ public class VexelCoreBukkit extends JavaPlugin implements Listener {
 
         proxyManager = new ProxyManager(instance);
         Bukkit.getPluginManager().registerEvents(proxyManager,this);
-        ConfigurationSerialization.registerClass(BukkitMsgBuilder.class, "MsgBuilder");
+        ConfigurationSerialization.registerClass(BukkitMsgBuilder.class);
 
         // Register menu system and respective listeners
         menuManager = new MenuManager(this);
