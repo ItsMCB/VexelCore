@@ -60,6 +60,7 @@ public class VexelPaginatedDialog<T> {
     // Defaults
     private int itemsPerPage = 10;
     private int columns = 2;
+    private @Nullable Integer buttonWidth = null;
     private String emptyMessage = "&7Nothing to display.";
 
     private Function<T, CompletableFuture<ButtonEntry>> entryRenderer;
@@ -123,6 +124,11 @@ public class VexelPaginatedDialog<T> {
 
     public VexelPaginatedDialog<T> setColumns(int columns) {
         this.columns = Math.max(1, columns);
+        return this;
+    }
+
+    public VexelPaginatedDialog<T> setButtonWidth(int buttonWidth) {
+        this.buttonWidth = Math.clamp(buttonWidth, 1, 1024);
         return this;
     }
 
@@ -208,10 +214,13 @@ public class VexelPaginatedDialog<T> {
                         entry.action().accept(player);
                     }
                 });
-                finalActions.add(ActionButton.builder(entry.label())
+                ActionButton.Builder buttonBuilder = ActionButton.builder(entry.label())
                         .tooltip(entry.tooltip())
-                        .action(DialogAction.customClick(btnKey, null))
-                        .build());
+                        .action(DialogAction.customClick(btnKey, null));
+                if (buttonWidth != null) {
+                    buttonBuilder.width(buttonWidth);
+                }
+                finalActions.add(buttonBuilder.build());
             }
 
             // Navigation logic. Append Previous/Next buttons only if relevant.

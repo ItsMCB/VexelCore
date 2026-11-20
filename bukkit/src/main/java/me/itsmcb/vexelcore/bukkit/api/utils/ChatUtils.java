@@ -28,6 +28,11 @@ public class ChatUtils {
 
     public static final Key ATLAS_ITEMS = Key.key("minecraft:items");
     public static final Key ATLAS_BLOCKS = Key.key("minecraft:blocks");
+    public static final Key ATLAS_GUI = Key.key("minecraft:gui");
+    public static final Key ATLAS_MOB_EFFECTS = Key.key("minecraft:mob_effects");
+    public static final Key ATLAS_PAINTINGS = Key.key("minecraft:paintings");
+    public static final Key ATLAS_PARTICLES = Key.key("minecraft:particles");
+    public static final Key ATLAS_MAP_DECORATIONS = Key.key("minecraft:map_decorations");
 
     /**
      * Creates a LegacyComponentSerializer that supports both
@@ -249,7 +254,7 @@ public class ChatUtils {
      * @return A list of {@link TextComponent}s, each representing a formatted line.
      */
     public static List<TextComponent> splitText(@NotNull String text) {
-        return splitText(text,DEFAULT_SPLIT_LENGTH);
+        return splitText(text, DEFAULT_SPLIT_LENGTH);
     }
 
     /**
@@ -330,7 +335,6 @@ public class ChatUtils {
 
         return resultLines;
     }
-
 
     /**
      * Creates a Component containing a Player Head.
@@ -421,7 +425,7 @@ public class ChatUtils {
      */
     public static Component makeLabel(HeadTexture head, String text) {
         Component icon = ChatUtils.getHeadComponent(head);
-        Component label = new BukkitMsgBuilder(" "+text).get();
+        Component label = new BukkitMsgBuilder(" " + text).get();
         // Appended to empty to fix Bedrock component rendering issue with icons
         return Component.empty().append(icon).append(label);
     }
@@ -436,42 +440,175 @@ public class ChatUtils {
         return Component.empty().append(icon).append(spacer).append(component);
     }
 
-    /**
-     * Produces a component showing a sprite to the left and text to the right.
-     */
-    public static Component makeLabel(String spriteKey, String text) {
-        return Component.text()
-                .append(Component.object(ObjectContents.sprite(ATLAS_ITEMS, Key.key(spriteKey))))
-                .append(Component.space())
-                .append(new BukkitMsgBuilder(text).get())
-                .build();
+    // =========================================================================
+    // Sprites & Sprite Labels
+    // =========================================================================
+
+    public record SpriteDefinition(@NotNull Key atlas, @NotNull Key sprite) {
+        public SpriteDefinition(@NotNull Key atlas, @NotNull String spriteKey) {
+            this(atlas, Key.key(spriteKey));
+        }
     }
 
     /**
-     * Produces a component with a sprite to the left and text to the right.
-     * This method attempts to resolve whether the material should use the 'blocks' or 'items' atlas.
+     * Creates a standalone sprite component from an explicit atlas and sprite key.
+     */
+    public static @NotNull Component getSpriteComponent(@NotNull Key atlas, @NotNull Key sprite) {
+        return Component.object(ObjectContents.sprite(atlas, sprite));
+    }
+
+    /**
+     * Creates a standalone sprite component from a resolved {@link SpriteDefinition}.
+     */
+    public static @NotNull Component getSpriteComponent(@NotNull SpriteDefinition spriteDef) {
+        return getSpriteComponent(spriteDef.atlas(), spriteDef.sprite());
+    }
+
+    /**
+     * Creates a standalone sprite component, inferring the atlas from the sprite path prefix
+     * (e.g., {@code "block/stone"}, {@code "item/diamond"}, {@code "gui/icon/checkmark"}).
+     */
+    public static @NotNull Component getSpriteComponent(@NotNull String spriteKey) {
+        return getSpriteComponent(resolveSprite(spriteKey));
+    }
+
+    /**
+     * Creates a standalone icon component for any Bukkit {@link Material}.
+     * Player head materials are rendered using {@link ObjectContents#playerHead()}.
+     */
+    public static @NotNull Component getSpriteComponent(@NotNull Material material) {
+        if (material == Material.PLAYER_HEAD || material == Material.PLAYER_WALL_HEAD) {
+            return Component.object(ObjectContents.playerHead().hat(true).build());
+        }
+        return getSpriteComponent(resolveSprite(material));
+    }
+
+    /**
+     * Produces a component showing a sprite from any atlas to the left and text to the right.
+     */
+    public static @NotNull Component makeLabel(@NotNull Key atlas, @NotNull Key sprite, @NotNull String text) {
+        return makeLabel(atlas, sprite, new BukkitMsgBuilder(text).get());
+    }
+
+    /**
+     * Produces a component showing a sprite from any atlas to the left and a component to the right.
+     */
+    public static @NotNull Component makeLabel(@NotNull Key atlas, @NotNull Key sprite, @NotNull Component component) {
+        // Appended to empty to preserve Bedrock/Geyser icon rendering compatibility
+        return Component.empty()
+                .append(getSpriteComponent(atlas, sprite))
+                .append(Component.space())
+                .append(component);
+    }
+
+    /**
+     * Produces a component showing a sprite to the left and text to the right.
+     * Automatically infers the atlas from prefixes such as {@code block/}, {@code item/}, {@code gui/}, etc.
+     */
+    public static @NotNull Component makeLabel(@NotNull String spriteKey, @NotNull String text) {
+        SpriteDefinition def = resolveSprite(spriteKey);
+        return makeLabel(def.atlas(), def.sprite(), text);
+    }
+
+    /**
+     * Produces a component showing a sprite to the left and a component to the right.
+     */
+    public static @NotNull Component makeLabel(@NotNull String spriteKey, @NotNull Component component) {
+        SpriteDefinition def = resolveSprite(spriteKey);
+        return makeLabel(def.atlas(), def.sprite(), component);
+    }
+
+    /**
+     * Produces a standalone icon component for a {@link Material}.
+     */
+    public static @NotNull Component makeLabel(@NotNull Material material) {
+        return getSpriteComponent(material);
+    }
+
+    /**
+     * Produces a component with a resolved {@link Material} sprite to the left and text to the right.
+     * This method resolves whether the material should use the 'blocks' or 'items' atlas,
+     * and handles player heads via {@link ObjectContents#playerHead()}.
      *
      * @param material The material to display.
      * @param text The text to append.
      * @return Component with sprite and text.
      */
-    public static Component makeLabel(Material material, String text) {
-        SpriteDefinition spriteDef = resolveSprite(material);
-
-        return Component.text()
-                .append(Component.object(ObjectContents.sprite(
-                        spriteDef.atlas,
-                        Key.key(spriteDef.key)
-                )))
-                .append(Component.space())
-                .append(new BukkitMsgBuilder(text).get())
-                .build();
+    public static @NotNull Component makeLabel(@NotNull Material material, @NotNull String text) {
+        return makeLabel(material, new BukkitMsgBuilder(text).get());
     }
 
-    private record SpriteDefinition(Key atlas, String key) {}
+    /**
+     * Produces a component with a resolved {@link Material} sprite to the left and a component to the right.
+     */
+    public static @NotNull Component makeLabel(@NotNull Material material, @NotNull Component component) {
+        // Appended to empty to preserve Bedrock/Geyser icon rendering compatibility
+        return Component.empty()
+                .append(getSpriteComponent(material))
+                .append(Component.space())
+                .append(component);
+    }
 
+    private static final Set<String> WOOD_TYPES = Set.of(
+            "oak", "spruce", "birch", "jungle", "acacia", "dark_oak",
+            "mangrove", "cherry", "bamboo", "pale_oak", "crimson", "warped"
+    );
 
+    private static final Map<String, String> COMPOUND_BLOCK_BASES = Map.ofEntries(
+            Map.entry("brick", "bricks"),
+            Map.entry("stone_brick", "stone_bricks"),
+            Map.entry("mud_brick", "mud_bricks"),
+            Map.entry("tuff_brick", "tuff_bricks"),
+            Map.entry("resin_brick", "resin_bricks"),
+            Map.entry("deepslate_brick", "deepslate_bricks"),
+            Map.entry("deepslate_tile", "deepslate_tiles"),
+            Map.entry("nether_brick", "nether_bricks"),
+            Map.entry("red_nether_brick", "red_nether_bricks"),
+            Map.entry("polished_blackstone_brick", "polished_blackstone_bricks"),
+            Map.entry("prismarine_brick", "prismarine_bricks"),
+            Map.entry("end_stone_brick", "end_stone_bricks"),
+            Map.entry("purpur", "purpur_block"),
+            Map.entry("quartz", "quartz_block_side"),
+            Map.entry("smooth_quartz", "quartz_block_bottom"),
+            Map.entry("smooth_sandstone", "sandstone_top"),
+            Map.entry("smooth_red_sandstone", "red_sandstone_top")
+    );
+
+    /**
+     * Explicit overrides for animated textures, non-standard item names, entity-rendered blocks,
+     * and multi-face blocks whose texture path does not match {@code block/<key>} or {@code item/<key>}.
+     */
     private static final Map<Material, SpriteDefinition> SPRITE_OVERRIDES = Map.ofEntries(
+            // Non-rendering air fallbacks
+            Map.entry(Material.AIR, new SpriteDefinition(ATLAS_ITEMS, "minecraft:item/structure_void")),
+            Map.entry(Material.CAVE_AIR, new SpriteDefinition(ATLAS_ITEMS, "minecraft:item/structure_void")),
+            Map.entry(Material.VOID_AIR, new SpriteDefinition(ATLAS_ITEMS, "minecraft:item/structure_void")),
+
+            // Entity-rendered skulls/heads (no block/<key> or item/<key> sprite exists)
+            Map.entry(Material.PLAYER_HEAD, new SpriteDefinition(ATLAS_ITEMS, "minecraft:item/armor_stand")),
+            Map.entry(Material.PLAYER_WALL_HEAD, new SpriteDefinition(ATLAS_ITEMS, "minecraft:item/armor_stand")),
+            Map.entry(Material.SKELETON_SKULL, new SpriteDefinition(ATLAS_ITEMS, "minecraft:item/bone")),
+            Map.entry(Material.SKELETON_WALL_SKULL, new SpriteDefinition(ATLAS_ITEMS, "minecraft:item/bone")),
+            Map.entry(Material.WITHER_SKELETON_SKULL, new SpriteDefinition(ATLAS_BLOCKS, "minecraft:block/coal_block")),
+            Map.entry(Material.WITHER_SKELETON_WALL_SKULL, new SpriteDefinition(ATLAS_BLOCKS, "minecraft:block/coal_block")),
+            Map.entry(Material.ZOMBIE_HEAD, new SpriteDefinition(ATLAS_ITEMS, "minecraft:item/rotten_flesh")),
+            Map.entry(Material.ZOMBIE_WALL_HEAD, new SpriteDefinition(ATLAS_ITEMS, "minecraft:item/rotten_flesh")),
+            Map.entry(Material.CREEPER_HEAD, new SpriteDefinition(ATLAS_ITEMS, "minecraft:item/gunpowder")),
+            Map.entry(Material.CREEPER_WALL_HEAD, new SpriteDefinition(ATLAS_ITEMS, "minecraft:item/gunpowder")),
+            Map.entry(Material.PIGLIN_HEAD, new SpriteDefinition(ATLAS_ITEMS, "minecraft:item/piglin_banner_pattern")),
+            Map.entry(Material.PIGLIN_WALL_HEAD, new SpriteDefinition(ATLAS_ITEMS, "minecraft:item/piglin_banner_pattern")),
+            Map.entry(Material.DRAGON_HEAD, new SpriteDefinition(ATLAS_ITEMS, "minecraft:item/dragon_breath")),
+            Map.entry(Material.DRAGON_WALL_HEAD, new SpriteDefinition(ATLAS_ITEMS, "minecraft:item/dragon_breath")),
+
+            // Other entity-rendered blocks without block/<key> atlas sprites
+            Map.entry(Material.CHEST, new SpriteDefinition(ATLAS_BLOCKS, "minecraft:block/oak_planks")),
+            Map.entry(Material.TRAPPED_CHEST, new SpriteDefinition(ATLAS_BLOCKS, "minecraft:block/oak_planks")),
+            Map.entry(Material.ENDER_CHEST, new SpriteDefinition(ATLAS_BLOCKS, "minecraft:block/obsidian")),
+            Map.entry(Material.CONDUIT, new SpriteDefinition(ATLAS_ITEMS, "minecraft:item/heart_of_the_sea")),
+            Map.entry(Material.DECORATED_POT, new SpriteDefinition(ATLAS_BLOCKS, "minecraft:block/terracotta")),
+            Map.entry(Material.TRIAL_SPAWNER, new SpriteDefinition(ATLAS_BLOCKS, "minecraft:block/trial_spawner_side_inactive")),
+            Map.entry(Material.VAULT, new SpriteDefinition(ATLAS_BLOCKS, "minecraft:block/vault_front_off")),
+
             // Animated base frames
             Map.entry(Material.CLOCK, new SpriteDefinition(ATLAS_ITEMS, "minecraft:item/clock_00")),
             Map.entry(Material.COMPASS, new SpriteDefinition(ATLAS_ITEMS, "minecraft:item/compass_00")),
@@ -483,100 +620,217 @@ public class ChatUtils {
             Map.entry(Material.SHIELD, new SpriteDefinition(ATLAS_ITEMS, "minecraft:item/shield")),
             Map.entry(Material.TRIDENT, new SpriteDefinition(ATLAS_ITEMS, "minecraft:item/trident")),
             Map.entry(Material.SPYGLASS, new SpriteDefinition(ATLAS_ITEMS, "minecraft:item/spyglass")),
+            Map.entry(Material.TIPPED_ARROW, new SpriteDefinition(ATLAS_ITEMS, "minecraft:item/tipped_arrow_head")),
 
-            // Blocks whose inventory texture lives ONLY in the item atlas
-            Map.entry(Material.BARRIER, new SpriteDefinition(ATLAS_ITEMS, "minecraft:item/barrier")),
-            Map.entry(Material.STRUCTURE_VOID, new SpriteDefinition(ATLAS_ITEMS, "minecraft:item/structure_void")),
-            Map.entry(Material.LIGHT, new SpriteDefinition(ATLAS_ITEMS, "minecraft:item/light")),
-            Map.entry(Material.REPEATER, new SpriteDefinition(ATLAS_ITEMS, "minecraft:item/repeater")),
-            Map.entry(Material.COMPARATOR, new SpriteDefinition(ATLAS_ITEMS, "minecraft:item/comparator")),
-            Map.entry(Material.FLOWER_POT, new SpriteDefinition(ATLAS_ITEMS, "minecraft:item/flower_pot")),
-            Map.entry(Material.HOPPER, new SpriteDefinition(ATLAS_ITEMS, "minecraft:item/hopper")),
-            Map.entry(Material.CAULDRON, new SpriteDefinition(ATLAS_ITEMS, "minecraft:item/cauldron")),
-            Map.entry(Material.BREWING_STAND, new SpriteDefinition(ATLAS_ITEMS, "minecraft:item/brewing_stand")),
-            Map.entry(Material.ITEM_FRAME, new SpriteDefinition(ATLAS_ITEMS, "minecraft:item/item_frame")),
-            Map.entry(Material.GLOW_ITEM_FRAME, new SpriteDefinition(ATLAS_ITEMS, "minecraft:item/glow_item_frame")),
-            Map.entry(Material.PAINTING, new SpriteDefinition(ATLAS_ITEMS, "minecraft:item/painting"))
+            // Crop block variants mapped to their item sprites
+            Map.entry(Material.CARROTS, new SpriteDefinition(ATLAS_ITEMS, "minecraft:item/carrot")),
+            Map.entry(Material.POTATOES, new SpriteDefinition(ATLAS_ITEMS, "minecraft:item/potato")),
+            Map.entry(Material.BEETROOTS, new SpriteDefinition(ATLAS_ITEMS, "minecraft:item/beetroot")),
+
+            // Composite blocks with dedicated side/base textures
+            Map.entry(Material.SMOOTH_STONE_SLAB, new SpriteDefinition(ATLAS_BLOCKS, "minecraft:block/smooth_stone_slab_side")),
+            Map.entry(Material.BAMBOO_MOSAIC_SLAB, new SpriteDefinition(ATLAS_BLOCKS, "minecraft:block/bamboo_mosaic")),
+            Map.entry(Material.BAMBOO_MOSAIC_STAIRS, new SpriteDefinition(ATLAS_BLOCKS, "minecraft:block/bamboo_mosaic")),
+            Map.entry(Material.PETRIFIED_OAK_SLAB, new SpriteDefinition(ATLAS_BLOCKS, "minecraft:block/oak_planks")),
+            Map.entry(Material.LIGHT_WEIGHTED_PRESSURE_PLATE, new SpriteDefinition(ATLAS_BLOCKS, "minecraft:block/gold_block")),
+            Map.entry(Material.HEAVY_WEIGHTED_PRESSURE_PLATE, new SpriteDefinition(ATLAS_BLOCKS, "minecraft:block/iron_block")),
+            Map.entry(Material.MOSS_CARPET, new SpriteDefinition(ATLAS_BLOCKS, "minecraft:block/moss_block")),
+            Map.entry(Material.PALE_MOSS_CARPET, new SpriteDefinition(ATLAS_BLOCKS, "minecraft:block/pale_moss_block")),
+            Map.entry(Material.GLASS_PANE, new SpriteDefinition(ATLAS_BLOCKS, "minecraft:block/glass")),
+
+            // Multi-face / directional blocks without a plain block/<key> texture
+            Map.entry(Material.GRASS_BLOCK, new SpriteDefinition(ATLAS_BLOCKS, "minecraft:block/grass_block_side")),
+            Map.entry(Material.PODZOL, new SpriteDefinition(ATLAS_BLOCKS, "minecraft:block/podzol_side")),
+            Map.entry(Material.MYCELIUM, new SpriteDefinition(ATLAS_BLOCKS, "minecraft:block/mycelium_side")),
+            Map.entry(Material.CRIMSON_NYLIUM, new SpriteDefinition(ATLAS_BLOCKS, "minecraft:block/crimson_nylium_side")),
+            Map.entry(Material.WARPED_NYLIUM, new SpriteDefinition(ATLAS_BLOCKS, "minecraft:block/warped_nylium_side")),
+            Map.entry(Material.DIRT_PATH, new SpriteDefinition(ATLAS_BLOCKS, "minecraft:block/dirt_path_side")),
+            Map.entry(Material.SNOW_BLOCK, new SpriteDefinition(ATLAS_BLOCKS, "minecraft:block/snow")),
+            Map.entry(Material.MAGMA_BLOCK, new SpriteDefinition(ATLAS_BLOCKS, "minecraft:block/magma")),
+            Map.entry(Material.SMOOTH_QUARTZ, new SpriteDefinition(ATLAS_BLOCKS, "minecraft:block/quartz_block_bottom")),
+            Map.entry(Material.SMOOTH_SANDSTONE, new SpriteDefinition(ATLAS_BLOCKS, "minecraft:block/sandstone_top")),
+            Map.entry(Material.SMOOTH_RED_SANDSTONE, new SpriteDefinition(ATLAS_BLOCKS, "minecraft:block/red_sandstone_top")),
+            Map.entry(Material.QUARTZ_BLOCK, new SpriteDefinition(ATLAS_BLOCKS, "minecraft:block/quartz_block_side")),
+            Map.entry(Material.DRIED_KELP_BLOCK, new SpriteDefinition(ATLAS_BLOCKS, "minecraft:block/dried_kelp_side")),
+            Map.entry(Material.HAY_BLOCK, new SpriteDefinition(ATLAS_BLOCKS, "minecraft:block/hay_block_side")),
+            Map.entry(Material.BONE_BLOCK, new SpriteDefinition(ATLAS_BLOCKS, "minecraft:block/bone_block_side")),
+            Map.entry(Material.BASALT, new SpriteDefinition(ATLAS_BLOCKS, "minecraft:block/basalt_side")),
+            Map.entry(Material.POLISHED_BASALT, new SpriteDefinition(ATLAS_BLOCKS, "minecraft:block/polished_basalt_side")),
+            Map.entry(Material.TNT, new SpriteDefinition(ATLAS_BLOCKS, "minecraft:block/tnt_side")),
+            Map.entry(Material.CRAFTING_TABLE, new SpriteDefinition(ATLAS_BLOCKS, "minecraft:block/crafting_table_front")),
+            Map.entry(Material.FURNACE, new SpriteDefinition(ATLAS_BLOCKS, "minecraft:block/furnace_front")),
+            Map.entry(Material.BLAST_FURNACE, new SpriteDefinition(ATLAS_BLOCKS, "minecraft:block/blast_furnace_front")),
+            Map.entry(Material.SMOKER, new SpriteDefinition(ATLAS_BLOCKS, "minecraft:block/smoker_front")),
+            Map.entry(Material.DISPENSER, new SpriteDefinition(ATLAS_BLOCKS, "minecraft:block/dispenser_front")),
+            Map.entry(Material.DROPPER, new SpriteDefinition(ATLAS_BLOCKS, "minecraft:block/dropper_front")),
+            Map.entry(Material.OBSERVER, new SpriteDefinition(ATLAS_BLOCKS, "minecraft:block/observer_front")),
+            Map.entry(Material.PISTON, new SpriteDefinition(ATLAS_BLOCKS, "minecraft:block/piston_side")),
+            Map.entry(Material.STICKY_PISTON, new SpriteDefinition(ATLAS_BLOCKS, "minecraft:block/piston_top_sticky")),
+            Map.entry(Material.LOOM, new SpriteDefinition(ATLAS_BLOCKS, "minecraft:block/loom_front")),
+            Map.entry(Material.CARTOGRAPHY_TABLE, new SpriteDefinition(ATLAS_BLOCKS, "minecraft:block/cartography_table_side1")),
+            Map.entry(Material.FLETCHING_TABLE, new SpriteDefinition(ATLAS_BLOCKS, "minecraft:block/fletching_table_front")),
+            Map.entry(Material.SMITHING_TABLE, new SpriteDefinition(ATLAS_BLOCKS, "minecraft:block/smithing_table_front")),
+            Map.entry(Material.STONECUTTER, new SpriteDefinition(ATLAS_BLOCKS, "minecraft:block/stonecutter_side")),
+            Map.entry(Material.GRINDSTONE, new SpriteDefinition(ATLAS_BLOCKS, "minecraft:block/grindstone_side")),
+            Map.entry(Material.LECTERN, new SpriteDefinition(ATLAS_BLOCKS, "minecraft:block/lectern_front")),
+            Map.entry(Material.COMPOSTER, new SpriteDefinition(ATLAS_BLOCKS, "minecraft:block/composter_side")),
+            Map.entry(Material.BARREL, new SpriteDefinition(ATLAS_BLOCKS, "minecraft:block/barrel_side")),
+            Map.entry(Material.BEE_NEST, new SpriteDefinition(ATLAS_BLOCKS, "minecraft:block/bee_nest_front")),
+            Map.entry(Material.BEEHIVE, new SpriteDefinition(ATLAS_BLOCKS, "minecraft:block/beehive_front")),
+            Map.entry(Material.PUMPKIN, new SpriteDefinition(ATLAS_BLOCKS, "minecraft:block/pumpkin_side")),
+            Map.entry(Material.MELON, new SpriteDefinition(ATLAS_BLOCKS, "minecraft:block/melon_side")),
+            Map.entry(Material.CACTUS, new SpriteDefinition(ATLAS_BLOCKS, "minecraft:block/cactus_side")),
+            Map.entry(Material.JUKEBOX, new SpriteDefinition(ATLAS_BLOCKS, "minecraft:block/jukebox_side")),
+            Map.entry(Material.LODESTONE, new SpriteDefinition(ATLAS_BLOCKS, "minecraft:block/lodestone_side")),
+            Map.entry(Material.RESPAWN_ANCHOR, new SpriteDefinition(ATLAS_BLOCKS, "minecraft:block/respawn_anchor_side0")),
+            Map.entry(Material.ANCIENT_DEBRIS, new SpriteDefinition(ATLAS_BLOCKS, "minecraft:block/ancient_debris_side")),
+            Map.entry(Material.REINFORCED_DEEPSLATE, new SpriteDefinition(ATLAS_BLOCKS, "minecraft:block/reinforced_deepslate_side")),
+            Map.entry(Material.CHISELED_BOOKSHELF, new SpriteDefinition(ATLAS_BLOCKS, "minecraft:block/chiseled_bookshelf_empty")),
+            Map.entry(Material.DAYLIGHT_DETECTOR, new SpriteDefinition(ATLAS_BLOCKS, "minecraft:block/daylight_detector_top")),
+            Map.entry(Material.ENCHANTING_TABLE, new SpriteDefinition(ATLAS_BLOCKS, "minecraft:block/enchanting_table_side")),
+            Map.entry(Material.END_PORTAL_FRAME, new SpriteDefinition(ATLAS_BLOCKS, "minecraft:block/end_portal_frame_side")),
+            Map.entry(Material.JIGSAW, new SpriteDefinition(ATLAS_BLOCKS, "minecraft:block/jigsaw_top")),
+            Map.entry(Material.COMMAND_BLOCK, new SpriteDefinition(ATLAS_BLOCKS, "minecraft:block/command_block_front")),
+            Map.entry(Material.CHAIN_COMMAND_BLOCK, new SpriteDefinition(ATLAS_BLOCKS, "minecraft:block/chain_command_block_front")),
+            Map.entry(Material.REPEATING_COMMAND_BLOCK, new SpriteDefinition(ATLAS_BLOCKS, "minecraft:block/repeating_command_block_front")),
+            Map.entry(Material.SUSPICIOUS_SAND, new SpriteDefinition(ATLAS_BLOCKS, "minecraft:block/suspicious_sand_0")),
+            Map.entry(Material.SUSPICIOUS_GRAVEL, new SpriteDefinition(ATLAS_BLOCKS, "minecraft:block/suspicious_gravel_0")),
+            Map.entry(Material.SCULK_SENSOR, new SpriteDefinition(ATLAS_BLOCKS, "minecraft:block/sculk_sensor_side")),
+            Map.entry(Material.CALIBRATED_SCULK_SENSOR, new SpriteDefinition(ATLAS_BLOCKS, "minecraft:block/calibrated_sculk_sensor_side")),
+            Map.entry(Material.SCULK_SHRIEKER, new SpriteDefinition(ATLAS_BLOCKS, "minecraft:block/sculk_shrieker_side")),
+            Map.entry(Material.SCULK_CATALYST, new SpriteDefinition(ATLAS_BLOCKS, "minecraft:block/sculk_catalyst_side")),
+            Map.entry(Material.OCHRE_FROGLIGHT, new SpriteDefinition(ATLAS_BLOCKS, "minecraft:block/ochre_froglight_side")),
+            Map.entry(Material.VERDANT_FROGLIGHT, new SpriteDefinition(ATLAS_BLOCKS, "minecraft:block/verdant_froglight_side")),
+            Map.entry(Material.PEARLESCENT_FROGLIGHT, new SpriteDefinition(ATLAS_BLOCKS, "minecraft:block/pearlescent_froglight_side"))
     );
-
 
     /**
      * Blocks that have a dedicated inventory/item sprite defined by Mojang.
      * These SHOULD NOT fall back to block/<key>.
      */
     private static final Set<Material> INVENTORY_BLOCKS = EnumSet.of(
-            // Plants & flat blocks
-            Material.LILY_PAD,
-            Material.VINE,
-            Material.SUGAR_CANE,
-            Material.BAMBOO,
-            Material.KELP,
-            Material.SEAGRASS,
-
-            // Redstone & utility
+            // Technical & utility blocks
+            Material.BARRIER,
+            Material.STRUCTURE_VOID,
+            Material.LIGHT,
+            Material.REPEATER,
+            Material.COMPARATOR,
             Material.LEVER,
             Material.TRIPWIRE_HOOK,
             Material.REDSTONE,
             Material.STRING,
+            Material.FLOWER_POT,
+            Material.HOPPER,
+            Material.CAULDRON,
+            Material.BREWING_STAND,
+            Material.BELL,
+            Material.CAKE,
+            Material.CAMPFIRE,
+            Material.SOUL_CAMPFIRE,
+            Material.SEA_PICKLE,
+            Material.ITEM_FRAME,
+            Material.GLOW_ITEM_FRAME,
+            Material.PAINTING,
 
-            // Doors, buttons, signs (inventory variants exist)
-            Material.OAK_DOOR,
-            Material.SPRUCE_DOOR,
-            Material.BIRCH_DOOR,
-            Material.JUNGLE_DOOR,
-            Material.ACACIA_DOOR,
-            Material.DARK_OAK_DOOR,
-            Material.MANGROVE_DOOR,
-            Material.CHERRY_DOOR,
-            Material.BAMBOO_DOOR,
-
-            Material.STONE_BUTTON,
-            Material.OAK_BUTTON,
-            Material.SPRUCE_BUTTON,
-            Material.BIRCH_BUTTON,
-            Material.JUNGLE_BUTTON,
-            Material.ACACIA_BUTTON,
-            Material.DARK_OAK_BUTTON,
-            Material.MANGROVE_BUTTON,
-            Material.CHERRY_BUTTON,
-            Material.BAMBOO_BUTTON
+            // Plants, flora & placeable crops/seeds
+            Material.LILY_PAD,
+            Material.VINE,
+            Material.GLOW_LICHEN,
+            Material.SCULK_VEIN,
+            Material.HANGING_ROOTS,
+            Material.POINTED_DRIPSTONE,
+            Material.SPORE_BLOSSOM,
+            Material.BIG_DRIPLEAF,
+            Material.SMALL_DRIPLEAF,
+            Material.PINK_PETALS,
+            Material.WILDFLOWERS,
+            Material.LEAF_LITTER,
+            Material.SUGAR_CANE,
+            Material.BAMBOO,
+            Material.KELP,
+            Material.SEAGRASS,
+            Material.FROGSPAWN,
+            Material.SNIFFER_EGG,
+            Material.TURTLE_EGG,
+            Material.NETHER_WART,
+            Material.SWEET_BERRIES,
+            Material.GLOW_BERRIES,
+            Material.COCOA_BEANS,
+            Material.PITCHER_PLANT,
+            Material.PITCHER_POD,
+            Material.TORCHFLOWER_SEEDS,
+            Material.WHEAT,
+            Material.WHEAT_SEEDS,
+            Material.MELON_SEEDS,
+            Material.PUMPKIN_SEEDS,
+            Material.BEETROOT_SEEDS,
+            Material.CARROT,
+            Material.POTATO
     );
+
+    /**
+     * Resolves the Atlas and Sprite Key from a raw sprite path string.
+     * Supports namespaced keys (e.g., {@code "minecraft:block/stone"}) and shorthand paths
+     * (e.g., {@code "block/stone"}, {@code "gui/icon/checkmark"}, {@code "diamond"}).
+     */
+    public static @NotNull SpriteDefinition resolveSprite(@NotNull String spriteKey) {
+        Key key = Key.key(spriteKey);
+        String path = key.value();
+
+        Key atlas;
+        if (path.startsWith("block/")) {
+            atlas = ATLAS_BLOCKS;
+        } else if (path.startsWith("gui/")) {
+            atlas = ATLAS_GUI;
+        } else if (path.startsWith("mob_effect/")) {
+            atlas = ATLAS_MOB_EFFECTS;
+        } else if (path.startsWith("painting/")) {
+            atlas = ATLAS_PAINTINGS;
+        } else if (path.startsWith("particle/")) {
+            atlas = ATLAS_PARTICLES;
+        } else if (path.startsWith("map/decorations/")) {
+            atlas = ATLAS_MAP_DECORATIONS;
+        } else {
+            atlas = ATLAS_ITEMS;
+        }
+
+        return new SpriteDefinition(atlas, key);
+    }
 
     /**
      * Resolves the Atlas and Sprite Key for a given Material.
      */
-    private static SpriteDefinition resolveSprite(Material material) {
-        final String key = material.key().value();
-
+    public static @NotNull SpriteDefinition resolveSprite(@NotNull Material material) {
         // Overrides
         SpriteDefinition override = SPRITE_OVERRIDES.get(material);
         if (override != null) {
             return override;
         }
 
-        // For example, oak_door the block face vs oak_door the item spite that a player would see in their inventory.
-        if (INVENTORY_BLOCKS.contains(material)) {
+        // Normalize waxed copper and infested stone variants to their base texture key
+        String key = material.key().value();
+        if (key.startsWith("waxed_")) {
+            key = key.substring("waxed_".length());
+        } else if (key.startsWith("infested_")) {
+            key = key.substring("infested_".length());
+        }
+
+        // For example, oak_door the block face vs oak_door the item sprite that a player would see in their inventory.
+        if (INVENTORY_BLOCKS.contains(material) || isItemAtlasBlockKey(key)) {
+            String normalizedItemKey = key.endsWith("_sign")
+                    ? key.replace("_wall_", "_")
+                    : key;
             return new SpriteDefinition(
                     ATLAS_ITEMS,
-                    "minecraft:item/" + key
+                    "minecraft:item/" + normalizedItemKey
             );
         }
 
-        // Blocks
+        // Blocks (including composite shapes like stairs, slabs, walls, fences, buttons, etc.)
         if (material.isBlock()) {
-
-            // Special-case blocks whose primary visible face is well-defined
-            // and commonly expected in UI contexts.
-            if (material == Material.GRASS_BLOCK) {
-                return new SpriteDefinition(
-                        ATLAS_BLOCKS,
-                        "minecraft:block/grass_block_side"
-                );
-            }
-
             return new SpriteDefinition(
                     ATLAS_BLOCKS,
-                    "minecraft:block/" + key
+                    "minecraft:block/" + resolveBlockTextureKey(key)
             );
         }
 
@@ -585,6 +839,65 @@ public class ChatUtils {
                 ATLAS_ITEMS,
                 "minecraft:item/" + key
         );
+    }
+
+    private static boolean isItemAtlasBlockKey(String key) {
+        return key.endsWith("_door")
+                || key.endsWith("_sign")
+                || key.equals("candle") || key.endsWith("_candle")
+                || key.equals("lantern") || key.endsWith("_lantern")
+                || key.equals("chain") || key.endsWith("_chain");
+    }
+
+    private static String resolveBlockTextureKey(String key) {
+        if (key.equals("shulker_box")) {
+            return "purpur_block";
+        }
+        if (key.endsWith("_shulker_box")) {
+            return key.substring(0, key.length() - "_shulker_box".length()) + "_terracotta";
+        }
+        if (key.endsWith("_bed")) {
+            return key.substring(0, key.length() - "_bed".length()) + "_wool";
+        }
+        if (key.endsWith("_wall_banner")) {
+            return key.substring(0, key.length() - "_wall_banner".length()) + "_wool";
+        }
+        if (key.endsWith("_banner")) {
+            return key.substring(0, key.length() - "_banner".length()) + "_wool";
+        }
+        if (key.endsWith("_carpet")) {
+            return key.substring(0, key.length() - "_carpet".length()) + "_wool";
+        }
+        if (key.endsWith("_stained_glass_pane")) {
+            return key.substring(0, key.length() - "_pane".length());
+        }
+        if (key.endsWith("_wood")) {
+            return key.substring(0, key.length() - "_wood".length()) + "_log";
+        }
+        if (key.endsWith("_hyphae")) {
+            return key.substring(0, key.length() - "_hyphae".length()) + "_stem";
+        }
+        if (key.endsWith("_wall_torch")) {
+            return key.replace("_wall_torch", "_torch");
+        }
+        if (key.equals("wall_torch")) {
+            return "torch";
+        }
+        if (key.endsWith("_wall_fan")) {
+            return key.replace("_wall_fan", "_fan");
+        }
+
+        for (String suffix : List.of("_stairs", "_slab", "_wall", "_fence_gate", "_fence", "_button", "_pressure_plate")) {
+            if (key.endsWith(suffix)) {
+                String stem = key.substring(0, key.length() - suffix.length());
+                if (WOOD_TYPES.contains(stem)) {
+                    return stem + "_planks";
+                }
+                return COMPOUND_BLOCK_BASES.getOrDefault(stem, stem);
+            }
+        }
+
+        return key;
     }
 
 }

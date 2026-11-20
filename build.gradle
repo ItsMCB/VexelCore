@@ -1,6 +1,6 @@
 allprojects {
     group = 'me.itsmcb.vexelcore'
-    version = '1.0.1-SNAPSHOT'
+    version = '2.0.1-SNAPSHOT'
 }
 
 subprojects {

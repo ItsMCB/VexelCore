@@ -11,6 +11,7 @@ import me.itsmcb.vexelcore.bukkit.api.text.BukkitMsgBuilder;
 import net.kyori.adventure.key.Key;
 import net.kyori.adventure.text.Component;
 import org.bukkit.entity.Player;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -26,6 +27,7 @@ public class VexelButtonDialog {
     private Component closeLabel = new BukkitMsgBuilder("&c» Close «").get(); // Todo localize
 
     private int columns = 3;
+    private @Nullable Integer buttonWidth = null;
 
     private Consumer<Player> parentAction;
     private boolean showCloseButton = true;
@@ -72,6 +74,11 @@ public class VexelButtonDialog {
         return this;
     }
 
+    public VexelButtonDialog setButtonWidth(int buttonWidth) {
+        this.buttonWidth = Math.clamp(buttonWidth, 1, 1024);
+        return this;
+    }
+
     public VexelButtonDialog setParent(Consumer<Player> parentAction) {
         this.parentAction = parentAction;
         return this;
@@ -95,10 +102,13 @@ public class VexelButtonDialog {
                     if (def.action != null) def.action.accept(player);
                 });
 
-                finalButtons.add(ActionButton.builder(def.label)
+                ActionButton.Builder buttonBuilder = ActionButton.builder(def.label)
                         .tooltip(def.tooltip)
-                        .action(DialogAction.customClick(btnKey, null))
-                        .build());
+                        .action(DialogAction.customClick(btnKey, null));
+                if (buttonWidth != null) {
+                    buttonBuilder.width(buttonWidth);
+                }
+                finalButtons.add(buttonBuilder.build());
             }
 
             ActionButton bottomButton;
